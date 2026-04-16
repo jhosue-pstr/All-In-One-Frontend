@@ -23,16 +23,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18' # Puedes cambiarlo si tu proyecto usa Node 20
+          node-version: '18'
 
       # 3. INSTALAR DEPENDENCIAS
       - name: Install dependencies
         run: npm install
 
       # 4. CORRER LOS TESTS Y GENERAR COBERTURA
-      # --no-watch es vital para que el CI no se quede colgado esperando
+      # Ahora simplemente llamamos al script que definimos en package.json
       - name: Run tests with coverage
-        run: npm run test -- --no-watch --code-coverage 
+        run: npm run test
 
       # 5. ESCANEAR CON SONARCLOUD
       - name: Analyze with SonarQube
@@ -46,5 +46,5 @@ jobs:
             -Dsonar.projectKey=jhosue-pstr_All-In-One-Frontend
             -Dsonar.sources=src
             -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.spec.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/**/lcov.info
+            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.tsx,**/*.test.ts
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
