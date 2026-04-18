@@ -1,0 +1,135 @@
+/* Panel Superior */
+.panel__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 15px;
+  background: #2c3e50;
+  border-bottom: 1px solid #1a252f;
+}
+
+.panel__basic-actions,
+.panel__actions,
+.panel__devices,
+.panel__switcher {
+  display: flex;
+  gap: 5px;
+}
+
+.btn-back {
+  padding: 8px 15px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Botones de GrapesJS */
+.gjs-pn-btn {
+  padding: 6px 12px;
+  background: #34495e;
+  border: 1px solid #2c3e50;
+  border-radius: 3px;
+  color: #ecf0f1;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: sans-serif;
+}
+
+.gjs-pn-btn:hover {
+  background: #4a6278;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  background: #3498db;
+  border-color: #3498db;
+  color: white;
+}
+
+/* Editor Row */
+.editor-row {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-canvas {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  background: #ffffff;
+}
+
+#gjs {
+  min-height: 100%;
+}
+
+/* Panel Derecho */
+.panel__right {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  min-width: 280px;
+  max-width: 400px;
+  background: #2c3e50;
+  border-left: 1px solid #1a252f;
+}
+
+/* Blocks - QUE OCUPEN TODA LA ALTURA */
+#blocks {
+  padding: 10px;
+  background: #34495e;
+  border-bottom: 1px solid #2c3e50;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 150px;
+}
+
+.gjs-block {
+  padding: 8px 12px;
+  background: #3498db;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: sans-serif;
+  flex-basis: auto;
+}
+
+.gjs-block:hover {
+  background: #2980b9;
+}
+
+/* Capas, Estilos, Traits */
+.layers-container,
+.styles-container,
+.traits-container,
+.pages-container {
+  padding: 10px;
+  background: #2c3e50;
+  overflow-y: auto;
+}
+
+.layers-container:empty,
+.styles-container:empty,
+.traits-container:empty {
+  display: none;
+}
+
+/* Canvas */
+.gjs-cv-canvas {
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .panel__right { display: none; }
+  .editor-row { flex-direction: column; }
+}

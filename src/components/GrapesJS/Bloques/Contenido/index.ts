@@ -1,0 +1,10 @@
+export { BloqueHeading } from './BloqueHeading';
+export { BloqueParagraph } from './BloqueParagraph';
+export { BloqueLink } from './BloqueLink';
+export { BloqueLista } from './BloqueLista';
+export { BloqueIcono } from './BloqueIcono';
+export { BloqueSpacer } from './BloqueSpacer';
+export { BloqueQuote } from './BloqueQuote';
+export { BloqueBadge } from './BloqueBadge';
+export { BloqueBoton } from './BloqueBoton';
+export { BloqueDivider } from './BloqueDivider';
