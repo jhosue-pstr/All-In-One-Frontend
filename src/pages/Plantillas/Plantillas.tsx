@@ -1,27 +1,35 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { plantillaService } from '../../services';
-import type { Plantilla, PlantillaCreate, PlantillaUpdate } from '../../models';
+import type { Plantilla, PlantillaCreate, PlantillaUpdate, Visibilidad } from '../../models';
 import './Plantillas.css';
+
+type Tab = 'mis-plantillas' | 'comunidad';
 
 export function Plantillas() {
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPlantilla, setEditingPlantilla] = useState<Plantilla | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('mis-plantillas');
   const [formData, setFormData] = useState<PlantillaCreate>({
     nombre: '',
     slug: '',
+    descripcion: '',
+    visibilidad: 'PRIVADA',
   });
   const navigate = useNavigate();
 
   useEffect(() => {
     loadPlantillas();
-  }, []);
+  }, [activeTab]);
 
   const loadPlantillas = async () => {
     try {
-      const data = await plantillaService.getAll();
+      setLoading(true);
+      const data = activeTab === 'mis-plantillas'
+        ? await plantillaService.getMisPlantillas()
+        : await plantillaService.getPublicas();
       setPlantillas(data);
     } catch (error) {
       console.error('Error loading plantillas:', error);
@@ -40,7 +48,7 @@ export function Plantillas() {
       }
       setShowModal(false);
       setEditingPlantilla(null);
-      setFormData({ nombre: '', slug: '' });
+      setFormData({ nombre: '', slug: '', descripcion: '', visibilidad: 'PRIVADA' });
       loadPlantillas();
     } catch (error) {
       console.error('Error saving plantilla:', error);
@@ -53,7 +61,12 @@ export function Plantillas() {
 
   const handleEditBasic = (plantilla: Plantilla) => {
     setEditingPlantilla(plantilla);
-    setFormData({ nombre: plantilla.nombre, slug: plantilla.slug });
+    setFormData({
+      nombre: plantilla.nombre,
+      slug: plantilla.slug,
+      descripcion: plantilla.descripcion || '',
+      visibilidad: plantilla.visibilidad,
+    });
     setShowModal(true);
   };
 
@@ -70,13 +83,9 @@ export function Plantillas() {
 
   const openCreateModal = () => {
     setEditingPlantilla(null);
-    setFormData({ nombre: '', slug: '' });
+    setFormData({ nombre: '', slug: '', descripcion: '', visibilidad: 'PRIVADA' });
     setShowModal(true);
   };
-
-  if (loading) {
-    return <div className="page-loading">Cargando...</div>;
-  }
 
   return (
     <div className="plantillas-container">
@@ -87,12 +96,31 @@ export function Plantillas() {
         </button>
       </header>
 
-      {plantillas.length === 0 ? (
+      <div className="tabs">
+        <button
+          className={`tab ${activeTab === 'mis-plantillas' ? 'active' : ''}`}
+          onClick={() => setActiveTab('mis-plantillas')}
+        >
+          Mis Plantillas
+        </button>
+        <button
+          className={`tab ${activeTab === 'comunidad' ? 'active' : ''}`}
+          onClick={() => setActiveTab('comunidad')}
+        >
+          Comunidad
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="page-loading">Cargando...</div>
+      ) : plantillas.length === 0 ? (
         <div className="empty-state">
-          <p>No hay plantillas creadas aún.</p>
-          <button className="btn-primary" onClick={openCreateModal}>
-            Crear mi primera plantilla
-          </button>
+          <p>No hay plantillas {activeTab === 'mis-plantillas' ? 'creadas aún' : 'disponibles'}.</p>
+          {activeTab === 'mis-plantillas' && (
+            <button className="btn-primary" onClick={openCreateModal}>
+              Crear mi primera plantilla
+            </button>
+          )}
         </div>
       ) : (
         <div className="plantillas-grid">
@@ -102,20 +130,29 @@ export function Plantillas() {
                 <h3>{plantilla.nombre}</h3>
                 <span className="plantilla-slug">{plantilla.slug}</span>
                 <p className="plantilla-desc">{plantilla.descripcion || 'Sin descripción'}</p>
-                <span className={`plantilla-status ${plantilla.activo ? 'active' : 'inactive'}`}>
-                  {plantilla.activo ? 'Activa' : 'Inactiva'}
-                </span>
+                <div className="plantilla-badges">
+                  <span className={`plantilla-visibilidad ${plantilla.visibilidad.toLowerCase()}`}>
+                    {plantilla.visibilidad === 'PUBLICA' ? 'Pública' : 'Privada'}
+                  </span>
+                  <span className={`plantilla-status ${plantilla.activo ? 'active' : 'inactive'}`}>
+                    {plantilla.activo ? 'Activa' : 'Inactiva'}
+                  </span>
+                </div>
               </div>
               <div className="plantilla-actions">
                 <button onClick={() => handleEdit(plantilla)} className="btn-edit">
                   Editar
                 </button>
-                <button onClick={() => handleEditBasic(plantilla)} className="btn-secondary">
-                  Editar basic
-                </button>
-                <button onClick={() => handleDelete(plantilla.id)} className="btn-delete">
-                  Eliminar
-                </button>
+                {activeTab === 'mis-plantillas' && (
+                  <>
+                    <button onClick={() => handleEditBasic(plantilla)} className="btn-secondary">
+                      Editar basic
+                    </button>
+                    <button onClick={() => handleDelete(plantilla.id)} className="btn-delete">
+                      Eliminar
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}
@@ -124,33 +161,78 @@ export function Plantillas() {
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
-            <form onSubmit={handleSubmit}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleSubmit} className="modal-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Nombre</label>
+                  <input
+                    type="text"
+                    value={formData.nombre}
+                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                    placeholder="Mi plantilla"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Slug</label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    placeholder="mi-plantilla"
+                    required
+                  />
+                </div>
+              </div>
               <div className="form-group">
-                <label>Nombre</label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                  required
+                <label>Descripción</label>
+                <textarea
+                  value={formData.descripcion}
+                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                  placeholder="Descripción de tu plantilla..."
+                  rows={3}
                 />
               </div>
               <div className="form-group">
-                <label>Slug</label>
-                <input
-                  type="text"
-                  value={formData.slug}
-                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  required
-                />
+                <label>Visibilidad</label>
+                <div className="visibility-options">
+                  <label className={`visibility-option ${formData.visibilidad === 'PRIVADA' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="visibilidad"
+                      value="PRIVADA"
+                      checked={formData.visibilidad === 'PRIVADA'}
+                      onChange={(e) => setFormData({ ...formData, visibilidad: e.target.value as Visibilidad })}
+                    />
+                    <span className="visibility-icon">🔒</span>
+                    <span className="visibility-label">Privada</span>
+                    <span className="visibility-desc">Solo tú podrás verla</span>
+                  </label>
+                  <label className={`visibility-option ${formData.visibilidad === 'PUBLICA' ? 'selected' : ''}`}>
+                    <input
+                      type="radio"
+                      name="visibilidad"
+                      value="PUBLICA"
+                      checked={formData.visibilidad === 'PUBLICA'}
+                      onChange={(e) => setFormData({ ...formData, visibilidad: e.target.value as Visibilidad })}
+                    />
+                    <span className="visibility-icon">🌍</span>
+                    <span className="visibility-label">Pública</span>
+                    <span className="visibility-desc">Todos pueden verla</span>
+                  </label>
+                </div>
               </div>
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary">
-                  {editingPlantilla ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn-primary btn-lg">
+                  {editingPlantilla ? 'Actualizar' : 'Crear Plantilla'}
                 </button>
               </div>
             </form>

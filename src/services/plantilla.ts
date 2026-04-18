@@ -34,6 +34,14 @@ export const plantillaService = {
     return fetchApi<Plantilla[]>('/plantillas');
   },
 
+  async getPublicas(): Promise<Plantilla[]> {
+    return fetchApi<Plantilla[]>('/plantillas/publicas');
+  },
+
+  async getMisPlantillas(): Promise<Plantilla[]> {
+    return fetchApi<Plantilla[]>('/plantillas/mis-plantillas');
+  },
+
   async getById(id: number): Promise<Plantilla> {
     return fetchApi<Plantilla>(`/plantillas/${id}`);
   },

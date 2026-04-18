@@ -1,6 +1,6 @@
-import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import './WebEditor.css';
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import "./WebEditor.css";
 
 export function WebEditor() {
   const { id } = useParams<{ id: string }>();
@@ -9,7 +9,7 @@ export function WebEditor() {
   return (
     <div className="web-editor-simple">
       <div className="editor-header">
-        <button onClick={() => navigate('/plantillas')}>← Volver</button>
+        <button onClick={() => navigate("/plantillas")}>← Volver</button>
         <span>Editor de Plantilla (ID: {id})</span>
         <button className="btn-primary">Guardar</button>
       </div>
