@@ -1,0 +1,49 @@
+.web-editor-simple {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: #1e293b;
+  color: white;
+}
+
+.editor-header button {
+  padding: 0.5rem 1rem;
+  background: #334155;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.editor-header button:hover {
+  background: #475569;
+}
+
+.editor-header .btn-primary {
+  background: #4f46e5;
+  margin-left: auto;
+}
+
+.editor-header .btn-primary:hover {
+  background: #4338ca;
+}
+
+.editor-content {
+  padding: 3rem;
+  text-align: center;
+}
+
+.editor-content h1 {
+  margin: 0 0 1rem;
+  color: #1e293b;
+}
+
+.editor-content p {
+  color: #64748b;
+}

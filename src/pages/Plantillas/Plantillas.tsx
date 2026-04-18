@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { plantillaService } from '../../services';
 import type { Plantilla, PlantillaCreate, PlantillaUpdate } from '../../models';
 import './Plantillas.css';
@@ -12,6 +13,7 @@ export function Plantillas() {
     nombre: '',
     slug: '',
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadPlantillas();
@@ -46,6 +48,10 @@ export function Plantillas() {
   };
 
   const handleEdit = (plantilla: Plantilla) => {
+    navigate(`/plantillas/${plantilla.id}/editar`);
+  };
+
+  const handleEditBasic = (plantilla: Plantilla) => {
     setEditingPlantilla(plantilla);
     setFormData({ nombre: plantilla.nombre, slug: plantilla.slug });
     setShowModal(true);
@@ -103,6 +109,9 @@ export function Plantillas() {
               <div className="plantilla-actions">
                 <button onClick={() => handleEdit(plantilla)} className="btn-edit">
                   Editar
+                </button>
+                <button onClick={() => handleEditBasic(plantilla)} className="btn-secondary">
+                  Editar basic
                 </button>
                 <button onClick={() => handleDelete(plantilla.id)} className="btn-delete">
                   Eliminar

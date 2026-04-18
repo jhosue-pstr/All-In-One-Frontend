@@ -8,6 +8,7 @@ import { Sitios } from './pages/Sitios/Sitios';
 import { Plantillas } from './pages/Plantillas/Plantillas';
 import { Modulos } from './pages/Modulos/Modulos';
 import { Configuraciones } from './pages/Configuraciones/Configuraciones';
+import { WebEditor } from './pages/WebEditor/WebEditor';
 import { authService } from './services';
 import type { User } from './models';
 import './App.css';
@@ -41,6 +42,7 @@ function App() {
         <Route path="/" element={
           isAuthenticated ? <Navigate to="/inicio" replace /> : <AuthLayout />
         } />
+        <Route path="/plantillas/:id/editar" element={<WebEditor />} />
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/sitios" element={<Sitios />} />
