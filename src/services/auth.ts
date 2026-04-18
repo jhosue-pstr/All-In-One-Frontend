@@ -1,4 +1,4 @@
-import type { TokenResponse, User, UserCreate, UserLogin } from '../models';
+import type { TokenResponse, User, UserCreate, UserLogin, UserUpdate } from '../models';
 import { getApiUrl } from '../config';
 
 const API_URL = getApiUrl();
@@ -62,6 +62,13 @@ export const authService = {
 
   async me(): Promise<User> {
     return fetchApi<User>('/auth/me');
+  },
+
+  async update(data: UserUpdate): Promise<User> {
+    return fetchApi<User>('/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   },
 
   logout(): void {

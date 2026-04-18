@@ -15,6 +15,12 @@ export interface UserCreate {
   apellido: string;
 }
 
+export interface UserUpdate {
+  nombre?: string;
+  apellido?: string;
+  contrasena?: string;
+}
+
 export interface UserLogin {
   correo: string;
   contrasena: string;
@@ -24,3 +30,5 @@ export interface TokenResponse {
   access_token: string;
   token_type: string;
 }
+
+export const USER_IMAGE_KEY = 'user_image';
