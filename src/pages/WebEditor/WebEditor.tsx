@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import html2canvas from "html2canvas";
 import { initGrapesJS } from "../../components/GrapesJS";
+import { plantillaService } from "../../services/plantilla";
 import "grapesjs/dist/css/grapes.min.css";
 import "./WebEditor.css";
 
@@ -9,6 +11,8 @@ export function WebEditor() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const grapesEditorRef = useRef<any>(null);
+  const [currentDevice, setCurrentDevice] = useState("Desktop");
+  const [isSaving, setIsSaving] = useState(false);
 
   const isTemplate = searchParams.get("isTemplate") === "true";
 
@@ -17,18 +21,32 @@ export function WebEditor() {
 
     (window as any).siteId = id;
 
-    if (!grapesEditorRef.current) {
-      grapesEditorRef.current = initGrapesJS({
-        siteId: id,
-        isTemplate,
-        onSave: async (data) => {
-          console.log("Guardando:", data);
-        },
-        onLoad: async () => {
-          return null;
-        },
-      });
-    }
+    const loadPlantilla = async () => {
+      try {
+        const plantilla = await plantillaService.getById(parseInt(id));
+        return plantilla.configuracion as {
+          html?: string;
+          css?: string;
+        } | null;
+      } catch (error) {
+        console.error("Error al cargar:", error);
+        return null;
+      }
+    };
+
+    const initEditor = async () => {
+      const projectData = await loadPlantilla();
+
+      if (!grapesEditorRef.current) {
+        grapesEditorRef.current = initGrapesJS({
+          siteId: id,
+          isTemplate,
+          projectData: projectData || undefined,
+        });
+      }
+    };
+
+    initEditor();
 
     return () => {
       if (grapesEditorRef.current) {
@@ -39,48 +57,76 @@ export function WebEditor() {
   }, [id, isTemplate]);
 
   useEffect(() => {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const contents = document.querySelectorAll('.panel-content');
-    
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const panel = tab.getAttribute('data-panel');
-        
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        
-        contents.forEach(c => {
-          c.classList.remove('active');
-          if (c instanceof HTMLElement) c.style.display = 'none';
+    if (!grapesEditorRef.current) return;
+
+    const editor = grapesEditorRef.current;
+    editor.on("change:device", () => {
+      setCurrentDevice(editor.getDevice());
+    });
+  }, []);
+
+  useEffect(() => {
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".panel-content");
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const panel = tab.getAttribute("data-panel");
+
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        contents.forEach((c) => {
+          c.classList.remove("active");
+          if (c instanceof HTMLElement) c.style.display = "none";
         });
-        
-        if (panel === 'blocks') {
-          document.querySelector(`#blocks-${id}`)?.classList.add('active');
-          document.querySelector(`#blocks-${id}`)?.setAttribute('style', 'display: flex !important; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 10px;');
-        } else if (panel === 'layers') {
-          const el = document.querySelector('.layers-container');
+
+        if (panel === "blocks") {
+          document.querySelector(`#blocks-${id}`)?.classList.add("active");
+          document
+            .querySelector(`#blocks-${id}`)
+            ?.setAttribute(
+              "style",
+              "display: flex !important; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 10px;",
+            );
+        } else if (panel === "layers") {
+          const el = document.querySelector(".layers-container");
           if (el) {
-            el.classList.add('active');
-            el.setAttribute('style', 'display: block; flex: 1; overflow-y: auto; padding: 10px;');
+            el.classList.add("active");
+            el.setAttribute(
+              "style",
+              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+            );
           }
-        } else if (panel === 'styles') {
-          const el = document.querySelector('.styles-container');
+        } else if (panel === "styles") {
+          const el = document.querySelector(".styles-container");
           if (el) {
-            el.classList.add('active');
-            el.setAttribute('style', 'display: block; flex: 1; overflow-y: auto; padding: 10px;');
+            el.classList.add("active");
+            el.setAttribute(
+              "style",
+              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+            );
           }
-        } else if (panel === 'pages') {
-          const el = document.querySelector('.pages-container');
+        } else if (panel === "pages") {
+          const el = document.querySelector(".pages-container");
           if (el) {
-            el.classList.add('active');
-            el.setAttribute('style', 'display: block; flex: 1; overflow-y: auto; padding: 10px;');
+            el.classList.add("active");
+            el.setAttribute(
+              "style",
+              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+            );
           }
         }
-        
+
         if (grapesEditorRef.current) {
-          const cmd = panel === 'blocks' ? 'show-blocks' : 
-                      panel === 'layers' ? 'show-layers' : 
-                      panel === 'styles' ? 'show-styles' : 'show-pages';
+          const cmd =
+            panel === "blocks"
+              ? "show-blocks"
+              : panel === "layers"
+                ? "show-layers"
+                : panel === "styles"
+                  ? "show-styles"
+                  : "show-pages";
           grapesEditorRef.current.runCommand(cmd);
         }
       });
@@ -101,11 +147,152 @@ export function WebEditor() {
           </button>
           <span className="editor-title">Editor - Plantilla {id}</span>
         </div>
-        
-        <div className="panel__devices"></div>
-        
-        {/* Contenedor para los botones de acciones de GrapesJS */}
-        <div className="panel__actions"></div>
+
+        <div className="panel__devices">
+          <button
+            className={`gjs-pn-btn ${currentDevice === "Desktop" ? "gjs-pn-active" : ""}`}
+            onClick={() => {
+              setCurrentDevice("Desktop");
+              grapesEditorRef.current?.setDevice("Desktop");
+            }}
+            title="PC"
+          >
+            <i className="fa fa-desktop"></i>
+          </button>
+          <button
+            className={`gjs-pn-btn ${currentDevice === "Tablet" ? "gjs-pn-active" : ""}`}
+            onClick={() => {
+              setCurrentDevice("Tablet");
+              grapesEditorRef.current?.setDevice("Tablet");
+            }}
+            title="Tablet"
+          >
+            <i className="fa fa-tablet"></i>
+          </button>
+          <button
+            className={`gjs-pn-btn ${currentDevice === "Mobile" ? "gjs-pn-active" : ""}`}
+            onClick={() => {
+              setCurrentDevice("Mobile");
+              grapesEditorRef.current?.setDevice("Mobile");
+            }}
+            title="Móvil"
+          >
+            <i className="fa fa-mobile"></i>
+          </button>
+        </div>
+
+        <div className="panel__actions">
+          <button
+            className="gjs-pn-btn btn-toggle-borders"
+            onClick={() => grapesEditorRef.current?.runCommand("sw-visibility")}
+            title="Ver Bordes"
+          >
+            <i className="fa fa-eye"></i>
+          </button>
+          <button
+            className="gjs-pn-btn"
+            onClick={() => grapesEditorRef.current?.runCommand("undo")}
+            title="Deshacer"
+          >
+            <i className="fa fa-undo"></i>
+          </button>
+          <button
+            className="gjs-pn-btn"
+            onClick={() => grapesEditorRef.current?.runCommand("redo")}
+            title="Rehacer"
+          >
+            <i className="fa fa-repeat"></i>
+          </button>
+          <button
+            className="gjs-pn-btn btn-save"
+            disabled={isSaving}
+            onClick={async () => {
+              if (!grapesEditorRef.current) return;
+              setIsSaving(true);
+              try {
+                const editor = grapesEditorRef.current;
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const wrapperDiv = document.createElement('div');
+                wrapperDiv.style.position = 'fixed';
+                wrapperDiv.style.top = '0';
+                wrapperDiv.style.left = '0';
+                wrapperDiv.style.zIndex = '-9999';
+                wrapperDiv.style.background = '#ffffff';
+                wrapperDiv.style.width = '600px';
+                
+                wrapperDiv.innerHTML = `
+                  <style>${editor.getCss()}</style>
+                  <div style="width:100%;padding:20px;">${editor.getHtml()}</div>
+                `;
+                
+                document.body.appendChild(wrapperDiv);
+                
+                const miniatura = await html2canvas(wrapperDiv, {
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: "#ffffff",
+                  scale: 1,
+                  logging: false,
+                });
+                document.body.removeChild(wrapperDiv);
+                
+                const blob = await new Promise<Blob>((resolve, reject) => {
+                  miniatura.toBlob(
+                    (blob) => blob ? resolve(blob) : reject(new Error('Error generating blob')),
+                    'image/png'
+                  );
+                });
+                
+                const formData = new FormData();
+                formData.append('file', blob, 'miniatura.png');
+                
+                const token = localStorage.getItem('token');
+                const uploadResponse = await fetch(
+                  `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/plantillas/${id}/miniatura`,
+                  {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                  }
+                );
+                
+                if (!uploadResponse.ok) {
+                  throw new Error('Error al subir la miniatura');
+                }
+                
+                const { url } = await uploadResponse.json();
+                
+                const plantillaId = parseInt(id || "0");
+                await plantillaService.update(plantillaId, {
+                  configuracion: {
+                    html: editor.getHtml() || "",
+                    css: editor.getCss() || "",
+                  },
+                  miniatura: url,
+                });
+                alert("Plantilla guardada correctamente");
+              } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("Error al guardar la plantilla");
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+            title="Guardar"
+          >
+            <i className="fa fa-save"></i>
+          </button>
+          <button
+            className="gjs-pn-btn btn-open-export"
+            onClick={() => grapesEditorRef.current?.runCommand("edit-code")}
+            title="Ver Código"
+          >
+            <i className="fa fa-code"></i>
+          </button>
+        </div>
       </div>
 
       {/* Editor Row */}
@@ -121,22 +308,57 @@ export function WebEditor() {
         <div className="panel__right">
           {/* Tabs */}
           <div className="panel-tabs">
-            <button className="tab-btn active" data-panel="blocks"><i className="fa fa-th"></i></button>
-            <button className="tab-btn" data-panel="layers"><i className="fa fa-layer-group"></i></button>
-            <button className="tab-btn" data-panel="styles"><i className="fa fa-paint-brush"></i></button>
-            <button className="tab-btn" data-panel="pages"><i className="fa fa-file-alt"></i></button>
+            <button className="tab-btn active" data-panel="blocks">
+              <i className="fa fa-th"></i>
+            </button>
+            <button className="tab-btn" data-panel="layers">
+              <i className="fa fa-layer-group"></i>
+            </button>
+            <button className="tab-btn" data-panel="styles">
+              <i className="fa fa-paint-brush"></i>
+            </button>
+            <button className="tab-btn" data-panel="pages">
+              <i className="fa fa-file-alt"></i>
+            </button>
           </div>
-          
+
           {/* Contenido del Panel */}
           <div id={`blocks-${id}`} className="panel-content active" />
-          <div className="panel-content layers-container" style={{ display: "none" }} />
-          <div className="panel-content styles-container" style={{ display: "none" }} />
-          <div className="panel-content pages-container" style={{ display: "none", padding: "10px", color: "#ddd" }}>
-            <h3 style={{ borderBottom: "1px solid #444", paddingBottom: "10px", marginTop: 0 }}>
+          <div
+            className="panel-content layers-container"
+            style={{ display: "none" }}
+          />
+          <div
+            className="panel-content styles-container"
+            style={{ display: "none" }}
+          />
+          <div
+            className="panel-content pages-container"
+            style={{ display: "none", padding: "10px", color: "#ddd" }}
+          >
+            <h3
+              style={{
+                borderBottom: "1px solid #444",
+                paddingBottom: "10px",
+                marginTop: 0,
+              }}
+            >
               Mis Páginas
             </h3>
             <div id={`pages-list-${id}`} />
-            <button id={`btn-add-page-${id}`} style={{ width: "100%", padding: "10px", marginTop: "15px", background: "#3498db", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}>
+            <button
+              id={`btn-add-page-${id}`}
+              style={{
+                width: "100%",
+                padding: "10px",
+                marginTop: "15px",
+                background: "#3498db",
+                color: "white",
+                border: "none",
+                borderRadius: "3px",
+                cursor: "pointer",
+              }}
+            >
               + Nueva Página
             </button>
           </div>

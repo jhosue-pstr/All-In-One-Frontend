@@ -1,13 +1,13 @@
 import grapesjs, { type Editor, type EditorConfig } from 'grapesjs';
 import { bloquesDefaults } from './Bloques';
-import { dispositivosDefaults, PanelDispositivosButtons } from './Paneles/PanelDispositivos';
-import { PanelSuperiorButtons } from './Paneles/PanelSuperior';
+import { dispositivosDefaults } from './Paneles/PanelDispositivos';
 import { PanelConmutadorButtons } from './Paneles/PanelConmutador';
 import './assets/editor.css';
 
 export interface GrapesJSInitOptions {
   siteId: string;
   isTemplate?: boolean;
+  projectData?: { html?: string; css?: string } | null;
   onSave?: (data: any) => Promise<void>;
   onLoad?: (siteId: string) => Promise<any>;
 }
@@ -43,6 +43,15 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   };
 
   const editor = grapesjs.init(config);
+
+  if (options.projectData) {
+    if (options.projectData.html) {
+      editor.setComponents(options.projectData.html);
+    }
+    if (options.projectData.css) {
+      editor.setStyle(options.projectData.css);
+    }
+  }
 
   editor.Commands.add('set-device-desktop', { run: () => editor.setDevice('Desktop') });
   editor.Commands.add('set-device-mobile', { run: () => editor.setDevice('Mobile') });
@@ -168,4 +177,4 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   return editor;
 };
 
-export { bloquesDefaults, dispositivosDefaults, PanelSuperiorButtons, PanelConmutadorButtons, PanelDispositivosButtons };
+export { bloquesDefaults, dispositivosDefaults, PanelConmutadorButtons };

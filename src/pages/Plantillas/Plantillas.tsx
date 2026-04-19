@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { plantillaService } from '../../services';
+import { CardPlantilla } from '../../components/CardPlantilla/CardPlantilla';
 import type { Plantilla, PlantillaCreate, PlantillaUpdate, Visibilidad } from '../../models';
 import './Plantillas.css';
 
@@ -125,36 +126,13 @@ export function Plantillas() {
       ) : (
         <div className="plantillas-grid">
           {plantillas.map((plantilla) => (
-            <div key={plantilla.id} className="plantilla-card">
-              <div className="plantilla-info">
-                <h3>{plantilla.nombre}</h3>
-                <span className="plantilla-slug">{plantilla.slug}</span>
-                <p className="plantilla-desc">{plantilla.descripcion || 'Sin descripción'}</p>
-                <div className="plantilla-badges">
-                  <span className={`plantilla-visibilidad ${plantilla.visibilidad.toLowerCase()}`}>
-                    {plantilla.visibilidad === 'PUBLICA' ? 'Pública' : 'Privada'}
-                  </span>
-                  <span className={`plantilla-status ${plantilla.activo ? 'active' : 'inactive'}`}>
-                    {plantilla.activo ? 'Activa' : 'Inactiva'}
-                  </span>
-                </div>
-              </div>
-              <div className="plantilla-actions">
-                <button onClick={() => handleEdit(plantilla)} className="btn-edit">
-                  Editar
-                </button>
-                {activeTab === 'mis-plantillas' && (
-                  <>
-                    <button onClick={() => handleEditBasic(plantilla)} className="btn-secondary">
-                      Editar basic
-                    </button>
-                    <button onClick={() => handleDelete(plantilla.id)} className="btn-delete">
-                      Eliminar
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+            <CardPlantilla
+              key={plantilla.id}
+              plantilla={plantilla}
+              showActions={activeTab === 'mis-plantillas'}
+              onEdit={handleEditBasic}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
