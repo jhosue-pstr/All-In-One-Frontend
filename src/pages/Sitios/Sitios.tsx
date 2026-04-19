@@ -1,20 +1,29 @@
 import { useEffect, useState } from 'react';
-import { sitioService } from '../../services';
-import type { Sitio, SitioCreate, SitioUpdate } from '../../models';
+import { useNavigate } from 'react-router-dom';
+import { sitioService, plantillaService } from '../../services';
+import { CardSitio } from '../../components/CardSitio/CardSitio';
+import type { Sitio, SitioCreate, SitioUpdate, Plantilla } from '../../models';
 import './Sitios.css';
 
+type TipoOrigen = 'mis-plantillas' | 'comunidad' | 'blank';
+
 export function Sitios() {
+  const navigate = useNavigate();
   const [sitios, setSitios] = useState<Sitio[]>([]);
+  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSitio, setEditingSitio] = useState<Sitio | null>(null);
   const [formData, setFormData] = useState<SitioCreate>({
     nombre: '',
     slug: '',
+    id_plantilla: undefined,
   });
+  const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
 
   useEffect(() => {
     loadSitios();
+    loadPlantillas();
   }, []);
 
   const loadSitios = async () => {
@@ -28,17 +37,38 @@ export function Sitios() {
     }
   };
 
+  const loadPlantillas = async () => {
+    try {
+      const misPlantillas = await plantillaService.getMisPlantillas();
+      const publicas = await plantillaService.getPublicas();
+      setPlantillas([...misPlantillas, ...publicas]);
+    } catch (error) {
+      console.error('Error loading plantillas:', error);
+    }
+  };
+
+  const handleSelectOrigen = (tipo: TipoOrigen) => {
+    setOrigenTipo(tipo);
+    setFormData({ ...formData, id_plantilla: undefined });
+  };
+
+  const handleSelectPlantilla = (id: number) => {
+    setFormData({ ...formData, id_plantilla: id });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (editingSitio) {
         await sitioService.update(editingSitio.id, formData as SitioUpdate);
       } else {
-        await sitioService.create(formData);
+        const nuevoSitio = await sitioService.create(formData);
+        navigate(`/sitio/${nuevoSitio.id}/editar`);
       }
       setShowModal(false);
       setEditingSitio(null);
-      setFormData({ nombre: '', slug: '' });
+      setFormData({ nombre: '', slug: '', id_plantilla: undefined });
+      setOrigenTipo('blank');
       loadSitios();
     } catch (error) {
       console.error('Error saving sitio:', error);
@@ -46,9 +76,7 @@ export function Sitios() {
   };
 
   const handleEdit = (sitio: Sitio) => {
-    setEditingSitio(sitio);
-    setFormData({ nombre: sitio.nombre, slug: sitio.slug });
-    setShowModal(true);
+    navigate(`/sitio/${sitio.id}/editar`);
   };
 
   const handleDelete = async (id: number) => {
@@ -91,31 +119,19 @@ export function Sitios() {
       ) : (
         <div className="sitios-grid">
           {sitios.map((sitio) => (
-            <div key={sitio.id} className="sitio-card">
-              <div className="sitio-info">
-                <h3>{sitio.nombre}</h3>
-                <span className="sitio-slug">{sitio.slug}</span>
-                <span className={`sitio-status ${sitio.activo ? 'active' : 'inactive'}`}>
-                  {sitio.activo ? 'Activo' : 'Inactivo'}
-                </span>
-              </div>
-              <div className="sitio-actions">
-                <button onClick={() => handleEdit(sitio)} className="btn-edit">
-                  Editar
-                </button>
-                <button onClick={() => handleDelete(sitio.id)} className="btn-delete">
-                  Eliminar
-                </button>
-              </div>
-            </div>
+            <CardSitio
+              key={sitio.id}
+              sitio={sitio}
+              onDelete={handleDelete}
+            />
           ))}
         </div>
       )}
 
-      {showModal && (
+      {showModal && !editingSitio && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingSitio ? 'Editar Sitio' : 'Nuevo Sitio'}</h2>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+            <h2>Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Nombre</label>
@@ -123,24 +139,78 @@ export function Sitios() {
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  placeholder="Mi sitio web"
                   required
                 />
               </div>
               <div className="form-group">
-                <label>Slug</label>
+                <label>Slug (subdominio)</label>
                 <input
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  placeholder="mi-sitio"
                   required
                 />
               </div>
+              
+              <div className="form-group">
+                <label>Seleccionar origen</label>
+                <div className="origen-tabs">
+                  <button
+                    type="button"
+                    className={`origen-tab ${origenTipo === 'blank' ? 'active' : ''}`}
+                    onClick={() => handleSelectOrigen('blank')}
+                  >
+                    Lienzo en blanco
+                  </button>
+                  <button
+                    type="button"
+                    className={`origen-tab ${origenTipo === 'mis-plantillas' ? 'active' : ''}`}
+                    onClick={() => handleSelectOrigen('mis-plantillas')}
+                  >
+                    Mis Plantillas
+                  </button>
+                  <button
+                    type="button"
+                    className={`origen-tab ${origenTipo === 'comunidad' ? 'active' : ''}`}
+                    onClick={() => handleSelectOrigen('comunidad')}
+                  >
+                    Comunidad
+                  </button>
+                </div>
+              </div>
+
+              {origenTipo !== 'blank' && (
+                <div className="form-group">
+                  <label>Elegir plantilla</label>
+                  <div className="plantillas-grid">
+                    {plantillas
+                      .filter(p => 
+                        origenTipo === 'mis-plantillas' 
+                          ? p.visibilidad === 'PRIVADA' && p.id_usuario === 1 // TODO: obtener usuario actual
+                          : p.visibilidad === 'PUBLICA'
+                      )
+                      .map(p => (
+                        <div
+                          key={p.id}
+                          className={`plantilla-option ${formData.id_plantilla === p.id ? 'selected' : ''}`}
+                          onClick={() => handleSelectPlantilla(p.id)}
+                        >
+                          {p.miniatura && <img src={p.miniatura} alt={p.nombre} />}
+                          <span>{p.nombre}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
               <div className="modal-actions">
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary">
-                  {editingSitio ? 'Actualizar' : 'Crear'}
+                  Crear Sitio
                 </button>
               </div>
             </form>

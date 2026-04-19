@@ -43,6 +43,7 @@ function App() {
           isAuthenticated ? <Navigate to="/inicio" replace /> : <AuthLayout />
         } />
         <Route path="/plantillas/:id/editar" element={<WebEditor />} />
+        <Route path="/sitio/:id/editar" element={<WebEditor />} />
         <Route element={<AuthenticatedLayout />}>
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/sitios" element={<Sitios />} />

@@ -5,6 +5,7 @@ export interface Sitio {
   id_usuario: number | null;
   id_plantilla: number | null;
   configuracion: Record<string, unknown> | null;
+  miniatura: string | null;
   switches: Record<string, boolean> | null;
   activo: boolean;
   created_at: string;
@@ -17,6 +18,7 @@ export interface SitioCreate {
   id_usuario?: number;
   id_plantilla?: number;
   configuracion?: Record<string, unknown>;
+  miniatura?: string;
   switches?: Record<string, boolean>;
   activo?: boolean;
 }
@@ -27,6 +29,7 @@ export interface SitioUpdate {
   id_usuario?: number;
   id_plantilla?: number;
   configuracion?: Record<string, unknown>;
+  miniatura?: string;
   switches?: Record<string, boolean>;
   activo?: boolean;
 }

@@ -31,7 +31,7 @@ async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise
 
 export const sitioService = {
   async getAll(): Promise<Sitio[]> {
-    return fetchApi<Sitio[]>('/sitios/');
+    return fetchApi<Sitio[]>('/sitios/mis-sitios');
   },
 
   async getById(id: number): Promise<Sitio> {

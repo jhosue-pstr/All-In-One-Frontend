@@ -1,33 +1,48 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { initGrapesJS } from "../../components/GrapesJS";
 import { plantillaService } from "../../services/plantilla";
+import { sitioService } from "../../services/sitio";
 import "grapesjs/dist/css/grapes.min.css";
 import "./WebEditor.css";
 
 export function WebEditor() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const grapesEditorRef = useRef<any>(null);
   const [currentDevice, setCurrentDevice] = useState("Desktop");
   const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
 
-  const isTemplate = searchParams.get("isTemplate") === "true";
+  const showToast = (message: string) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  };
+
+  const isTemplate = location.pathname.startsWith("/plantillas");
 
   useEffect(() => {
     if (!id) return;
 
     (window as any).siteId = id;
 
-    const loadPlantilla = async () => {
+    const loadData = async () => {
       try {
-        const plantilla = await plantillaService.getById(parseInt(id));
-        return plantilla.configuracion as {
-          html?: string;
-          css?: string;
-        } | null;
+        if (isTemplate) {
+          const plantilla = await plantillaService.getById(parseInt(id));
+          return plantilla.configuracion as {
+            html?: string;
+            css?: string;
+          } | null;
+        } else {
+          const sitio = await sitioService.getById(parseInt(id));
+          return sitio.configuracion as {
+            html?: string;
+            css?: string;
+          } | null;
+        }
       } catch (error) {
         console.error("Error al cargar:", error);
         return null;
@@ -35,7 +50,7 @@ export function WebEditor() {
     };
 
     const initEditor = async () => {
-      const projectData = await loadPlantilla();
+      const projectData = await loadData();
 
       if (!grapesEditorRef.current) {
         grapesEditorRef.current = initGrapesJS({
@@ -237,19 +252,31 @@ export function WebEditor() {
                 });
                 document.body.removeChild(wrapperDiv);
                 
+                const itemId = parseInt(id || "0");
+                
+                const configuracion = {
+                  html: editor.getHtml() || "",
+                  css: editor.getCss() || "",
+                };
+                
+                let miniaturaUrl = null;
+                
                 const blob = await new Promise<Blob>((resolve, reject) => {
                   miniatura.toBlob(
                     (blob) => blob ? resolve(blob) : reject(new Error('Error generating blob')),
                     'image/png'
                   );
                 });
-                
+
                 const formData = new FormData();
                 formData.append('file', blob, 'miniatura.png');
-                
+
                 const token = localStorage.getItem('token');
+                const endpoint = isTemplate 
+                  ? `/plantillas/${id}/miniatura` 
+                  : `/sitios/${id}/miniatura`;
                 const uploadResponse = await fetch(
-                  `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/plantillas/${id}/miniatura`,
+                  `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}${endpoint}`,
                   {
                     method: 'POST',
                     headers: {
@@ -258,25 +285,30 @@ export function WebEditor() {
                     body: formData,
                   }
                 );
-                
+
                 if (!uploadResponse.ok) {
                   throw new Error('Error al subir la miniatura');
                 }
+
+                const data = await uploadResponse.json();
+                miniaturaUrl = data.url;
                 
-                const { url } = await uploadResponse.json();
-                
-                const plantillaId = parseInt(id || "0");
-                await plantillaService.update(plantillaId, {
-                  configuracion: {
-                    html: editor.getHtml() || "",
-                    css: editor.getCss() || "",
-                  },
-                  miniatura: url,
-                });
-                alert("Plantilla guardada correctamente");
+                if (isTemplate) {
+                  await plantillaService.update(itemId, {
+                    configuracion,
+                    miniatura: miniaturaUrl,
+                  });
+                  showToast("Plantilla guardada correctamente");
+                } else {
+                  await sitioService.update(itemId, {
+                    configuracion,
+                    miniatura: miniaturaUrl,
+                  });
+                  showToast("Sitio guardado correctamente");
+                }
               } catch (error) {
                 console.error("Error al guardar:", error);
-                alert("Error al guardar la plantilla");
+                showToast("Error al guardar");
               } finally {
                 setIsSaving(false);
               }
@@ -364,6 +396,11 @@ export function WebEditor() {
           </div>
         </div>
       </div>
+      {toast.show && (
+        <div className="toast">
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }
