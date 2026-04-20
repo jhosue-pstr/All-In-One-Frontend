@@ -18,8 +18,8 @@ export interface SitioCreate {
   id_usuario?: number;
   id_plantilla?: number;
   configuracion?: Record<string, unknown>;
-  miniatura?: string;
   switches?: Record<string, boolean>;
+  miniatura?: string;
   activo?: boolean;
 }
 
@@ -29,7 +29,7 @@ export interface SitioUpdate {
   id_usuario?: number;
   id_plantilla?: number;
   configuracion?: Record<string, unknown>;
-  miniatura?: string;
   switches?: Record<string, boolean>;
+  miniatura?: string;
   activo?: boolean;
 }

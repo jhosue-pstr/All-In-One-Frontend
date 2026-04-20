@@ -57,4 +57,26 @@ export const sitioService = {
       method: 'DELETE',
     });
   },
+
+  async uploadMinatura(id: number, file: File): Promise<string> {
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/sitios/${id}/miniatura`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ detail: 'Error al subir la miniatura' }));
+      throw new Error(error.detail || 'Error al subir la miniatura');
+    }
+
+    const data = await response.json();
+    return data.url;
+  },
 };
