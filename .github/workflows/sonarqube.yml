@@ -1,50 +1,25 @@
-name: SonarQube analysis
+name: SonarCloud Frontend
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:
-
-permissions:
-  pull-requests: read
 
 jobs:
   Analysis:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. DESCARGAR EL CÓDIGO
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2. PREPARAR EL ENTORNO FRONTEND
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      # 3. INSTALAR DEPENDENCIAS
-      - name: Install dependencies
-        run: npm install
-
-      # 4. CORRER LOS TESTS Y GENERAR COBERTURA
-      # Ahora simplemente llamamos al script que definimos en package.json
-      - name: Run tests with coverage
-        run: npm run test
-
-      # 5. ESCANEAR CON SONARCLOUD
-      - name: Analyze with SonarQube
-        uses: SonarSource/sonarqube-scan-action@7295e71c9583053f5bf40e9d4068a0c974603ec8
+      - name: SonarCloud Scan Frontend
+        uses: SonarSource/sonarqube-scan-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
             -Dsonar.projectKey=jhosue-pstr_All-In-One-Frontend
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/*.spec.ts,**/*.test.tsx,**/*.test.ts
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.organization=jhosue-pstr
+            -Dsonar.sources=All-In-One-Frontend/src
