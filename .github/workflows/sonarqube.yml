@@ -22,4 +22,5 @@ jobs:
           args: >
             -Dsonar.projectKey=jhosue-pstr_All-In-One-Frontend
             -Dsonar.organization=jhosue-pstr
-            -Dsonar.sources=All-In-One-Frontend/src
+            -Dsonar.sources=src
+            -Dsonar.exclusions=node_modules/**,dist/**,public/**
