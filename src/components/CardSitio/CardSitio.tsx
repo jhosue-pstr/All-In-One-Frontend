@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import type { Sitio } from "../../models";
+import { API_CONFIG } from "../../config";
 import "./CardSitio.css";
+
+const API_URL = API_CONFIG.baseUrl.replace("/api", "");
 
 interface CardSitioProps {
   sitio: Sitio;
@@ -20,6 +23,10 @@ export function CardSitio({ sitio, onDelete }: CardSitioProps) {
     }
   };
 
+  const handleView = () => {
+    window.open(`${API_URL}/${sitio.slug}`, "_blank");
+  };
+
   return (
     <div className="sitio-card">
       {sitio.miniatura && (
@@ -35,6 +42,9 @@ export function CardSitio({ sitio, onDelete }: CardSitioProps) {
         </span>
       </div>
       <div className="sitio-actions">
+        <button onClick={handleView} className="btn-view" title="Ver sitio">
+          👁 Ver
+        </button>
         <button onClick={handleEdit} className="btn-edit">
           Editar
         </button>
