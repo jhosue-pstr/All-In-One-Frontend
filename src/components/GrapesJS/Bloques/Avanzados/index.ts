@@ -1,0 +1,19 @@
+export { BloqueLogin } from './BloqueLogin';
+export { BloqueRegistro } from './BloqueRegistro';
+export { BloqueBusqueda } from './BloqueBusqueda';
+export { BloqueCarousel } from './BloqueCarousel';
+export { BloqueStats } from './BloqueStats';
+export { BloqueCountdown } from './BloqueCountdown';
+export { BloquePricing } from './BloquePricing';
+export { BloqueDropdown } from './BloqueDropdown';
+
+export { BloqueAccordion } from './BloqueAccordion';
+export { BloqueAlertas } from './BloqueAlertas';
+export { BloqueBreadcrumb } from './BloqueBreadcrumb';
+export { BloqueModal } from './BloqueModal';
+export { BloquePaginacion } from './BloquePaginacion';
+export { BloqueProgress } from './BloqueProgress';
+export { BloqueRating } from './BloqueRating';
+export { BloqueSpinner } from './BloqueSpinner';
+export { BloqueTabs } from './BloqueTabs';
+export { BloqueTags } from './BloqueTags';

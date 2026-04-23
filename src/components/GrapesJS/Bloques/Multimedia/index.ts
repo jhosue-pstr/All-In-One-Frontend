@@ -1,3 +1,10 @@
 export { BloqueMap } from './BloqueMap';
 export { BloqueVideo } from './BloqueVideo';
 export { BloqueGallery } from './BloqueGallery';
+export { BloqueAudio } from './BloqueAudio';
+export { BloqueCarruselImagenes } from './BloqueCarruselImagenes';
+export { BloqueBackgroundVideo } from './BloqueBackgroundVideo';
+export { BloqueImagenOverlay } from './BloqueImagenOverlay';
+export { BloqueLightboxGallery } from './BloqueLightboxGallery';
+export { BloqueLottie } from './BloqueLottie';
+export { BloqueImagenComparativa } from './BloqueImagenComparativa';

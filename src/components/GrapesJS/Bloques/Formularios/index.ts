@@ -1,0 +1,9 @@
+export { BloqueInputTexto } from './BloqueInputTexto';
+export { BloqueInputEmail } from './BloqueInputEmail';
+export { BloqueInputPassword } from './BloqueInputPassword';
+export { BloqueTextarea } from './BloqueTextarea';
+export { BloqueSelect } from './BloqueSelect';
+export { BloqueCheckbox } from './BloqueCheckbox';
+export { BloqueRadio } from './BloqueRadio';
+export { BloqueFormulario } from './BloqueFormulario';
+export { BloqueFecha } from './BloqueFecha';
