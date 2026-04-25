@@ -23,6 +23,44 @@ export function WebEditor() {
 
   const isTemplate = location.pathname.startsWith("/plantillas");
 
+  const activatePanel = (panel: string | null, siteId: string) => {
+    const panelStyles: Record<string, string> = {
+      blocks: "display: flex !important; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 10px;",
+      layers: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+      styles: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+      pages: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+    };
+
+    const panelSelectors: Record<string, string> = {
+      blocks: `#blocks-${siteId}`,
+      layers: ".layers-container",
+      styles: ".styles-container",
+      pages: ".pages-container",
+    };
+
+    const cmdMap: Record<string, string> = {
+      blocks: "show-blocks",
+      layers: "show-layers",
+      styles: "show-styles",
+      pages: "show-pages",
+    };
+
+    if (panel === "blocks") {
+      const el = document.querySelector(`#blocks-${siteId}`);
+      el?.classList.add("active");
+      el?.setAttribute("style", panelStyles[panel]);
+    } else {
+      const selector = panelSelectors[panel || ""];
+      const el = selector ? document.querySelector(selector) : null;
+      if (el) {
+        el.classList.add("active");
+        el.setAttribute("style", panelStyles[panel || "layers"]);
+      }
+    }
+
+    return cmdMap[panel || "blocks"];
+  };
+
   useEffect(() => {
     if (!id) return;
 
@@ -84,67 +122,25 @@ export function WebEditor() {
     const tabs = document.querySelectorAll(".tab-btn");
     const contents = document.querySelectorAll(".panel-content");
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const panel = tab.getAttribute("data-panel");
+    const handleTabClick = (tab: Element) => {
+      const panel = tab.getAttribute("data-panel");
 
-        tabs.forEach((t) => t.classList.remove("active"));
-        tab.classList.add("active");
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
 
-        contents.forEach((c) => {
-          c.classList.remove("active");
-          if (c instanceof HTMLElement) c.style.display = "none";
-        });
-
-        if (panel === "blocks") {
-          document.querySelector(`#blocks-${id}`)?.classList.add("active");
-          document
-            .querySelector(`#blocks-${id}`)
-            ?.setAttribute(
-              "style",
-              "display: flex !important; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 10px;",
-            );
-        } else if (panel === "layers") {
-          const el = document.querySelector(".layers-container");
-          if (el) {
-            el.classList.add("active");
-            el.setAttribute(
-              "style",
-              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
-            );
-          }
-        } else if (panel === "styles") {
-          const el = document.querySelector(".styles-container");
-          if (el) {
-            el.classList.add("active");
-            el.setAttribute(
-              "style",
-              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
-            );
-          }
-        } else if (panel === "pages") {
-          const el = document.querySelector(".pages-container");
-          if (el) {
-            el.classList.add("active");
-            el.setAttribute(
-              "style",
-              "display: block; flex: 1; overflow-y: auto; padding: 10px;",
-            );
-          }
-        }
-
-        if (grapesEditorRef.current) {
-          const cmd =
-            panel === "blocks"
-              ? "show-blocks"
-              : panel === "layers"
-                ? "show-layers"
-                : panel === "styles"
-                  ? "show-styles"
-                  : "show-pages";
-          grapesEditorRef.current.runCommand(cmd);
-        }
+      contents.forEach((c) => {
+        c.classList.remove("active");
+        if (c instanceof HTMLElement) c.style.display = "none";
       });
+
+      if (grapesEditorRef.current && panel) {
+        const cmd = activatePanel(panel, id);
+        grapesEditorRef.current.runCommand(cmd);
+      }
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => handleTabClick(tab));
     });
   }, [id]);
 

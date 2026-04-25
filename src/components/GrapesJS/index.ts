@@ -62,62 +62,92 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   faLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(faLink);
 
-  if (options.projectData?.html) editor.setComponents(options.projectData.html);
+if (options.projectData?.html) editor.setComponents(options.projectData.html);
   if (options.projectData?.css) editor.setStyle(options.projectData.css);
+
+  const createDeleteModalContent = (pageName: string) => `
+    <div style="padding:20px;text-align:center;">
+      <p style="margin-bottom:20px;font-size:16px;">¿Eliminar la página "<b>${pageName}</b>"?</p>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button id="cancel-del-btn" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button id="confirm-del-btn" style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
+      </div>
+    </div>
+  `;
+
+  const createNewPageModalContent = () => `
+    <div style="padding:20px;">
+      <input type="text" id="new-page-name" placeholder="Nombre de la página" 
+        style="width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button id="cancel-new-page" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button id="save-new-page" style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
+      </div>
+    </div>
+  `;
+
+  const attachDeleteModalHandlers = (pageId: string, container: HTMLElement) => {
+    const content = editor.Modal.getContent() as HTMLElement;
+    content?.querySelector("#confirm-del-btn")?.addEventListener("click", () => {
+      editor.Pages.remove(pageId);
+      renderPagesList(container);
+      editor.Modal.close();
+    });
+    content?.querySelector("#cancel-del-btn")?.addEventListener("click", () => editor.Modal.close());
+  };
+
+  const attachNewPageModalHandlers = () => {
+    const content = editor.Modal.getContent() as HTMLElement;
+    const input = content?.querySelector("#new-page-name") as HTMLInputElement;
+    input?.focus();
+    content?.querySelector("#save-new-page")?.addEventListener("click", () => {
+      const name = input?.value.trim();
+      if (name) {
+        editor.Pages.add({ name, component: `<div></div>` });
+        renderPagesList(document.getElementById(pagesListId) as HTMLElement);
+      }
+      editor.Modal.close();
+    });
+    content?.querySelector("#cancel-new-page")?.addEventListener("click", () => editor.Modal.close());
+  };
+
+  const addDeleteButton = (el: HTMLElement, page: any, container: HTMLElement) => {
+    const delBtn = document.createElement("span");
+    delBtn.innerHTML = "🗑️";
+    delBtn.style.cssText = "cursor:pointer;font-size:14px;padding:0 4px;";
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      const pageName = page.get("name") || page.id;
+      editor.Modal.setTitle("Eliminar Página").setContent(createDeleteModalContent(pageName)).open();
+      setTimeout(() => attachDeleteModalHandlers(page.id, container), 50);
+    };
+    el.appendChild(delBtn);
+  };
+
+  const createPageElement = (page: any, container: HTMLElement) => {
+    const isActive = editor.Pages.getSelected()?.id === page.id;
+    const el = document.createElement("div");
+    el.style.cssText = `padding:8px;background:${isActive ? "#3498db" : "#34495e"};margin-bottom:4px;border-radius:3px;cursor:pointer;color:white;display:flex;justify-content:space-between;`;
+    el.innerText = page.get("name") || page.id;
+    el.onclick = () => {
+      editor.Pages.select(page.id);
+      renderPagesList(container);
+    };
+    return el;
+  };
 
   const renderPagesList = (container: HTMLElement | null) => {
     if (!container) return;
     container.innerHTML = "";
     const pages = editor.Pages.getAll();
     if (pages.length === 0) {
-      container.innerHTML =
-        "<p style='color:#999;font-size:13px;'>Sin páginas</p>";
+      container.innerHTML = "<p style='color:#999;font-size:13px;'>Sin páginas</p>";
       return;
     }
     pages.forEach((page: any) => {
-      const isActive = editor.Pages.getSelected()?.id === page.id;
-      const el = document.createElement("div");
-      el.style.cssText = `padding:8px;background:${isActive ? "#3498db" : "#34495e"};margin-bottom:4px;border-radius:3px;cursor:pointer;color:white;display:flex;justify-content:space-between;`;
-      el.innerText = page.get("name") || page.id;
-      el.onclick = () => {
-        editor.Pages.select(page.id);
-        renderPagesList(container);
-      };
+      const el = createPageElement(page, container);
       if (pages.length > 1) {
-        const delBtn = document.createElement("span");
-        delBtn.innerHTML = "🗑️";
-        delBtn.style.cssText = "cursor:pointer;font-size:14px;padding:0 4px;";
-        delBtn.onclick = (e) => {
-          e.stopPropagation();
-          const pageName = page.get("name") || page.id;
-          editor.Modal.setTitle("Eliminar Página")
-            .setContent(
-              `
-            <div style="padding:20px;text-align:center;">
-              <p style="margin-bottom:20px;font-size:16px;">¿Eliminar la página "<b>${pageName}</b>"?</p>
-              <div style="display:flex;gap:10px;justify-content:center;">
-                <button id="cancel-del-btn" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-                <button id="confirm-del-btn" style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
-              </div>
-            </div>
-          `,
-            )
-            .open();
-          setTimeout(() => {
-            const content = editor.Modal.getContent() as HTMLElement;
-            content
-              ?.querySelector("#confirm-del-btn")
-              ?.addEventListener("click", () => {
-                editor.Pages.remove(page.id);
-                renderPagesList(container);
-                editor.Modal.close();
-              });
-            content
-              ?.querySelector("#cancel-del-btn")
-              ?.addEventListener("click", () => editor.Modal.close());
-          }, 50);
-        };
-        el.appendChild(delBtn);
+        addDeleteButton(el, page, container);
       }
       container.appendChild(el);
     });
@@ -129,38 +159,8 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     const b = document.getElementById(btnAddPageId);
     if (b) {
       b.onclick = () => {
-        editor.Modal.setTitle("Nueva Página").setContent(`
-          <div style="padding:20px;">
-            <input type="text" id="new-page-name" placeholder="Nombre de la página" 
-              style="width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-              <button id="cancel-new-page" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-              <button id="save-new-page" style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
-            </div>
-          </div>
-        `);
-        setTimeout(() => {
-          const content = editor.Modal.getContent() as HTMLElement;
-          const input = content?.querySelector(
-            "#new-page-name",
-          ) as HTMLInputElement;
-          input?.focus();
-          content
-            ?.querySelector("#save-new-page")
-            ?.addEventListener("click", () => {
-              const name = input?.value.trim();
-              if (name) {
-                editor.Pages.add({ name, component: `<div></div>` });
-                renderPagesList(
-                  document.getElementById(pagesListId) as HTMLElement,
-                );
-              }
-              editor.Modal.close();
-            });
-          content
-            ?.querySelector("#cancel-new-page")
-            ?.addEventListener("click", () => editor.Modal.close());
-        }, 50);
+        editor.Modal.setTitle("Nueva Página").setContent(createNewPageModalContent()).open();
+        setTimeout(attachNewPageModalHandlers, 50);
       };
     }
   };
