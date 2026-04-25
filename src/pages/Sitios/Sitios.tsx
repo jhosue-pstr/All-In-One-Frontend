@@ -152,13 +152,11 @@ export function Sitios() {
         >
           <div 
             className="modal modal-lg" 
-            onClick={(e) => e.stopPropagation()} 
-            onKeyDown={(e) => e.stopPropagation()}
             role="dialog" 
             aria-modal="true"
-            tabIndex={-1}
+            aria-labelledby="modal-title"
           >
-            <h2>Nuevo Sitio</h2>
+            <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label htmlFor="sitio-nombre">Nombre</label>

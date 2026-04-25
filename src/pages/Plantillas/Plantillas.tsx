@@ -161,14 +161,12 @@ export function Plantillas() {
         >
           <div 
             className="modal modal-lg" 
-            onClick={(e) => e.stopPropagation()} 
-            onKeyDown={(e) => e.stopPropagation()}
             role="dialog" 
             aria-modal="true"
-            tabIndex={-1}
+            aria-labelledby="modal-title"
           >
             <div className="modal-header">
-              <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
+              <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
