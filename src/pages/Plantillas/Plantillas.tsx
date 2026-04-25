@@ -165,6 +165,7 @@ export function Plantillas() {
             onKeyDown={(e) => e.stopPropagation()}
             role="dialog" 
             aria-modal="true"
+            tabIndex={-1}
           >
             <div className="modal-header">
               <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>

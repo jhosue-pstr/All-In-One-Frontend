@@ -156,6 +156,7 @@ export function Sitios() {
             onKeyDown={(e) => e.stopPropagation()}
             role="dialog" 
             aria-modal="true"
+            tabIndex={-1}
           >
             <h2>Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
@@ -216,7 +217,7 @@ export function Sitios() {
                     {plantillas
                       .filter(p => 
                         origenTipo === 'mis-plantillas' 
-                          ? p.visibilidad === 'PRIVADA' && p.id_usuario === 1 // TODO: obtener usuario actual
+                          ? p.visibilidad === 'PRIVADA' && p.id_usuario === Number(localStorage.getItem('userId'))
                           : p.visibilidad === 'PUBLICA'
                       )
                       .map(p => (
