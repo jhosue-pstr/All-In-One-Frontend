@@ -144,19 +144,19 @@ export function Plantillas() {
       )}
 
       {showModal && (
-        <dialog
+<dialog
           className="modal-overlay"
           open
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setShowModal(false);
-          }}
         >
           <div 
             className="modal modal-lg"
-            onClick={(e) => e.stopPropagation()}
+            aria-labelledby="modal-title"
+          >
+          <div 
+            className="modal modal-lg"
             aria-labelledby="modal-title"
           >
             <div className="modal-header">

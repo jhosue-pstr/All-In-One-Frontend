@@ -87,7 +87,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   `;
 
   const attachDeleteModalHandlers = (pageId: string, container: HTMLElement) => {
-    const content = editor.Modal.getContent() as HTMLElement;
+    const content = editor.Modal.getContent();
     content?.querySelector("#confirm-del-btn")?.addEventListener("click", () => {
       editor.Pages.remove(pageId);
       renderPagesList(container);
@@ -97,14 +97,14 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   };
 
   const attachNewPageModalHandlers = () => {
-    const content = editor.Modal.getContent() as HTMLElement;
-    const input = content?.querySelector("#new-page-name") as HTMLInputElement;
+    const content = editor.Modal.getContent();
+    const input = content?.querySelector("#new-page-name") as HTMLInputElement | null;
     input?.focus();
     content?.querySelector("#save-new-page")?.addEventListener("click", () => {
       const name = input?.value.trim();
       if (name) {
         editor.Pages.add({ name, component: `<div></div>` });
-        renderPagesList(document.getElementById(pagesListId) as HTMLElement);
+        renderPagesList(document.getElementById(pagesListId));
       }
       editor.Modal.close();
     });
@@ -193,7 +193,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
       ".traits-container",
       ".pages-container",
     ].forEach((sel) => {
-      const el = row.querySelector(sel) as HTMLElement;
+      const el = row.querySelector(sel);
       if (el) el.style.display = "none";
     });
   };
@@ -201,47 +201,47 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   editor.Commands.add("show-layers", {
     run() {
       hideAll();
-      const el = getRow()?.querySelector(".layers-container") as HTMLElement;
+      const el = getRow()?.querySelector(".layers-container");
       if (el) el.style.display = "";
     },
     stop() {
-      const el = getRow()?.querySelector(".layers-container") as HTMLElement;
+      const el = getRow()?.querySelector(".layers-container");
       if (el) el.style.display = "none";
     },
   });
   editor.Commands.add("show-styles", {
     run() {
       hideAll();
-      const el = getRow()?.querySelector(".styles-container") as HTMLElement;
+      const el = getRow()?.querySelector(".styles-container");
       if (el) el.style.display = "";
     },
     stop() {
-      const el = getRow()?.querySelector(".styles-container") as HTMLElement;
+      const el = getRow()?.querySelector(".styles-container");
       if (el) el.style.display = "none";
     },
   });
   editor.Commands.add("show-traits", {
     run() {
       hideAll();
-      const el = getRow()?.querySelector(".traits-container") as HTMLElement;
+      const el = getRow()?.querySelector(".traits-container");
       if (el) el.style.display = "";
     },
     stop() {
-      const el = getRow()?.querySelector(".traits-container") as HTMLElement;
+      const el = getRow()?.querySelector(".traits-container");
       if (el) el.style.display = "none";
     },
   });
   editor.Commands.add("show-blocks", {
     run() {
       hideAll();
-      const el = getRow()?.querySelector(blocksSel) as HTMLElement;
+      const el = getRow()?.querySelector(blocksSel);
       if (el) el.style.display = "";
     },
   });
   editor.Commands.add("show-pages", {
     run() {
       hideAll();
-      const el = getRow()?.querySelector(".pages-container") as HTMLElement;
+      const el = getRow()?.querySelector(".pages-container");
       if (el) {
         el.style.display = "block";
         renderPagesList(

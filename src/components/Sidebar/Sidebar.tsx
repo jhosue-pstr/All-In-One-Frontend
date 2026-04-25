@@ -5,7 +5,7 @@ import type { User } from '../../models';
 import './Sidebar.css';
 
 interface SidebarProps {
-  user: User | null;
+  readonly user: User | null;
 }
 
 const menuItems = [
@@ -16,14 +16,14 @@ const menuItems = [
   { path: '/configuraciones', label: 'Configuraciones', icon: HiOutlineCog },
 ];
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user }: Readonly<SidebarProps>) {
   const location = useLocation();
   const userImage = localStorage.getItem(USER_IMAGE_KEY);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem(USER_IMAGE_KEY);
-    window.location.href = '/';
+    globalThis.location.href = '/';
   };
 
   return (

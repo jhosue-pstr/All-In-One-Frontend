@@ -3,10 +3,10 @@ import { authService } from '../../services';
 import './Login.css';
 
 interface LoginProps {
-  onSuccess?: () => void;
+  readonly onSuccess?: () => void;
 }
 
-export function Login({ onSuccess }: LoginProps) {
+export function Login({ onSuccess }: Readonly<LoginProps>) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [error, setError] = useState('');

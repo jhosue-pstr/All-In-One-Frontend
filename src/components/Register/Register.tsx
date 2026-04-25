@@ -3,11 +3,11 @@ import { authService } from '../../services';
 import './Register.css';
 
 interface RegisterProps {
-  onSuccess?: () => void;
-  onSwitchToLogin?: () => void;
+  readonly onSuccess?: () => void;
+  readonly onSwitchToLogin?: () => void;
 }
 
-export function Register({ onSuccess, onSwitchToLogin }: RegisterProps) {
+export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [nombre, setNombre] = useState('');

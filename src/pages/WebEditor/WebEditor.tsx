@@ -64,7 +64,7 @@ export function WebEditor() {
   useEffect(() => {
     if (!id) return;
 
-    (window as any).siteId = id;
+    (globalThis as { siteId?: string }).siteId = id;
 
     const loadData = async () => {
       try {
