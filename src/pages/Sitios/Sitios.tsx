@@ -135,11 +135,17 @@ export function Sitios() {
       )}
 
       {showModal && !editingSitio && (
-        <dialog
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
           className="modal-overlay"
-          open
+          tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowModal(false);
           }}
         >
           <div className="modal modal-lg" aria-labelledby="modal-title">
@@ -235,7 +241,7 @@ export function Sitios() {
               </div>
             </form>
           </div>
-        </dialog>
+        </div>
       )}
     </div>
   );
