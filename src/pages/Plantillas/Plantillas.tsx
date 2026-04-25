@@ -151,10 +151,21 @@ export function Plantillas() {
         <button
           className="modal-overlay"
           onClick={() => setShowModal(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+              setShowModal(false);
+            }
+          }}
           aria-label="Cerrar modal"
           type="button"
         >
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div 
+            className="modal modal-lg" 
+            onClick={(e) => e.stopPropagation()} 
+            onKeyDown={(e) => e.stopPropagation()}
+            role="dialog" 
+            aria-modal="true"
+          >
             <div className="modal-header">
               <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>

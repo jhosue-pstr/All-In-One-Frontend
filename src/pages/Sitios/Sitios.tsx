@@ -142,10 +142,21 @@ export function Sitios() {
         <button
           className="modal-overlay"
           onClick={() => setShowModal(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
+              setShowModal(false);
+            }
+          }}
           aria-label="Cerrar modal"
           type="button"
         >
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+          <div 
+            className="modal modal-lg" 
+            onClick={(e) => e.stopPropagation()} 
+            onKeyDown={(e) => e.stopPropagation()}
+            role="dialog" 
+            aria-modal="true"
+          >
             <h2>Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -209,14 +220,20 @@ export function Sitios() {
                           : p.visibilidad === 'PUBLICA'
                       )
                       .map(p => (
-                        <div
+                        <button
+                          type="button"
                           key={p.id}
                           className={`plantilla-option ${formData.id_plantilla === p.id ? 'selected' : ''}`}
                           onClick={() => handleSelectPlantilla(p.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              handleSelectPlantilla(p.id);
+                            }
+                          }}
                         >
                           {p.miniatura && <img src={p.miniatura} alt={p.nombre} />}
                           <span>{p.nombre}</span>
-                        </div>
+                        </button>
                       ))}
                   </div>
                 </div>

@@ -31,13 +31,13 @@ export function WebEditor() {
     const loadData = async () => {
       try {
         if (isTemplate) {
-          const plantilla = await plantillaService.getById(parseInt(id));
+          const plantilla = await plantillaService.getById(Number.parseInt(id));
           return plantilla.configuracion as {
             html?: string;
             css?: string;
           } | null;
         } else {
-          const sitio = await sitioService.getById(parseInt(id));
+          const sitio = await sitioService.getById(Number.parseInt(id));
           return sitio.configuracion as {
             html?: string;
             css?: string;
@@ -252,7 +252,7 @@ export function WebEditor() {
                 });
                 document.body.removeChild(wrapperDiv);
                 
-                const itemId = parseInt(id || "0");
+                const itemId = Number.parseInt(id || "0");
                 
                 const configuracion = {
                   html: editor.getHtml() || "",
