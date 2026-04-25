@@ -1,0 +1,10 @@
+export { BloqueLoginSimple } from "./BloqueLoginSimple";
+export { BloqueLoginCard } from "./BloqueLoginCard";
+export { BloqueLoginMinimal } from "./BloqueLoginMinimal";
+export { BloqueRegistroSimple } from "./BloqueRegistroSimple";
+export { BloqueRegistroCard } from "./BloqueRegistroCard";
+export { BloqueRegistroMinimal } from "./BloqueRegistroMinimal";
+export { BloqueLoginGoogle } from "./BloqueLoginConGoogle";
+export { BloqueLoginSocial } from "./BloqueLoginSocial";
+export { BloquePerfilSimple } from "./BloquePerfilSimple";
+export { BloquePerfilDetallado } from "./BloquePerfilDetallado";

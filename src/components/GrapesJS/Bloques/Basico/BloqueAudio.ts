@@ -1,9 +1,9 @@
 export const BloqueAudio = {
-  id: "multimedia-audio",
+  id: "bloque-audio",
   label: "Audio",
-  category: "Multimedia",
+  category: "Basico",
   attributes: { class: "fa fa-music" },
-  content: `<audio controls style="width:100%;max-width:600px;height:50px;border-radius:25px;">
+  content: `<audio controls style="width:100%;border-radius:8px;">
     <source src="" type="audio/mpeg">
     Tu navegador no soporta audio.
   </audio>`,

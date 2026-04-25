@@ -1,0 +1,16 @@
+export { BloqueTitulo } from "./BloqueTitulo";
+export { BloqueTexto } from "./BloqueTexto";
+export { BloqueHeading } from "./BloqueHeading";
+export { BloqueImagen } from "./BloqueImagen";
+export { BloqueBoton } from "./BloqueBoton";
+export { BloqueLink } from "./BloqueLink";
+export { BloqueSeccion } from "./BloqueSeccion";
+export { BloqueSpacer } from "./BloqueSpacer";
+export { BloqueLista } from "./BloqueLista";
+export { BloqueQuote } from "./BloqueQuote";
+export { BloqueDivider } from "./BloqueDivider";
+export { BloqueBadge } from "./BloqueBadge";
+export { BloqueIcono } from "./BloqueIcono";
+export { BloqueVideo } from "./BloqueVideo";
+export { BloqueAudio } from "./BloqueAudio";
+export { BloqueMapa } from "./BloqueMapa";

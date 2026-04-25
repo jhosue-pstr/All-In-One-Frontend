@@ -1,0 +1,16 @@
+export { BloqueSeccion } from "./BloqueSeccion";
+export { BloqueHeader } from "./BloqueHeader";
+export { BloqueNavbar } from "./BloqueNavbar";
+export { BloqueHero } from "./BloqueHero";
+export { BloqueHeroGrande } from "./BloqueHeroGrande";
+export { BloqueServicios } from "./BloqueServicios";
+export { BloqueFeatures } from "./BloqueFeatures";
+export { BloqueNosotros } from "./BloqueNosotros";
+export { BloqueEquipo } from "./BloqueEquipo";
+export { BloqueCTA } from "./BloqueCTA";
+export { BloqueTestimonios } from "./BloqueTestimonios";
+export { BloquePrecios } from "./BloquePrecios";
+export { BloqueFAQ } from "./BloqueFAQ";
+export { BloqueBlogGrid } from "./BloqueBlogGrid";
+export { BloqueContacto } from "./BloqueContacto";
+export { BloqueFooter } from "./BloqueFooter";
