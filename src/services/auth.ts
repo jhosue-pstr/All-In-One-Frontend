@@ -1,33 +1,5 @@
 import type { TokenResponse, User, UserCreate, UserLogin, UserUpdate } from '../models';
-import { getApiUrl } from '../config';
-
-const API_URL = getApiUrl();
-
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('token');
-  
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ detail: 'Error desconocido' }));
-    throw new Error(error.detail || 'Error en la solicitud');
-  }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
-}
+import { API_URL, fetchApi } from './api';
 
 export const authService = {
   async register(data: UserCreate): Promise<User> {
@@ -36,12 +8,10 @@ export const authService = {
       body: JSON.stringify(data),
     });
   },
-
   async login(data: UserLogin): Promise<TokenResponse> {
     const formData = new URLSearchParams();
     formData.append('username', data.correo);
     formData.append('password', data.contrasena);
-
     const response = await fetch(`${API_URL}/auth/inicio`, {
       method: 'POST',
       headers: {
@@ -49,32 +19,26 @@ export const authService = {
       },
       body: formData,
     });
-
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Credenciales incorrectas' }));
       throw new Error(error.detail || 'Error en el inicio de sesión');
     }
-
     const tokenData: TokenResponse = await response.json();
     localStorage.setItem('token', tokenData.access_token);
     return tokenData;
   },
-
   async me(): Promise<User> {
     return fetchApi<User>('/auth/me');
   },
-
   async update(data: UserUpdate): Promise<User> {
     return fetchApi<User>('/auth/me', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
-
   logout(): void {
     localStorage.removeItem('token');
   },
-
   getToken(): string | null {
     return localStorage.getItem('token');
   },
