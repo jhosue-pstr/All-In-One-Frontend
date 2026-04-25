@@ -66,10 +66,6 @@ export function Plantillas() {
     }
   };
 
-  const handleEdit = (plantilla: Plantilla) => {
-    navigate(`/plantillas/${plantilla.id}/editar`);
-  };
-
   const handleEditBasic = (plantilla: Plantilla) => {
     setEditingPlantilla(plantilla);
     setFormData({
@@ -122,9 +118,9 @@ export function Plantillas() {
         </button>
       </div>
 
-      {loading ? (
-        <div className="page-loading">Cargando...</div>
-      ) : plantillas.length === 0 ? (
+{loading && <div className="page-loading">Cargando...</div>}
+
+      {!loading && plantillas.length === 0 && (
         <div className="empty-state">
           <p>No hay plantillas {activeTab === 'mis-plantillas' ? 'creadas aún' : 'disponibles'}.</p>
           {activeTab === 'mis-plantillas' && (
@@ -133,7 +129,9 @@ export function Plantillas() {
             </button>
           )}
         </div>
-      ) : (
+      )}
+
+      {!loading && plantillas.length > 0 && (
         <div className="plantillas-grid">
           {plantillas.map((plantilla) => (
             <CardPlantilla

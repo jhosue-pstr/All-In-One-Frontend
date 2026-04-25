@@ -62,7 +62,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   faLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(faLink);
 
-if (options.projectData?.html) editor.setComponents(options.projectData.html);
+  if (options.projectData?.html) editor.setComponents(options.projectData.html);
   if (options.projectData?.css) editor.setStyle(options.projectData.css);
 
   const createDeleteModalContent = (pageName: string) => `

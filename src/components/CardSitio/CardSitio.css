@@ -40,7 +40,7 @@
 .sitio-slug {
   display: block;
   font-size: 0.875rem;
-  color: #64748b;
+  color: #475569;
   margin-bottom: 0.5rem;
 }
 
@@ -53,13 +53,13 @@
 }
 
 .sitio-status.active {
-  background: #dcfce7;
-  color: #16a34a;
+  background: #bbf7d0;
+  color: #166534;
 }
 
 .sitio-status.inactive {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .sitio-actions {

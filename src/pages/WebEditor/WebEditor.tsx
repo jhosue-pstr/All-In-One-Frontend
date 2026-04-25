@@ -123,7 +123,7 @@ export function WebEditor() {
     const contents = document.querySelectorAll(".panel-content");
 
     const handleTabClick = (tab: Element) => {
-      const panel = tab.getAttribute("data-panel");
+      const panel = (tab as HTMLElement).dataset.panel;
 
       tabs.forEach((t) => t.classList.remove("active"));
       tab.classList.add("active");
@@ -246,7 +246,7 @@ export function WebEditor() {
                   scale: 1,
                   logging: false,
                 });
-                document.body.removeChild(wrapperDiv);
+                wrapperDiv.remove();
                 
                 const itemId = Number.parseInt(id || "0");
                 

@@ -18,12 +18,16 @@
 
 .btn-back {
   padding: 8px 15px;
-  background: #e74c3c;
+  background: #c0392b;
   color: white;
   border: none;
   border-radius: 3px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.btn-back:hover {
+  background: #a93226;
 }
 
 /* Botones de GrapesJS */
@@ -93,7 +97,7 @@
 
 .gjs-block {
   padding: 8px 12px;
-  background: #3498db;
+  background: #2563eb;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -103,7 +107,7 @@
 }
 
 .gjs-block:hover {
-  background: #2980b9;
+  background: #1d4ed8;
 }
 
 /* Capas, Estilos, Traits */

@@ -93,13 +93,13 @@
 }
 
 .sitio-status.active {
-  background: #dcfce7;
-  color: #16a34a;
+  background: #bbf7d0;
+  color: #166534;
 }
 
 .sitio-status.inactive {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .sitio-actions {
@@ -118,21 +118,21 @@
 }
 
 .btn-edit {
-  background: #e0e7ff;
-  color: #4f46e5;
+  background: #c7d2fe;
+  color: #3730a3;
 }
 
 .btn-edit:hover {
-  background: #c7d2fe;
+  background: #a5b4fc;
 }
 
 .btn-delete {
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fecaca;
+  color: #991b1b;
 }
 
 .btn-delete:hover {
-  background: #fecaca;
+  background: #fca5a5;
 }
 
 .modal-overlay {
@@ -265,8 +265,8 @@
 
 .btn-cancel {
   padding: 0.625rem 1.25rem;
-  background: #f1f5f9;
-  color: #64748b;
+  background: #e2e8f0;
+  color: #334155;
   border: none;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -275,7 +275,7 @@
 }
 
 .btn-cancel:hover {
-  background: #e2e8f0;
+  background: #cbd5e1;
 }
 
 @media (max-width: 768px) {

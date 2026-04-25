@@ -85,10 +85,6 @@ export function Sitios() {
     }
   };
 
-  const handleEdit = (sitio: Sitio) => {
-    navigate(`/sitio/${sitio.id}/editar`);
-  };
-
   const handleDelete = async (id: number) => {
     if (confirm('¿Estás seguro de eliminar este sitio?')) {
       try {
