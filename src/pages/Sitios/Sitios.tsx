@@ -134,8 +134,9 @@ export function Sitios() {
             <h2>Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>Nombre</label>
+                <label htmlFor="sitio-nombre">Nombre</label>
                 <input
+                  id="sitio-nombre"
                   type="text"
                   value={formData.nombre}
                   onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
@@ -144,8 +145,9 @@ export function Sitios() {
                 />
               </div>
               <div className="form-group">
-                <label>Slug (subdominio)</label>
+                <label htmlFor="sitio-slug">Slug (subdominio)</label>
                 <input
+                  id="sitio-slug"
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -155,7 +157,7 @@ export function Sitios() {
               </div>
               
               <div className="form-group">
-                <label>Seleccionar origen</label>
+                <span>Seleccionar origen</span>
                 <div className="origen-tabs">
                   <button
                     type="button"
@@ -183,7 +185,7 @@ export function Sitios() {
 
               {origenTipo !== 'blank' && (
                 <div className="form-group">
-                  <label>Elegir plantilla</label>
+                  <span>Elegir plantilla</span>
                   <div className="plantillas-grid">
                     {plantillas
                       .filter(p => 

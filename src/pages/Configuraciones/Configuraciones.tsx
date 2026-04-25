@@ -176,24 +176,27 @@ export function Configuraciones() {
 
               <form className="config-form" onSubmit={handleProfileSubmit}>
                 <div className="form-group">
-                  <label>Nombre</label>
+                  <label htmlFor="nombre">Nombre</label>
                   <input 
+                    id="nombre"
                     type="text" 
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Apellido</label>
+                  <label htmlFor="apellido">Apellido</label>
                   <input 
+                    id="apellido"
                     type="text" 
                     value={formData.apellido}
                     onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Correo electrónico</label>
+                  <label htmlFor="correo">Correo electrónico</label>
                   <input 
+                    id="correo"
                     type="email" 
                     value={user?.correo || ''} 
                     disabled 
@@ -224,8 +227,9 @@ export function Configuraciones() {
               )}
               <form className="config-form" onSubmit={handlePasswordSubmit}>
                 <div className="form-group">
-                  <label>Nueva contraseña</label>
+                  <label htmlFor="nueva-contrasena">Nueva contraseña</label>
                   <input 
+                    id="nueva-contrasena"
                     type="password" 
                     value={formData.nueva_contrasena}
                     onChange={(e) => setFormData({ ...formData, nueva_contrasena: e.target.value })}
@@ -233,8 +237,9 @@ export function Configuraciones() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Confirmar contraseña</label>
+                  <label htmlFor="confirmar-contrasena">Confirmar contraseña</label>
                   <input 
+                    id="confirmar-contrasena"
                     type="password" 
                     value={formData.confirmar_contrasena}
                     onChange={(e) => setFormData({ ...formData, confirmar_contrasena: e.target.value })}

@@ -147,8 +147,9 @@ export function Plantillas() {
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label>Nombre</label>
+                  <label htmlFor="plantilla-nombre">Nombre</label>
                   <input
+                    id="plantilla-nombre"
                     type="text"
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
@@ -157,8 +158,9 @@ export function Plantillas() {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Slug</label>
+                  <label htmlFor="plantilla-slug">Slug</label>
                   <input
+                    id="plantilla-slug"
                     type="text"
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
@@ -168,8 +170,9 @@ export function Plantillas() {
                 </div>
               </div>
               <div className="form-group">
-                <label>Descripción</label>
+                <label htmlFor="plantilla-descripcion">Descripción</label>
                 <textarea
+                  id="plantilla-descripcion"
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   placeholder="Descripción de tu plantilla..."
@@ -177,7 +180,7 @@ export function Plantillas() {
                 />
               </div>
               <div className="form-group">
-                <label>Visibilidad</label>
+                <span>Visibilidad</span>
                 <div className="visibility-options">
                   <label className={`visibility-option ${formData.visibilidad === 'PRIVADA' ? 'selected' : ''}`}>
                     <input
