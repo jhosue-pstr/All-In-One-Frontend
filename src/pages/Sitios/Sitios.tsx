@@ -135,21 +135,14 @@ export function Sitios() {
       )}
 
       {showModal && !editingSitio && (
-<dialog
+        <dialog
           className="modal-overlay"
           open
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
         >
-          <div 
-            className="modal modal-lg"
-            aria-labelledby="modal-title"
-          >
-          <div 
-            className="modal modal-lg"
-            aria-labelledby="modal-title"
-          >
+          <div className="modal modal-lg" aria-labelledby="modal-title">
             <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">

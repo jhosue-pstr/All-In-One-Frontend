@@ -304,4 +304,5 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   return editor;
 };
 
-export { dispositivosDefaults, PanelConmutadorButtons };
+export { dispositivosDefaults } from "./Paneles/PanelDispositivos";
+export { PanelConmutadorButtons } from "./Paneles/PanelConmutador";

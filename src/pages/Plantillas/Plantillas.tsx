@@ -144,21 +144,14 @@ export function Plantillas() {
       )}
 
       {showModal && (
-<dialog
+        <dialog
           className="modal-overlay"
           open
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
         >
-          <div 
-            className="modal modal-lg"
-            aria-labelledby="modal-title"
-          >
-          <div 
-            className="modal modal-lg"
-            aria-labelledby="modal-title"
-          >
+          <div className="modal modal-lg" aria-labelledby="modal-title">
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
