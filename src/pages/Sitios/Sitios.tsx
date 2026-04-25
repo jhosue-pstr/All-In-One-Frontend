@@ -135,21 +135,19 @@ export function Sitios() {
       )}
 
       {showModal && !editingSitio && (
-        <button
+        <dialog
           className="modal-overlay"
-          onClick={() => setShowModal(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
-              setShowModal(false);
-            }
+          open
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
           }}
-          aria-label="Cerrar modal"
-          type="button"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowModal(false);
+          }}
         >
           <div 
-            className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true"
+            className="modal modal-lg"
+            onClick={(e) => e.stopPropagation()}
             aria-labelledby="modal-title"
           >
             <h2 id="modal-title">Nuevo Sitio</h2>
@@ -244,7 +242,7 @@ export function Sitios() {
               </div>
             </form>
           </div>
-        </button>
+        </dialog>
       )}
     </div>
   );

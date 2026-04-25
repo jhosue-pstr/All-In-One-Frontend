@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { plantillaService } from '../../services';
 import { CardPlantilla } from '../../components/CardPlantilla/CardPlantilla';
 import type { Plantilla, PlantillaCreate, PlantillaUpdate, Visibilidad } from '../../models';
@@ -19,7 +18,6 @@ export function Plantillas() {
     descripcion: '',
     visibilidad: 'PRIVADA',
   });
-  const navigate = useNavigate();
 
   useEffect(() => {
     loadPlantillas();
@@ -146,21 +144,19 @@ export function Plantillas() {
       )}
 
       {showModal && (
-        <button
+        <dialog
           className="modal-overlay"
-          onClick={() => setShowModal(false)}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape' || e.key === ' ' || e.key === 'Enter') {
-              setShowModal(false);
-            }
+          open
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
           }}
-          aria-label="Cerrar modal"
-          type="button"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowModal(false);
+          }}
         >
           <div 
-            className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true"
+            className="modal modal-lg"
+            onClick={(e) => e.stopPropagation()}
             aria-labelledby="modal-title"
           >
             <div className="modal-header">
@@ -241,7 +237,7 @@ export function Plantillas() {
               </div>
             </form>
           </div>
-        </button>
+        </dialog>
       )}
     </div>
   );

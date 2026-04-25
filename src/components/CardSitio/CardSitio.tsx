@@ -6,11 +6,11 @@ import "./CardSitio.css";
 const API_URL = API_CONFIG.baseUrl.replace("/api", "");
 
 interface CardSitioProps {
-  sitio: Sitio;
-  onDelete?: (id: number) => void;
+  readonly sitio: Sitio;
+  readonly onDelete?: (id: number) => void;
 }
 
-export function CardSitio({ sitio, onDelete }: CardSitioProps) {
+export function CardSitio({ sitio, onDelete }: Readonly<CardSitioProps>) {
   const navigate = useNavigate();
 
   const handleEdit = () => {

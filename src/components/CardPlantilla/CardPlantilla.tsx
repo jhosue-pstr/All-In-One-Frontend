@@ -3,13 +3,13 @@ import type { Plantilla } from "../../models";
 import "./CardPlantilla.css";
 
 interface CardPlantillaProps {
-  plantilla: Plantilla;
-  showActions?: boolean;
-  onDelete?: (id: number) => void;
-  onEdit?: (plantilla: Plantilla) => void;
+  readonly plantilla: Plantilla;
+  readonly showActions?: boolean;
+  readonly onDelete?: (id: number) => void;
+  readonly onEdit?: (plantilla: Plantilla) => void;
 }
 
-export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit }: CardPlantillaProps) {
+export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit }: Readonly<CardPlantillaProps>) {
   const navigate = useNavigate();
 
   const handleEdit = () => {

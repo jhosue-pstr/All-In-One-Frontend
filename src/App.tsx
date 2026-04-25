@@ -66,7 +66,7 @@ function AuthenticatedLayout() {
       .then(setUser)
       .catch(() => {
         authService.logout();
-        window.location.href = '/';
+        globalThis.location.href = '/';
       })
       .finally(() => setLoading(false));
   }, []);
@@ -89,7 +89,7 @@ function AuthLayout() {
   const [showRegister, setShowRegister] = useState(false);
 
   const handleAuthSuccess = () => {
-    window.location.href = '/inicio';
+    globalThis.location.href = '/inicio';
   };
 
   return (

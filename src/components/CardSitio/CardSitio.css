@@ -102,14 +102,18 @@
 
 .sitio-actions .btn-delete {
   padding: 0.5rem 1rem;
-  background: #fee2e2;
-  color: #dc2626;
+  background: #fecaca;
+  color: #991b1b;
   border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.sitio-actions .btn-delete:hover {
+  background: #fca5a5;
 }
 
 .sitio-actions .btn-delete:hover {
