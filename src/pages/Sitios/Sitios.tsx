@@ -19,6 +19,16 @@ export function Sitios() {
     slug: '',
     id_plantilla: undefined,
   });
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showModal) {
+        setShowModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showModal]);
   const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
 
   useEffect(() => {
@@ -129,8 +139,13 @@ export function Sitios() {
       )}
 
       {showModal && !editingSitio && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="modal-overlay"
+          onClick={() => setShowModal(false)}
+          aria-label="Cerrar modal"
+          type="button"
+        >
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2>Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -217,7 +232,7 @@ export function Sitios() {
               </div>
             </form>
           </div>
-        </div>
+        </button>
       )}
     </div>
   );

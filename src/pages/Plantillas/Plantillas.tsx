@@ -25,6 +25,16 @@ export function Plantillas() {
     loadPlantillas();
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showModal) {
+        setShowModal(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showModal]);
+
   const loadPlantillas = async () => {
     try {
       setLoading(true);
@@ -138,8 +148,13 @@ export function Plantillas() {
       )}
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+        <button
+          className="modal-overlay"
+          onClick={() => setShowModal(false)}
+          aria-label="Cerrar modal"
+          type="button"
+        >
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <div className="modal-header">
               <h2>{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
@@ -218,7 +233,7 @@ export function Plantillas() {
               </div>
             </form>
           </div>
-        </div>
+        </button>
       )}
     </div>
   );
