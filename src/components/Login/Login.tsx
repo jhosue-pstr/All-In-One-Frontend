@@ -1,31 +1,24 @@
-import { useState, type FormEvent } from 'react';
 import { authService } from '../../services';
+import { useForm } from '../../hooks/useForm';
 import './Login.css';
 
 interface LoginProps {
   readonly onSuccess?: () => void;
 }
 
+interface LoginValues {
+  correo: string;
+  contrasena: string;
+}
+
 export function Login({ onSuccess }: Readonly<LoginProps>) {
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await authService.login({ correo, contrasena });
-      onSuccess?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { values, error, loading, setField, handleSubmit } = useForm<LoginValues>({
+    initialValues: { correo: '', contrasena: '' },
+    onSubmit: async (v) => {
+      await authService.login(v);
+    },
+    onSuccess,
+  });
 
   return (
     <form className="login-form" onSubmit={handleSubmit}>
@@ -38,8 +31,8 @@ export function Login({ onSuccess }: Readonly<LoginProps>) {
         <input
           type="email"
           id="correo"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
+          value={values.correo}
+          onChange={(e) => setField('correo', e.target.value)}
           required
           placeholder="correo@ejemplo.com"
         />
@@ -50,8 +43,8 @@ export function Login({ onSuccess }: Readonly<LoginProps>) {
         <input
           type="password"
           id="contrasena"
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
+          value={values.contrasena}
+          onChange={(e) => setField('contrasena', e.target.value)}
           required
           placeholder="••••••••"
         />

@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
 import { authService } from '../../services';
+import { useForm } from '../../hooks/useForm';
 import './Register.css';
 
 interface RegisterProps {
@@ -7,31 +7,21 @@ interface RegisterProps {
   readonly onSwitchToLogin?: () => void;
 }
 
-export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>) {
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+interface RegisterValues {
+  correo: string;
+  contrasena: string;
+  nombre: string;
+  apellido: string;
+}
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    setLoading(true);
-
-    try {
-      await authService.register({ correo, contrasena, nombre, apellido });
-      setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
-      onSuccess?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al registrar');
-    } finally {
-      setLoading(false);
-    }
-  };
+export function Register({ onSuccess }: Readonly<RegisterProps>) {
+  const { values, error, success, loading, setField, handleSubmit } = useForm<RegisterValues>({
+    initialValues: { correo: '', contrasena: '', nombre: '', apellido: '' },
+    onSubmit: async (v) => {
+      await authService.register(v);
+    },
+    onSuccess,
+  });
 
   return (
     <form className="register-form" onSubmit={handleSubmit}>
@@ -45,10 +35,10 @@ export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>
         <input
           type="text"
           id="nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          value={values.nombre}
+          onChange={(e) => setField('nombre', e.target.value)}
           required
-          placeholder="Juan"
+          placeholder="Tu nombre"
         />
       </div>
       
@@ -57,10 +47,10 @@ export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>
         <input
           type="text"
           id="apellido"
-          value={apellido}
-          onChange={(e) => setApellido(e.target.value)}
+          value={values.apellido}
+          onChange={(e) => setField('apellido', e.target.value)}
           required
-          placeholder="Pérez"
+          placeholder="Tu apellido"
         />
       </div>
       
@@ -69,8 +59,8 @@ export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>
         <input
           type="email"
           id="correo"
-          value={correo}
-          onChange={(e) => setCorreo(e.target.value)}
+          value={values.correo}
+          onChange={(e) => setField('correo', e.target.value)}
           required
           placeholder="correo@ejemplo.com"
         />
@@ -81,23 +71,16 @@ export function Register({ onSuccess, onSwitchToLogin }: Readonly<RegisterProps>
         <input
           type="password"
           id="contrasena"
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
+          value={values.contrasena}
+          onChange={(e) => setField('contrasena', e.target.value)}
           required
           placeholder="••••••••"
         />
       </div>
       
       <button type="submit" disabled={loading}>
-        {loading ? 'Registrando...' : 'Registrarse'}
+        {loading ? 'Registrando...' : 'Crear Cuenta'}
       </button>
-      
-      <p className="switch-text">
-        ¿Ya tienes cuenta?{' '}
-        <button type="button" className="switch-btn" onClick={onSwitchToLogin}>
-          Iniciar Sesión
-        </button>
-      </p>
     </form>
   );
 }

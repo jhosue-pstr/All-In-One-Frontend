@@ -183,70 +183,46 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   };
 
   const blocksSel = `#blocks-${siteId}`;
+  
+  const showPanel = (selector: string, show: boolean) => {
+    const el = getRow()?.querySelector(selector);
+    if (el) el.style.display = show ? "" : "none";
+  };
+  
   const hideAll = () => {
     const row = getRow();
     if (!row) return;
-    [
-      blocksSel,
-      ".layers-container",
-      ".styles-container",
-      ".traits-container",
-      ".pages-container",
-    ].forEach((sel) => {
+    [blocksSel, ".layers-container", ".styles-container", ".traits-container", ".pages-container"].forEach((sel) => {
       const el = row.querySelector(sel);
       if (el) el.style.display = "none";
     });
   };
 
-  editor.Commands.add("show-layers", {
-    run() {
-      hideAll();
-      const el = getRow()?.querySelector(".layers-container");
-      if (el) el.style.display = "";
-    },
-    stop() {
-      const el = getRow()?.querySelector(".layers-container");
-      if (el) el.style.display = "none";
-    },
-  });
-  editor.Commands.add("show-styles", {
-    run() {
-      hideAll();
-      const el = getRow()?.querySelector(".styles-container");
-      if (el) el.style.display = "";
-    },
-    stop() {
-      const el = getRow()?.querySelector(".styles-container");
-      if (el) el.style.display = "none";
-    },
-  });
-  editor.Commands.add("show-traits", {
-    run() {
-      hideAll();
-      const el = getRow()?.querySelector(".traits-container");
-      if (el) el.style.display = "";
-    },
-    stop() {
-      const el = getRow()?.querySelector(".traits-container");
-      if (el) el.style.display = "none";
-    },
-  });
-  editor.Commands.add("show-blocks", {
-    run() {
-      hideAll();
-      const el = getRow()?.querySelector(blocksSel);
-      if (el) el.style.display = "";
-    },
-  });
+  const addPanelCommand = (id: string, selectors: string[], hasStop = true) => {
+    const cmd: Record<string, unknown> = {
+      run() {
+        hideAll();
+        selectors.forEach(sel => showPanel(sel, true));
+      },
+    };
+    if (hasStop) {
+      cmd.stop = () => selectors.forEach(sel => showPanel(sel, false));
+    }
+    editor.Commands.add(id, cmd);
+  };
+
+  addPanelCommand("show-layers", [".layers-container"]);
+  addPanelCommand("show-styles", [".styles-container"]);
+  addPanelCommand("show-traits", [".traits-container"]);
+  addPanelCommand("show-blocks", [blocksSel], false);
+  
   editor.Commands.add("show-pages", {
     run() {
       hideAll();
+      showPanel(".pages-container", true);
       const el = getRow()?.querySelector(".pages-container");
       if (el) {
-        el.style.display = "block";
-        renderPagesList(
-          el.querySelector(`#pages-list-${siteId}`) as HTMLElement,
-        );
+        renderPagesList(el.querySelector(`#pages-list-${siteId}`) as HTMLElement);
       }
     },
   });
