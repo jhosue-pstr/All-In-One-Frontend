@@ -2,7 +2,7 @@ export const BloqueSidebarIzquierdo = {
   id: "layout-sidebar-izq",
   label: "Sidebar Izquierdo",
   category: "Layout",
-  attributes: { class: "fa fa-bars" },
+  attributes: { class: "fa fa-solid fa-align-left" },
   content: `<div style="display:flex;padding:20px;gap:20px;">
   <aside style="width:250px;flex-shrink:0;padding:20px;background:#f8f9fa;border-radius:8px;">
     <strong>Men&uacute;</strong>

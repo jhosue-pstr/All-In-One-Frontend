@@ -2,7 +2,7 @@ export const BloqueSidebarDerecho = {
   id: "layout-sidebar-der",
   label: "Sidebar Derecho",
   category: "Layout",
-  attributes: { class: "fa fa-bars" },
+  attributes: { class: "fa fa fa-solid fa-align-right" },
   content: `<div style="display:flex;padding:20px;gap:20px;">
   <main style="flex:1;padding:20px;background:#f8f9fa;border-radius:8px;">
     Contenido principal

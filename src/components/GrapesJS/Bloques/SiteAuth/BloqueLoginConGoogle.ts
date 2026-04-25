@@ -2,7 +2,7 @@ export const BloqueLoginGoogle = {
   id: "auth-login-google",
   label: "Login Google",
   category: "Auth",
-  attributes: { class: "fa fa-google" },
+  attributes: { class: " fa fa-brands fa-google" },
   content: `<div style="padding:30px;background:#fff;border-radius:12px;max-width:380px;text-align:center;">
   <h2 style="margin:0 0 25px 0;font-size:24px;">Iniciar Sesi&oacute;n</h2>
   <button style="width:100%;padding:14px;background:#fff;border:2px solid #ddd;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;margin-bottom:15px;display:flex;align-items:center;justify-content:center;gap:10px;">
