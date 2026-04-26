@@ -116,7 +116,7 @@ export function Plantillas() {
         </button>
       </div>
 
-{loading && <div className="page-loading">Cargando...</div>}
+      {loading && <div className="page-loading">Cargando...</div>}
 
       {!loading && plantillas.length === 0 && (
         <div className="empty-state">
@@ -144,20 +144,28 @@ export function Plantillas() {
       )}
 
       {showModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          className="modal-overlay"
-          tabIndex={-1}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setShowModal(false);
-          }}
-        >
-          <div className="modal modal-lg" aria-labelledby="modal-title">
+        <div className="modal-overlay">
+          
+          {/* 1. EL FONDO OSCURO INTERACTIVO: Actúa como botón de cierre semánticamente correcto */}
+          <div 
+            role="button"
+            tabIndex={0}
+            aria-label="Cerrar modal"
+            onClick={() => setShowModal(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setShowModal(false);
+            }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
+          />
+
+          {/* 2. EL MODAL REAL: Limpio de eventos de clic en el contenedor base */}
+          <div 
+            className="modal modal-lg" 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="modal-title"
+            style={{ position: 'relative', zIndex: 1 }}
+          >
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
