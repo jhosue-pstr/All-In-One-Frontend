@@ -146,26 +146,32 @@ export function Plantillas() {
       {showModal && (
         <div className="modal-overlay">
           
-          <div 
-            role="button"
-            tabIndex={0}
+          {/* 1. Usamos un <button> nativo en lugar de un div con role="button" */}
+          <button 
+            type="button"
             aria-label="Cerrar modal"
             onClick={() => setShowModal(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') setShowModal(false);
+            style={{ 
+              position: 'absolute', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              width: '100%', height: '100%',
+              background: 'transparent', 
+              border: 'none', 
+              padding: 0,
+              cursor: 'default' 
             }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
           />
-          <div 
+          
+          {/* 2. Usamos <dialog> nativo en lugar de div con role="dialog" */}
+          <dialog 
             className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true" 
             aria-labelledby="modal-title"
+            open
             style={{ position: 'relative', zIndex: 1 }}
           >
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+              <button type="button" className="modal-close" onClick={() => setShowModal(false)}>×</button>
             </div>
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="form-row">
@@ -240,7 +246,7 @@ export function Plantillas() {
                 </button>
               </div>
             </form>
-          </div>
+          </dialog>
         </div>
       )}
     </div>
