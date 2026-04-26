@@ -62,8 +62,9 @@
 }
 
 .gjs-pn-btn.gjs-pn-active {
-  background: #2563eb;
-  border-color: #2563eb;
+  /* Se oscureció el azul para contraste > 4.5:1 con el texto blanco */
+  background: #1d4ed8;
+  border-color: #1d4ed8;
   color: white;
 }
 
@@ -79,7 +80,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #c0392b;
+  /* Se oscureció el rojo para contraste > 4.5:1 con el texto blanco */
+  background: #a93226;
   color: white;
   border: none;
   border-radius: 4px;
@@ -88,7 +90,7 @@
 }
 
 .btn-back:hover {
-  background: #a93226;
+  background: #8f2920;
 }
 
 /* Editor Row */
@@ -145,8 +147,9 @@
 
 .tab-btn.active {
   background: #2c3e50;
-  color: #3b82f6;
-  border-bottom: 2px solid #3b82f6;
+  /* Se aclaró el azul a #60a5fa para que contraste bien sobre el fondo oscuro #2c3e50 */
+  color: #60a5fa;
+  border-bottom: 2px solid #60a5fa;
 }
 
 /* Panel Content */
@@ -174,7 +177,8 @@
 
 .gjs-block {
   padding: 8px 12px;
-  background: #2563eb;
+  /* Se oscureció el azul para contraste > 4.5:1 con el texto blanco */
+  background: #1d4ed8;
   color: white;
   border-radius: 4px;
   cursor: pointer;
@@ -182,7 +186,7 @@
 }
 
 .gjs-block:hover {
-  background: #1d4ed8;
+  background: #1e40af;
 }
 
 /* Canvas */
@@ -201,7 +205,8 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #10b981;
+  /* Se oscureció el verde para contraste > 4.5:1 con el texto blanco */
+  background: #047857;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;

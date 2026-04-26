@@ -93,7 +93,8 @@
 
 .btn-edit {
   padding: 0.5rem 1rem;
-  background: #3b82f6;
+  /* Se cambió #3b82f6 por #2563eb para pasar el contraste mínimo de 4.5:1 con el texto blanco */
+  background: #2563eb; 
   color: white;
   border: none;
   border-radius: 6px;
@@ -104,7 +105,8 @@
 }
 
 .btn-edit:hover {
-  background: #2563eb;
+  /* Se oscureció el hover de #2563eb a #1d4ed8 en proporción */
+  background: #1d4ed8;
 }
 
 .btn-delete {

@@ -1,6 +1,5 @@
 import grapesjs, { type Editor, type EditorConfig } from "grapesjs";
 import { dispositivosDefaults } from "./Paneles/PanelDispositivos";
-import { PanelConmutadorButtons } from "./Paneles/PanelConmutador";
 import { blocks } from "./Bloques";
 import "./assets/editor.css";
 

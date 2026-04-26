@@ -70,7 +70,8 @@
 
 .sitio-actions .btn-view {
   padding: 0.5rem 1rem;
-  background: #10b981;
+  /* Se oscureció el verde de #10b981 a #047857 para asegurar contraste > 4.5:1 con el texto blanco */
+  background: #047857;
   color: white;
   border: none;
   border-radius: 6px;
@@ -81,12 +82,14 @@
 }
 
 .sitio-actions .btn-view:hover {
-  background: #059669;
+  /* Hover del verde oscurecido en proporción */
+  background: #064e3b;
 }
 
 .sitio-actions .btn-edit {
   padding: 0.5rem 1rem;
-  background: #3b82f6;
+  /* Se oscureció el azul de #3b82f6 a #1d4ed8 para asegurar contraste > 4.5:1 con el texto blanco */
+  background: #1d4ed8;
   color: white;
   border: none;
   border-radius: 6px;
@@ -97,7 +100,8 @@
 }
 
 .sitio-actions .btn-edit:hover {
-  background: #2563eb;
+  /* Hover del azul oscurecido en proporción */
+  background: #1e40af;
 }
 
 .sitio-actions .btn-delete {
