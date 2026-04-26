@@ -138,7 +138,6 @@ export function Sitios() {
       {showModal && !editingSitio && (
         <div
           className="modal-overlay"
-          /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}

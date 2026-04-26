@@ -116,7 +116,7 @@ export function Plantillas() {
         </button>
       </div>
 
-      {loading && <div className="page-loading">Cargando...</div>}
+{loading && <div className="page-loading">Cargando...</div>}
 
       {!loading && plantillas.length === 0 && (
         <div className="empty-state">
@@ -145,17 +145,19 @@ export function Plantillas() {
 
       {showModal && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
           className="modal-overlay"
+          tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowModal(false);
+          }}
         >
-          <div 
-            className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true" 
-            aria-labelledby="modal-title"
-          >
+          <div className="modal modal-lg" aria-labelledby="modal-title">
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
