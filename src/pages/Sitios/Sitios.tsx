@@ -138,24 +138,27 @@ export function Sitios() {
       {showModal && !editingSitio && (
         <div className="modal-overlay">
           
-          {/* 1. FONDO OSCURO INTERACTIVO: Maneja el cierre y cumple las reglas a11y */}
-          <div 
-            role="button"
-            tabIndex={0}
+          {/* 1. Usamos un <button> nativo para el fondo interactivo */}
+          <button 
+            type="button"
             aria-label="Cerrar modal"
             onClick={() => setShowModal(false)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') setShowModal(false);
+            style={{ 
+              position: 'absolute', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              width: '100%', height: '100%',
+              background: 'transparent', 
+              border: 'none', 
+              padding: 0,
+              cursor: 'default' 
             }}
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
           />
 
-          {/* 2. MODAL CONTENEDOR: Limpio de eventos problemáticos */}
-          <div 
+          {/* 2. Usamos <dialog> nativo con el atributo open */}
+          <dialog 
             className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true" 
             aria-labelledby="modal-title"
+            open
             style={{ position: 'relative', zIndex: 1 }}
           >
             <h2 id="modal-title">Nuevo Sitio</h2>
@@ -244,7 +247,7 @@ export function Sitios() {
                 </button>
               </div>
             </form>
-          </div>
+          </dialog>
         </div>
       )}
     </div>
