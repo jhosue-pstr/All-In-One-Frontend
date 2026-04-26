@@ -20,8 +20,6 @@ export function Sitios() {
     id_plantilla: undefined,
   });
 
-  const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
-
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && showModal) {
@@ -31,6 +29,7 @@ export function Sitios() {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showModal]);
+  const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
 
   useEffect(() => {
     loadSitios();
@@ -137,17 +136,19 @@ export function Sitios() {
 
       {showModal && !editingSitio && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
           className="modal-overlay"
+          tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget) setShowModal(false);
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') setShowModal(false);
+          }}
         >
-          <div 
-            className="modal modal-lg" 
-            role="dialog" 
-            aria-modal="true" 
-            aria-labelledby="modal-title"
-          >
+          <div className="modal modal-lg" aria-labelledby="modal-title">
             <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -216,6 +217,11 @@ export function Sitios() {
                           key={p.id}
                           className={`plantilla-option ${formData.id_plantilla === p.id ? 'selected' : ''}`}
                           onClick={() => handleSelectPlantilla(p.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              handleSelectPlantilla(p.id);
+                            }
+                          }}
                         >
                           {p.miniatura && <img src={p.miniatura} alt={p.nombre} />}
                           <span>{p.nombre}</span>
