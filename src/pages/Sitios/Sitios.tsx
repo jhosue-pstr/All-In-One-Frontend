@@ -20,6 +20,8 @@ export function Sitios() {
     id_plantilla: undefined,
   });
 
+  const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && showModal) {
@@ -29,7 +31,6 @@ export function Sitios() {
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [showModal]);
-  const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
 
   useEffect(() => {
     loadSitios();
@@ -135,20 +136,28 @@ export function Sitios() {
       )}
 
       {showModal && !editingSitio && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-          className="modal-overlay"
-          tabIndex={-1}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowModal(false);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Escape') setShowModal(false);
-          }}
-        >
-          <div className="modal modal-lg" aria-labelledby="modal-title">
+        <div className="modal-overlay">
+          
+          {/* 1. FONDO OSCURO INTERACTIVO: Maneja el cierre y cumple las reglas a11y */}
+          <div 
+            role="button"
+            tabIndex={0}
+            aria-label="Cerrar modal"
+            onClick={() => setShowModal(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setShowModal(false);
+            }}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
+          />
+
+          {/* 2. MODAL CONTENEDOR: Limpio de eventos problemáticos */}
+          <div 
+            className="modal modal-lg" 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="modal-title"
+            style={{ position: 'relative', zIndex: 1 }}
+          >
             <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -217,11 +226,6 @@ export function Sitios() {
                           key={p.id}
                           className={`plantilla-option ${formData.id_plantilla === p.id ? 'selected' : ''}`}
                           onClick={() => handleSelectPlantilla(p.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              handleSelectPlantilla(p.id);
-                            }
-                          }}
                         >
                           {p.miniatura && <img src={p.miniatura} alt={p.nombre} />}
                           <span>{p.nombre}</span>

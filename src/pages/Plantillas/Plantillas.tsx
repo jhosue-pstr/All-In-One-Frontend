@@ -146,7 +146,6 @@ export function Plantillas() {
       {showModal && (
         <div className="modal-overlay">
           
-          {/* 1. EL FONDO OSCURO INTERACTIVO: Actúa como botón de cierre semánticamente correcto */}
           <div 
             role="button"
             tabIndex={0}
@@ -157,8 +156,6 @@ export function Plantillas() {
             }}
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
           />
-
-          {/* 2. EL MODAL REAL: Limpio de eventos de clic en el contenedor base */}
           <div 
             className="modal modal-lg" 
             role="dialog" 
