@@ -1,15 +1,11 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:20-alpine'
-            args '--network host -v /var/run/docker.sock:/var/run/docker.sock'
-        }
-    }
+    agent any
 
     environment {
         SONAR_HOST_URL = 'http://sonarqube:9000'
         SONAR_TOKEN    = credentials('Sonar-qube')
         PROJECT_KEY    = 'All-In-One-Frontend'
+        NODE_IMAGE     = 'node:20-alpine'
     }
 
     stages {
@@ -19,22 +15,21 @@ pipeline {
             }
         }
 
-        stage('Setup Node & Docker') {
+        stage('Setup Node') {
             steps {
-                sh 'apk add --no-cache docker-cli'
-                sh 'npm install'
+                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm install'
             }
         }
 
         stage('Lint & Build') {
             steps {
-                sh 'npm run build'
+                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm run build'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'npm run test || true'
+                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm run test || true'
             }
         }
 
