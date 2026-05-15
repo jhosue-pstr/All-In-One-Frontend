@@ -86,7 +86,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   `;
 
   const attachDeleteModalHandlers = (pageId: string, container: HTMLElement) => {
-    const content = editor.Modal.getContent();
+    const content = editor.Modal.getContent() as HTMLElement | null;
     content?.querySelector("#confirm-del-btn")?.addEventListener("click", () => {
       editor.Pages.remove(pageId);
       renderPagesList(container);
@@ -96,7 +96,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   };
 
   const attachNewPageModalHandlers = () => {
-    const content = editor.Modal.getContent();
+    const content = editor.Modal.getContent() as HTMLElement | null;
     const input = content?.querySelector("#new-page-name") as HTMLInputElement | null;
     input?.focus();
     content?.querySelector("#save-new-page")?.addEventListener("click", () => {
@@ -178,13 +178,14 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   });
 
   const getRow = (): HTMLElement | null => {
-    return editor.getContainer()?.closest(".editor-row") as HTMLElement;
+    const container = editor.getContainer();
+    return container instanceof HTMLElement ? container.closest(".editor-row") : null;
   };
 
   const blocksSel = `#blocks-${siteId}`;
   
   const showPanel = (selector: string, show: boolean) => {
-    const el = getRow()?.querySelector(selector);
+    const el = getRow()?.querySelector(selector) as HTMLElement | null;
     if (el) el.style.display = show ? "" : "none";
   };
   
@@ -192,7 +193,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     const row = getRow();
     if (!row) return;
     [blocksSel, ".layers-container", ".styles-container", ".traits-container", ".pages-container"].forEach((sel) => {
-      const el = row.querySelector(sel);
+      const el = row.querySelector(sel) as HTMLElement | null;
       if (el) el.style.display = "none";
     });
   };
@@ -219,7 +220,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     run() {
       hideAll();
       showPanel(".pages-container", true);
-      const el = getRow()?.querySelector(".pages-container");
+      const el = getRow()?.querySelector(".pages-container") as HTMLElement | null;
       if (el) {
         renderPagesList(el.querySelector(`#pages-list-${siteId}`) as HTMLElement);
       }

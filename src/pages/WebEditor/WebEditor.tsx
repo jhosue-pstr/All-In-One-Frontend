@@ -134,7 +134,7 @@ export function WebEditor() {
         if (c instanceof HTMLElement) c.style.display = "none";
       });
 
-      if (grapesEditorRef.current && panel) {
+      if (grapesEditorRef.current && panel && id) {
         const cmd = activatePanel(panel, id);
         grapesEditorRef.current.runCommand(cmd);
       }

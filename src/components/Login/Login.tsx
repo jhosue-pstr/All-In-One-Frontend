@@ -1,3 +1,4 @@
+import type { UserLogin } from '../../models';
 import { authService } from '../../services';
 import { AuthForm } from '../AuthForm/AuthForm';
 import './Login.css';
@@ -16,7 +17,7 @@ export function Login({ onSuccess }: Readonly<LoginProps>) {
         { id: 'contrasena', label: 'Contraseña', type: 'password', placeholder: '••••••••', required: true },
       ]}
       submitText="Iniciar Sesión"
-      onSubmit={async (v) => { await authService.login(v); }}
+      onSubmit={async (v) => { await authService.login(v as unknown as UserLogin); }}
       onSuccess={onSuccess}
     />
   );

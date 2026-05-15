@@ -1,3 +1,4 @@
+import type { UserCreate } from '../../models';
 import { authService } from '../../services';
 import { AuthForm } from '../AuthForm/AuthForm';
 import './Register.css';
@@ -19,7 +20,7 @@ export function Register({ onSuccess }: Readonly<RegisterProps>) {
         { id: 'contrasena', label: 'Contraseña', type: 'password', placeholder: '••••••••', required: true },
       ]}
       submitText="Crear Cuenta"
-      onSubmit={async (v) => { await authService.register(v); }}
+      onSubmit={async (v) => { await authService.register(v as unknown as UserCreate); }}
       onSuccess={onSuccess}
       successMessage="¡Registro exitoso! Ahora puedes iniciar sesión."
     />

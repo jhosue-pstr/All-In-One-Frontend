@@ -56,7 +56,9 @@ pipeline {
 
     post {
         always {
-            deleteDir()
+            script {
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} sh -c "rm -rf node_modules dist .tsbuildinfo 2>/dev/null; find . -maxdepth 1 -not -name . -exec rm -rf {} + 2>/dev/null" || true'
+            }
         }
     }
 }
