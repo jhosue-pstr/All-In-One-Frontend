@@ -40,7 +40,7 @@ export function Plantillas() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: Event) => {
     e.preventDefault();
     try {
       if (editingPlantilla) {

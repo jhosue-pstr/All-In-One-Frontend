@@ -12,7 +12,7 @@ interface UseFormReturn<T> {
   success: string;
   loading: boolean;
   setField: (field: keyof T, value: string) => void;
-  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  handleSubmit: (e: Event) => void;
   reset: () => void;
 }
 
@@ -36,7 +36,7 @@ export function useForm<T extends Record<string, string>>({
     setSuccess('');
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setError('');
     setSuccess('');
