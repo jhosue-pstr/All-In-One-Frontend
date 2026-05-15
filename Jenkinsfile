@@ -17,32 +17,32 @@ pipeline {
 
         stage('Setup Node') {
             steps {
-                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm install'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} npm install'
             }
         }
 
         stage('Lint & Build') {
             steps {
-                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm run build'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} npm run build'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'docker run --rm -v "$PWD:/app" -w /app ${NODE_IMAGE} npm run test || true'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} npm run test || true'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 sh '''docker run --rm \
-                    -v "${WORKSPACE}:/usr/src" \
-                    --network host \
+                    --volumes-from jenkins \
+                    --network app-network \
                     -e SONAR_TOKEN="${SONAR_TOKEN}" \
                     sonarsource/sonar-scanner-cli:latest \
                     -Dsonar.projectKey=${PROJECT_KEY} \
-                    -Dsonar.sources=/usr/src/src \
-                    -Dsonar.exclusions=/usr/src/node_modules/**,/usr/src/dist/**,/usr/src/public/** \
+                    -Dsonar.sources=${WORKSPACE}/src \
+                    -Dsonar.exclusions=${WORKSPACE}/node_modules/**,${WORKSPACE}/dist/**,${WORKSPACE}/public/** \
                     -Dsonar.host.url=${SONAR_HOST_URL}'''
             }
         }
