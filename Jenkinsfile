@@ -51,8 +51,9 @@ pipeline {
                     -e SONAR_TOKEN="${SONAR_TOKEN}" \
                     sonarsource/sonar-scanner-cli:latest \
                     -Dsonar.projectKey=${PROJECT_KEY} \
-                    -Dsonar.sources=${WORKSPACE}/src \
-                    -Dsonar.exclusions=${WORKSPACE}/node_modules/**,${WORKSPACE}/dist/**,${WORKSPACE}/public/** \
+                    -Dsonar.projectBaseDir=${WORKSPACE} \
+                    -Dsonar.sources=src \
+                    -Dsonar.exclusions=node_modules/**,dist/**,public/** \
                     -Dsonar.host.url=${SONAR_HOST_URL}'''
             }
         }
