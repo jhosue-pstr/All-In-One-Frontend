@@ -4,6 +4,7 @@ import html2canvas from "html2canvas";
 import { initGrapesJS } from "../../components/GrapesJS";
 import { plantillaService } from "../../services/plantilla";
 import { sitioService } from "../../services/sitio";
+
 import "grapesjs/dist/css/grapes.min.css";
 import "./WebEditor.css";
 
@@ -250,9 +251,18 @@ export function WebEditor() {
                 
                 const itemId = Number.parseInt(id || "0");
                 
+                let jsContent = "";
+                try {
+                  const jsResp = await fetch('/scripts/site-auth.js');
+                  jsContent = await jsResp.text();
+                } catch (e) {
+                  console.warn("No se pudo cargar site-auth.js", e);
+                }
+
                 const configuracion = {
-                  html: editor.getHtml() || "",
+                  html: (editor.getHtml() || "").replaceAll("{{SITIO_ID}}", id),
                   css: editor.getCss() || "",
+                  js: jsContent,
                 };
                 
                 let miniaturaUrl = null;

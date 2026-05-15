@@ -8,9 +8,11 @@ const API_URL = API_CONFIG.baseUrl.replace("/api", "");
 interface CardSitioProps {
   readonly sitio: Sitio;
   readonly onDelete?: (id: number) => void;
+  readonly modulos?: Array<{ id: number; slug: string; nombre: string }>;
+  readonly activeModIds?: number[];
 }
 
-export function CardSitio({ sitio, onDelete }: Readonly<CardSitioProps>) {
+export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly<CardSitioProps>) {
   const navigate = useNavigate();
 
   const handleEdit = () => {
@@ -27,6 +29,9 @@ export function CardSitio({ sitio, onDelete }: Readonly<CardSitioProps>) {
     window.open(`${API_URL}/${sitio.slug}`, "_blank");
   };
 
+  const activeSet = new Set(activeModIds ?? []);
+  const activeModulos = modulos?.filter(m => activeSet.has(m.id)) ?? [];
+
   return (
     <div className="sitio-card">
       {sitio.miniatura && (
@@ -41,6 +46,16 @@ export function CardSitio({ sitio, onDelete }: Readonly<CardSitioProps>) {
           {sitio.activo ? 'Activo' : 'Inactivo'}
         </span>
       </div>
+      {activeModulos.length > 0 && (
+        <div className="sitio-modulos">
+          <span className="sitio-modulos-label">Módulos:</span>
+          <div className="sitio-modulos-list">
+            {activeModulos.map(m => (
+              <span key={m.slug} className="sitio-modulo-badge">{m.nombre}</span>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="sitio-actions">
         <button onClick={handleView} className="btn-view" title="Ver sitio">
           👁 Ver

@@ -62,6 +62,37 @@
   color: #991b1b;
 }
 
+.sitio-modulos {
+  padding: 0 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.sitio-modulos-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sitio-modulos-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.sitio-modulo-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
 .sitio-actions {
   display: flex;
   gap: 0.5rem;

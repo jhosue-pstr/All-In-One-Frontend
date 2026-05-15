@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { sitioService, plantillaService } from '../../services';
+import { sitioService, plantillaService, moduloService } from '../../services';
+import { sitioModuloService } from '../../services/sitioModulo';
 import { CardSitio } from '../../components/CardSitio/CardSitio';
-import type { Sitio, SitioCreate, SitioUpdate, Plantilla } from '../../models';
+import type { Sitio, SitioCreate, SitioUpdate, Plantilla, Modulo } from '../../models';
 import './Sitios.css';
 
 type TipoOrigen = 'mis-plantillas' | 'comunidad' | 'blank';
@@ -11,6 +12,8 @@ export function Sitios() {
   const navigate = useNavigate();
   const [sitios, setSitios] = useState<Sitio[]>([]);
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
+  const [modulos, setModulos] = useState<Modulo[]>([]);
+  const [sitioModulosMap, setSitioModulosMap] = useState<Record<number, number[]>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingSitio, setEditingSitio] = useState<Sitio | null>(null);
@@ -33,14 +36,20 @@ export function Sitios() {
   }, [showModal]);
 
   useEffect(() => {
-    loadSitios();
-    loadPlantillas();
+    loadSitios().then(() => {
+      loadPlantillas();
+      loadModulos();
+    });
   }, []);
 
   const loadSitios = async () => {
     try {
       const data = await sitioService.getAll();
       setSitios(data);
+      const entries = await Promise.all(
+        data.map(s => sitioModuloService.getBySitio(s.id).then(ids => [s.id, ids] as const).catch(() => [s.id, []] as const))
+      );
+      setSitioModulosMap(Object.fromEntries(entries));
     } catch (error) {
       console.error('Error loading sitios:', error);
     } finally {
@@ -55,6 +64,15 @@ export function Sitios() {
       setPlantillas([...misPlantillas, ...publicas]);
     } catch (error) {
       console.error('Error loading plantillas:', error);
+    }
+  };
+
+  const loadModulos = async () => {
+    try {
+      const data = await moduloService.getAll();
+      setModulos(data.filter(m => m.activo));
+    } catch (error) {
+      console.error('Error loading modulos:', error);
     }
   };
 
@@ -130,6 +148,8 @@ export function Sitios() {
               key={sitio.id}
               sitio={sitio}
               onDelete={handleDelete}
+              modulos={modulos}
+              activeModIds={sitioModulosMap[sitio.id] ?? []}
             />
           ))}
         </div>
