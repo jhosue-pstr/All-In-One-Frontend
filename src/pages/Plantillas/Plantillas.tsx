@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEventHandler } from 'react';
+import { useEffect, useState } from 'react';
 import { plantillaService } from '../../services';
 import { CardPlantilla } from '../../components/CardPlantilla/CardPlantilla';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
@@ -40,7 +40,7 @@ export function Plantillas() {
     }
   };
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       if (editingPlantilla) {

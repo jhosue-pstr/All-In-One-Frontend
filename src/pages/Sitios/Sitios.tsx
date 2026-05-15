@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEventHandler } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sitioService, plantillaService, moduloService } from '../../services';
 import { sitioModuloService } from '../../services/sitioModulo';
@@ -78,7 +78,7 @@ export function Sitios() {
     setFormData({ ...formData, id_plantilla: id });
   };
 
-  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       /* v8 ignore next 3 */

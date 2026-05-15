@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEventHandler } from 'react';
+import { useState, useEffect } from 'react';
 import { HiOutlineUser, HiOutlineGlobe, HiOutlineShieldCheck, HiOutlineBell } from 'react-icons/hi';
 import { authService, USER_IMAGE_KEY } from '../../services';
 import type { User } from '../../models';
@@ -41,7 +41,7 @@ export function Configuraciones() {
     }
   };
 
-  const handleProfileSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     setMessage('');
@@ -60,7 +60,7 @@ export function Configuraciones() {
     }
   };
 
-  const handlePasswordSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+  const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (formData.nueva_contrasena !== formData.confirmar_contrasena) {
