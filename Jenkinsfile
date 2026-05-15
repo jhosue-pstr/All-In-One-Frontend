@@ -54,6 +54,7 @@ pipeline {
                     -Dsonar.projectBaseDir=${WORKSPACE} \
                     -Dsonar.sources=src \
                     -Dsonar.exclusions=node_modules/**,dist/**,public/** \
+                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
                     -Dsonar.host.url=${SONAR_HOST_URL}'''
             }
         }
