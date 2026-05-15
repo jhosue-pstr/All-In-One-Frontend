@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:20-alpine'
+            args '--network host -v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         SONAR_HOST_URL = 'http://sonarqube:9000'
@@ -14,8 +19,9 @@ pipeline {
             }
         }
 
-        stage('Setup Node') {
+        stage('Setup Node & Docker') {
             steps {
+                sh 'apk add --no-cache docker-cli'
                 sh 'npm install'
             }
         }
@@ -35,13 +41,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 sh '''docker run --rm \
-                    --volumes-from jenkins \
-                    --network app-network \
+                    -v "${WORKSPACE}:/usr/src" \
+                    --network host \
                     -e SONAR_TOKEN="${SONAR_TOKEN}" \
                     sonarsource/sonar-scanner-cli:latest \
                     -Dsonar.projectKey=${PROJECT_KEY} \
-                    -Dsonar.sources=${WORKSPACE}/src \
-                    -Dsonar.exclusions=${WORKSPACE}/node_modules/**,${WORKSPACE}/dist/**,${WORKSPACE}/public/** \
+                    -Dsonar.sources=/usr/src/src \
+                    -Dsonar.exclusions=/usr/src/node_modules/**,/usr/src/dist/**,/usr/src/public/** \
                     -Dsonar.host.url=${SONAR_HOST_URL}'''
             }
         }
@@ -55,7 +61,7 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            deleteDir()
         }
     }
 }
