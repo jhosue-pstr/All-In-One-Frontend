@@ -51,4 +51,12 @@ describe('fetchApi', () => {
     const result = await fetchApi('/test')
     expect(result).toEqual({})
   })
+
+  it('should use fallback error message when detail is missing', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({}),
+    })
+    await expect(fetchApi('/test')).rejects.toThrow('Error en la solicitud')
+  })
 })

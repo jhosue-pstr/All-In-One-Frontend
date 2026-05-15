@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import type { FormEventHandler } from 'react';
 
 interface UseFormOptions<T> {
   initialValues: T;
@@ -12,7 +13,7 @@ interface UseFormReturn<T> {
   success: string;
   loading: boolean;
   setField: (field: keyof T, value: string) => void;
-  handleSubmit: (e: FormEvent) => Promise<void>;
+  handleSubmit: FormEventHandler<HTMLFormElement>;
   reset: () => void;
 }
 
@@ -36,7 +37,7 @@ export function useForm<T extends Record<string, string>>({
     setSuccess('');
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');

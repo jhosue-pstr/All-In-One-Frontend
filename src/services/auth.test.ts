@@ -41,6 +41,24 @@ describe('authService', () => {
     expect(result).toEqual(mockUser)
   })
 
+  it('login should throw on non-ok response', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: () => Promise.resolve({ detail: 'Credenciales incorrectas' }),
+    })
+    await expect(authService.login({ correo: 'a@b.com', contrasena: 'wrong' })).rejects.toThrow('Credenciales incorrectas')
+  })
+
+  it('login should throw fallback when no detail in response', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({}),
+    })
+    await expect(authService.login({ correo: 'a@b.com', contrasena: 'wrong' })).rejects.toThrow('Error en el inicio de sesión')
+  })
+
   it('update should PUT /auth/me', async () => {
     ;(globalThis.fetch as any).mockResolvedValue({
       ok: true,

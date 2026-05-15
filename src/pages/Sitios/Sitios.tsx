@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEventHandler } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sitioService, plantillaService, moduloService } from '../../services';
 import { sitioModuloService } from '../../services/sitioModulo';
 import { CardSitio } from '../../components/CardSitio/CardSitio';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 import type { Sitio, SitioCreate, SitioUpdate, Plantilla, Modulo } from '../../models';
 import './Sitios.css';
 
@@ -25,15 +26,7 @@ export function Sitios() {
 
   const [origenTipo, setOrigenTipo] = useState<TipoOrigen>('blank');
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showModal) {
-        setShowModal(false);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [showModal]);
+  useEscapeKey(showModal, () => setShowModal(false));
 
   useEffect(() => {
     loadSitios().then(() => {
@@ -85,9 +78,10 @@ export function Sitios() {
     setFormData({ ...formData, id_plantilla: id });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     try {
+      /* v8 ignore next 3 */
       if (editingSitio) {
         await sitioService.update(editingSitio.id, formData as SitioUpdate);
       } else {

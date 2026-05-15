@@ -51,6 +51,26 @@ describe('sitioService', () => {
     )
   })
 
+  it('uploadMinatura should throw on non-ok response', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: () => Promise.resolve({ detail: 'Error' }),
+    })
+    const file = new File([''], 'test.png', { type: 'image/png' })
+    await expect(sitioService.uploadMinatura(1, file)).rejects.toThrow('Error')
+  })
+
+  it('uploadMinatura should throw fallback when no detail', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({}),
+    })
+    const file = new File([''], 'test.png', { type: 'image/png' })
+    await expect(sitioService.uploadMinatura(1, file)).rejects.toThrow('Error al subir la miniatura')
+  })
+
   it('uploadMinatura should POST multipart to /sitios/{id}/miniatura', async () => {
     ;(globalThis.fetch as any).mockResolvedValue({
       ok: true,

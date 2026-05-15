@@ -53,6 +53,11 @@ describe('Sidebar', () => {
     expect(img).toHaveAttribute('src', 'data:image/png;base64,abc')
   })
 
+  it('should show default initial U when user has no nombre', () => {
+    renderSidebar({ ...mockUser, nombre: '' })
+    expect(screen.getByText('U')).toBeInTheDocument()
+  })
+
   it('should clear token and redirect on logout', () => {
     localStorage.setItem('token', 'tok')
     const originalLocation = globalThis.location

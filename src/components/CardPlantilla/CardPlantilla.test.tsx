@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { CardPlantilla } from './CardPlantilla'
 
+const mockNavigate = vi.hoisted(() => vi.fn())
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
 const mockPlantilla = {
   id: 1,
   nombre: 'Mi Plantilla',
@@ -57,6 +63,18 @@ describe('CardPlantilla', () => {
     expect(screen.getByText('Activa')).toBeInTheDocument()
   })
 
+  it('should show inactive status', () => {
+    renderCardPlantilla({ plantilla: { ...mockPlantilla, activo: false } as any })
+    expect(screen.getByText('Inactiva')).toBeInTheDocument()
+  })
+
+  it('should render miniatura image when provided', () => {
+    renderCardPlantilla({ plantilla: { ...mockPlantilla, miniatura: 'thumb.jpg' } as any })
+    const img = screen.getByAltText('Mi Plantilla')
+    expect(img).toBeInTheDocument()
+    expect(img).toHaveAttribute('src', 'thumb.jpg')
+  })
+
   it('should show actions when showActions is true', () => {
     renderCardPlantilla()
     expect(screen.getByText('Editar')).toBeInTheDocument()
@@ -77,10 +95,24 @@ describe('CardPlantilla', () => {
     expect(onDelete).toHaveBeenCalledWith(1)
   })
 
+  it('should not call onDelete when delete cancelled', () => {
+    const onDelete = vi.fn()
+    ;(globalThis.confirm as any).mockReturnValue(false)
+    renderCardPlantilla({ onDelete })
+    fireEvent.click(screen.getByText('Eliminar'))
+    expect(onDelete).not.toHaveBeenCalled()
+  })
+
   it('should call onEdit when edit basic clicked', () => {
     const onEdit = vi.fn()
     renderCardPlantilla({ onEdit })
     fireEvent.click(screen.getByText('Editar basic'))
     expect(onEdit).toHaveBeenCalledWith(mockPlantilla)
+  })
+
+  it('should navigate to edit page when Editar is clicked', () => {
+    renderCardPlantilla()
+    fireEvent.click(screen.getByText('Editar'))
+    expect(mockNavigate).toHaveBeenCalledWith('/plantillas/1/editar')
   })
 })

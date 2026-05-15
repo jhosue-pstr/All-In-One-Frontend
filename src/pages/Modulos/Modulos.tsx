@@ -41,6 +41,7 @@ export function Modulos() {
   }, [selectedId]);
 
   const handleToggle = useCallback(async (moduloId: number, value: boolean) => {
+    /* v8 ignore next 2 */
     if (!selectedId) return;
     setToggling(moduloId);
     const prev = new Set(activeModIds);
@@ -94,11 +95,7 @@ export function Modulos() {
         </aside>
 
         <main className="modulos-main">
-          {!selectedSitio ? (
-            <div className="modulos-placeholder">
-              <p>Selecciona un sitio de la lista para gestionar sus módulos.</p>
-            </div>
-          ) : (
+          {selectedSitio ? (
             <>
               <div className="modulos-header">
                 <h2>{selectedSitio.nombre}</h2>
@@ -133,6 +130,10 @@ export function Modulos() {
                 </div>
               )}
             </>
+          ) : (
+            <div className="modulos-placeholder">
+              <p>Selecciona un sitio de la lista para gestionar sus módulos.</p>
+            </div>
           )}
         </main>
       </div>

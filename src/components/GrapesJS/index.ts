@@ -14,7 +14,7 @@ export interface GrapesJSInitOptions {
 export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   const siteId = options.siteId;
   const blockId = `#blocks-${siteId}`;
-  const pagesListId = `#pages-list-${siteId}`;
+  const pagesListId = `pages-list-${siteId}`;
   const btnAddPageId = `btn-add-page-${siteId}`;
 
   const config: EditorConfig = {
@@ -97,7 +97,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
 
   const attachNewPageModalHandlers = () => {
     const content = editor.Modal.getContent() as HTMLElement | null;
-    const input = content?.querySelector("#new-page-name") as HTMLInputElement | null;
+    const input = content?.querySelector<HTMLInputElement>("#new-page-name");
     input?.focus();
     content?.querySelector("#save-new-page")?.addEventListener("click", () => {
       const name = input?.value.trim();
@@ -185,7 +185,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   const blocksSel = `#blocks-${siteId}`;
   
   const showPanel = (selector: string, show: boolean) => {
-    const el = getRow()?.querySelector(selector) as HTMLElement | null;
+    const el = getRow()?.querySelector<HTMLElement>(selector);
     if (el) el.style.display = show ? "" : "none";
   };
   
@@ -222,7 +222,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
       showPanel(".pages-container", true);
       const el = getRow()?.querySelector(".pages-container") as HTMLElement | null;
       if (el) {
-        renderPagesList(el.querySelector(`#pages-list-${siteId}`) as HTMLElement);
+        renderPagesList(el.querySelector<HTMLElement>(`#pages-list-${siteId}`));
       }
     },
   });

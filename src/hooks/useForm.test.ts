@@ -31,6 +31,18 @@ describe('useForm', () => {
     expect(result.current.loading).toBe(false)
   })
 
+  it('should set fallback error when onSubmit throws non-Error', async () => {
+    const onSubmit = vi.fn().mockRejectedValue('string error')
+    const { result } = renderHook(() => useForm({ initialValues, onSubmit }))
+
+    await act(async () => {
+      await result.current.handleSubmit({ preventDefault: vi.fn() } as any)
+    })
+
+    expect(result.current.error).toBe('Error desconocido')
+    expect(result.current.loading).toBe(false)
+  })
+
   it('should set error message when onSubmit throws', async () => {
     const onSubmit = vi.fn().mockRejectedValue(new Error('Error de prueba'))
     const { result } = renderHook(() => useForm({ initialValues, onSubmit }))

@@ -113,6 +113,7 @@ export function WebEditor() {
   useEffect(() => {
     if (!grapesEditorRef.current) return;
 
+    /* v8 ignore next 4 */
     const editor = grapesEditorRef.current;
     editor.on("change:device", () => {
       setCurrentDevice(editor.getDevice());

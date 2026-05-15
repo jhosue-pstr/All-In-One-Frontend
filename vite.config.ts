@@ -18,6 +18,7 @@ export default defineConfig({
         'src/vite-env.d.ts',
         'src/components/GrapesJS/Bloques/**',
         'src/components/GrapesJS/Paneles/*.ts',
+        'src/services/index.ts',
         'src/models/**',
         'src/assets/**',
         'src/types/**',

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEventHandler } from 'react';
 import { plantillaService } from '../../services';
 import { CardPlantilla } from '../../components/CardPlantilla/CardPlantilla';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 import type { Plantilla, PlantillaCreate, PlantillaUpdate, Visibilidad } from '../../models';
 import './Plantillas.css';
 
@@ -23,15 +24,7 @@ export function Plantillas() {
     loadPlantillas();
   }, [activeTab]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showModal) {
-        setShowModal(false);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [showModal]);
+  useEscapeKey(showModal, () => setShowModal(false));
 
   const loadPlantillas = async () => {
     try {
@@ -47,7 +40,7 @@ export function Plantillas() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     try {
       if (editingPlantilla) {

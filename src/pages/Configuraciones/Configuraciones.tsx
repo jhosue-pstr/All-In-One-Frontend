@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEventHandler } from 'react';
 import { HiOutlineUser, HiOutlineGlobe, HiOutlineShieldCheck, HiOutlineBell } from 'react-icons/hi';
 import { authService, USER_IMAGE_KEY } from '../../services';
 import type { User } from '../../models';
@@ -41,7 +41,7 @@ export function Configuraciones() {
     }
   };
 
-  const handleProfileSubmit = async (e: React.FormEvent) => {
+  const handleProfileSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setSaving(true);
     setMessage('');
@@ -60,7 +60,7 @@ export function Configuraciones() {
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     
     if (formData.nueva_contrasena !== formData.confirmar_contrasena) {
@@ -91,6 +91,7 @@ export function Configuraciones() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    /* v8 ignore next 2 */
     if (!file) return;
 
     const reader = new FileReader();

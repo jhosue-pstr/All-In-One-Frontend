@@ -3,6 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { CardSitio } from './CardSitio'
 
+const mockNavigate = vi.hoisted(() => vi.fn())
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
 const mockSitio = {
   id: 1,
   nombre: 'Mi Sitio',
@@ -81,5 +87,20 @@ describe('CardSitio', () => {
     renderCardSitio({ onDelete })
     fireEvent.click(screen.getByText('Eliminar'))
     expect(onDelete).not.toHaveBeenCalled()
+  })
+
+  it('should navigate to edit page when Editar is clicked', () => {
+    renderCardSitio()
+    fireEvent.click(screen.getByText('Editar'))
+    expect(mockNavigate).toHaveBeenCalledWith('/sitio/1/editar')
+  })
+
+  it('should open site in new tab when Ver is clicked', () => {
+    const mockOpen = vi.fn()
+    vi.stubGlobal('open', mockOpen)
+    renderCardSitio()
+    fireEvent.click(screen.getByText('👁 Ver'))
+    expect(mockOpen).toHaveBeenCalledWith(expect.stringContaining('/mi-sitio'), '_blank')
+    vi.unstubAllGlobals()
   })
 })
