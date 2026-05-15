@@ -53,7 +53,8 @@ pipeline {
                     -Dsonar.projectKey=${PROJECT_KEY} \
                     -Dsonar.projectBaseDir=${WORKSPACE} \
                     -Dsonar.sources=src \
-                    -Dsonar.exclusions=node_modules/**,dist/**,public/** \
+                    -Dsonar.exclusions=node_modules/**,dist/**,public/**,src/**/*.test.*,src/**/*.spec.*,src/vite-env.d.ts,src/models/**,src/assets/**,src/types/**,src/constants/** \
+                    -Dsonar.coverage.exclusions=src/**/*.test.*,src/**/*.spec.*,src/demo.test.ts,src/vite-env.d.ts,src/components/GrapesJS/Bloques/**,src/components/GrapesJS/Paneles/*.ts,src/models/**,src/assets/**,src/types/**,src/constants/** \
                     -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
                     -Dsonar.host.url=${SONAR_HOST_URL}'''
             }

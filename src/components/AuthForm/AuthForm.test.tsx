@@ -18,11 +18,13 @@ describe('AuthForm', () => {
 
   it('should call onSubmit with values when submitted', async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined)
-    render(<AuthForm title="Login" fields={fields} submitText="Entrar" onSubmit={onSubmit} formClassName="login-form" />)
+    const { container } = render(<AuthForm title="Login" fields={fields} submitText="Entrar" onSubmit={onSubmit} formClassName="login-form" />)
+    const form = container.querySelector('form')
+    if (!form) throw new Error('Form not found')
 
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'a@b.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: '123' } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Entrar' }).closest('form')!)
+    fireEvent.submit(form)
 
     await waitFor(() => {
       expect(onSubmit).toHaveBeenCalledWith({ correo: 'a@b.com', contrasena: '123' })
@@ -31,16 +33,18 @@ describe('AuthForm', () => {
 
   it('should show error message when onSubmit fails', async () => {
     const onSubmit = vi.fn().mockRejectedValue(new Error('Credenciales incorrectas'))
-    render(<AuthForm title="Login" fields={fields} submitText="Entrar" onSubmit={onSubmit} formClassName="login-form" />)
+    const { container } = render(<AuthForm title="Login" fields={fields} submitText="Entrar" onSubmit={onSubmit} formClassName="login-form" />)
+    const form = container.querySelector('form')
+    if (!form) throw new Error('Form not found')
 
-    fireEvent.submit(screen.getByRole('button', { name: 'Entrar' }).closest('form')!)
+    fireEvent.submit(form)
 
     expect(await screen.findByText('Credenciales incorrectas')).toBeInTheDocument()
   })
 
   it('should show success message when successMessage prop is set', async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined)
-    render(
+    const { container } = render(
       <AuthForm
         title="Register"
         fields={fields}
@@ -50,8 +54,10 @@ describe('AuthForm', () => {
         successMessage="Registro exitoso"
       />
     )
+    const form = container.querySelector('form')
+    if (!form) throw new Error('Form not found')
 
-    fireEvent.submit(screen.getByRole('button', { name: 'Crear' }).closest('form')!)
+    fireEvent.submit(form)
 
     expect(await screen.findByText('Registro exitoso')).toBeInTheDocument()
   })

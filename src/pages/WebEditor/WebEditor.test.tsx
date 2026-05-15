@@ -43,6 +43,13 @@ function renderWebEditor(path = '/plantillas/1/editar') {
   )
 }
 
+async function waitForRender() {
+  renderWebEditor()
+  await waitFor(() => {
+    expect(screen.getByTitle('PC')).toBeInTheDocument()
+  })
+}
+
 describe('WebEditor', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
@@ -53,21 +60,16 @@ describe('WebEditor', () => {
   })
 
   it('should render editor with device buttons', async () => {
-    renderWebEditor()
+    await waitForRender()
 
-    await waitFor(() => {
-      expect(screen.getByTitle('PC')).toBeInTheDocument()
-    })
     expect(screen.getByTitle('Tablet')).toBeInTheDocument()
     expect(screen.getByTitle('Móvil')).toBeInTheDocument()
   })
 
   it('should render action buttons', async () => {
-    renderWebEditor()
+    await waitForRender()
 
-    await waitFor(() => {
-      expect(screen.getByTitle('Ver Bordes')).toBeInTheDocument()
-    })
+    expect(screen.getByTitle('Ver Bordes')).toBeInTheDocument()
     expect(screen.getByTitle('Deshacer')).toBeInTheDocument()
     expect(screen.getByTitle('Rehacer')).toBeInTheDocument()
     expect(screen.getByTitle('Guardar')).toBeInTheDocument()
@@ -75,10 +77,8 @@ describe('WebEditor', () => {
   })
 
   it('should render editor title', async () => {
-    renderWebEditor()
+    await waitForRender()
 
-    await waitFor(() => {
-      expect(screen.getAllByText(/Editor/).length).toBeGreaterThan(0)
-    })
+    expect(screen.getAllByText(/Editor/).length).toBeGreaterThan(0)
   })
 })
