@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import type { FormEventHandler } from 'react';
 
 interface UseFormOptions<T> {
