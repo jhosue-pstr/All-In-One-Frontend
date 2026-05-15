@@ -41,7 +41,7 @@ export function Configuraciones() {
     }
   };
 
-  const handleProfileSubmit = async (e: Event) => {
+  const handleProfileSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
     setMessage('');
@@ -60,7 +60,7 @@ export function Configuraciones() {
     }
   };
 
-  const handlePasswordSubmit = async (e: Event) => {
+  const handlePasswordSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (formData.nueva_contrasena !== formData.confirmar_contrasena) {

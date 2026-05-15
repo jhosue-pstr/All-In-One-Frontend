@@ -78,7 +78,7 @@ export function Sitios() {
     setFormData({ ...formData, id_plantilla: id });
   };
 
-  const handleSubmit = async (e: Event) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       /* v8 ignore next 3 */
