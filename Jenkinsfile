@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout true
+    }
+
     environment {
         SONAR_HOST_URL = 'http://sonarqube:9000'
         SONAR_TOKEN    = credentials('Sonar-qube')
@@ -9,6 +13,12 @@ pipeline {
     }
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} sh -c "rm -rf node_modules dist .tsbuildinfo 2>/dev/null; rm -rf ./* ./.??* 2>/dev/null" || true'
+            }
+        }
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -56,9 +66,7 @@ pipeline {
 
     post {
         always {
-            script {
-                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} sh -c "rm -rf node_modules dist .tsbuildinfo 2>/dev/null; find . -maxdepth 1 -not -name . -exec rm -rf {} + 2>/dev/null" || true'
-            }
+            sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} sh -c "rm -rf node_modules dist .tsbuildinfo 2>/dev/null; rm -rf ./* ./.??* 2>/dev/null" || true'
         }
     }
 }
