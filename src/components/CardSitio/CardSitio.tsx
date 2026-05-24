@@ -33,7 +33,7 @@ export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly<C
   const activeModulos = modulos?.filter(m => activeSet.has(m.id)) ?? [];
 
   return (
-    <div className="sitio-card">
+    <div className="sitio-card" data-testid={`sitio-card-${sitio.id}`}>
       {sitio.miniatura && (
         <div className="sitio-miniatura">
           <img src={sitio.miniatura} alt={sitio.nombre} />
@@ -60,10 +60,10 @@ export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly<C
         <button onClick={handleView} className="btn-view" title="Ver sitio">
           👁 Ver
         </button>
-        <button onClick={handleEdit} className="btn-edit">
+        <button onClick={handleEdit} className="btn-edit" data-testid={`btn-editar-sitio-${sitio.id}`}>
           Editar
         </button>
-        <button onClick={handleDelete} className="btn-delete">
+        <button onClick={handleDelete} className="btn-delete" data-testid={`btn-eliminar-sitio-${sitio.id}`}>
           Eliminar
         </button>
       </div>

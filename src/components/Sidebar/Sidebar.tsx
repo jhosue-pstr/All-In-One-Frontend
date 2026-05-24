@@ -53,6 +53,7 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
             key={item.path}
             to={item.path}
             className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+            data-testid={`nav-${item.label.toLowerCase()}`}
           >
             <item.icon className="nav-icon" />
             <span className="nav-label">{item.label}</span>
@@ -62,7 +63,7 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
 
       <hr className="sidebar-divider" />
 
-      <button className="logout-btn" onClick={handleLogout}>
+      <button className="logout-btn" onClick={handleLogout} data-testid="logout-btn">
         <HiOutlineLogout className="nav-icon" />
         <span className="nav-label">Salir</span>
       </button>

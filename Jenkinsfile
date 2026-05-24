@@ -65,6 +65,47 @@ pipeline {
                 sh 'docker build -t all-in-one-frontend:latest .'
             }
         }
+
+        stage('Run E2E Tests') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh 'docker compose -f docker-compose.yaml up -d db backend frontend'
+                sh '''
+                    timeout=60
+                    while [ $timeout -gt 0 ]; do
+                        if curl -s http://frontend:5173 > /dev/null 2>&1; then
+                            break
+                        fi
+                        sleep 2
+                        timeout=$((timeout - 2))
+                    done
+                '''
+                sh '''
+                    docker run --rm \
+                        --network app-network \
+                        -e BASE_URL=http://frontend:5173 \
+                        -e API_URL=http://backend:8000/api \
+                        -e TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+                        -e TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+                        -e CI=true \
+                        -v "$WORKSPACE:/app" \
+                        -w /app \
+                        mcr.microsoft.com/playwright:v1.52.0-jammy \
+                        sh -c "npm ci && npx playwright test"
+                '''
+                junit 'test-results/results.xml'
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'playwright-report',
+                    reportFiles: 'index.html',
+                    reportName: 'E2E Test Report'
+                ])
+            }
+        }
     }
 
     post {

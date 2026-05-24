@@ -27,7 +27,7 @@ export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit 
   };
 
   return (
-    <div className="plantilla-card">
+    <div className="plantilla-card" data-testid={`plantilla-card-${plantilla.id}`}>
       {plantilla.miniatura && (
         <div className="plantilla-miniatura">
           <img src={plantilla.miniatura} alt={plantilla.nombre} />
@@ -48,13 +48,13 @@ export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit 
       </div>
       {showActions && (
         <div className="plantilla-actions">
-          <button onClick={handleEdit} className="btn-edit">
+          <button onClick={handleEdit} className="btn-edit" data-testid={`btn-editar-plantilla-${plantilla.id}`}>
             Editar
           </button>
-          <button onClick={handleEditBasic} className="btn-secondary">
+          <button onClick={handleEditBasic} className="btn-secondary" data-testid={`btn-editar-basic-plantilla-${plantilla.id}`}>
             Editar basic
           </button>
-          <button onClick={handleDelete} className="btn-delete">
+          <button onClick={handleDelete} className="btn-delete" data-testid={`btn-eliminar-plantilla-${plantilla.id}`}>
             Eliminar
           </button>
         </div>

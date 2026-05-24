@@ -123,7 +123,7 @@ export function Sitios() {
     <div className="sitios-container">
       <header className="page-header">
         <h1>Sitios</h1>
-        <button className="btn-primary" onClick={openCreateModal}>
+        <button className="btn-primary" onClick={openCreateModal} data-testid="btn-nuevo-sitio">
           + Nuevo Sitio
         </button>
       </header>
@@ -131,7 +131,7 @@ export function Sitios() {
       {sitios.length === 0 ? (
         <div className="empty-state">
           <p>No hay sitios creados aún.</p>
-          <button className="btn-primary" onClick={openCreateModal}>
+          <button className="btn-primary" onClick={openCreateModal} data-testid="btn-primer-sitio">
             Crear mi primer sitio
           </button>
         </div>
@@ -174,6 +174,7 @@ export function Sitios() {
             aria-labelledby="modal-title"
             open
             style={{ position: 'relative', zIndex: 1 }}
+            data-testid="modal-sitio"
           >
             <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
@@ -256,7 +257,7 @@ export function Sitios() {
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn-primary" data-testid="btn-crear-sitio">
                   Crear Sitio
                 </button>
               </div>

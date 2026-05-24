@@ -89,7 +89,7 @@ export function Plantillas() {
     <div className="plantillas-container">
       <header className="page-header">
         <h1>Plantillas</h1>
-        <button className="btn-primary" onClick={openCreateModal}>
+        <button className="btn-primary" onClick={openCreateModal} data-testid="btn-nueva-plantilla">
           + Nueva Plantilla
         </button>
       </header>
@@ -115,7 +115,7 @@ export function Plantillas() {
         <div className="empty-state">
           <p>No hay plantillas {activeTab === 'mis-plantillas' ? 'creadas aún' : 'disponibles'}.</p>
           {activeTab === 'mis-plantillas' && (
-            <button className="btn-primary" onClick={openCreateModal}>
+            <button className="btn-primary" onClick={openCreateModal} data-testid="btn-primera-plantilla">
               Crear mi primera plantilla
             </button>
           )}
@@ -161,6 +161,7 @@ export function Plantillas() {
             aria-labelledby="modal-title"
             open
             style={{ position: 'relative', zIndex: 1 }}
+            data-testid="modal-plantilla"
           >
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
@@ -234,7 +235,7 @@ export function Plantillas() {
                 <button type="button" className="btn-cancel" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn-primary btn-lg">
+                <button type="submit" className="btn-primary btn-lg" data-testid="btn-crear-plantilla">
                   {editingPlantilla ? 'Actualizar' : 'Crear Plantilla'}
                 </button>
               </div>
