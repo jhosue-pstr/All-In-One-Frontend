@@ -4,5 +4,6 @@ export { moduloService } from './modulo';
 export { plantillaService } from './plantilla';
 export { blogService } from './blog';
 export { storeService } from './store';
+export { siteAuthService } from './siteAuth';
 export { fetchApi, API_URL } from './api';
 export { USER_IMAGE_KEY } from '../models';

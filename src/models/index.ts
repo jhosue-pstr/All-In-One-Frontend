@@ -4,3 +4,4 @@ export * from './modulo';
 export * from './plantilla';
 export * from './blog';
 export * from './store';
+export * from './siteAuth';
