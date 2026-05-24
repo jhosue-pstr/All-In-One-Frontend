@@ -61,7 +61,7 @@ function renderWebEditor(path = '/plantillas/1/editar') {
 async function waitForRender(path?: string) {
   const result = renderWebEditor(path)
   await waitFor(() => {
-    expect(screen.getByTitle('PC')).toBeInTheDocument()
+    expect(screen.getByTitle('Desktop')).toBeInTheDocument()
   })
   return result
 }
@@ -91,8 +91,9 @@ describe('WebEditor', () => {
   it('should render editor with device buttons', async () => {
     await waitForRender()
 
+    expect(screen.getByTitle('Desktop')).toBeInTheDocument()
     expect(screen.getByTitle('Tablet')).toBeInTheDocument()
-    expect(screen.getByTitle('Móvil')).toBeInTheDocument()
+    expect(screen.getByTitle('Mobile')).toBeInTheDocument()
   })
 
   it('should render action buttons', async () => {
@@ -129,24 +130,24 @@ describe('WebEditor', () => {
 
     renderWebEditor()
     await waitFor(() => {
-      expect(screen.getByTitle('PC')).toBeInTheDocument()
+      expect(screen.getByTitle('Desktop')).toBeInTheDocument()
     })
 
     expect(consoleSpy).toHaveBeenCalledWith('Error al cargar:', expect.any(Error))
     consoleSpy.mockRestore()
   })
 
-  it('should switch device when clicking PC, Tablet, and Móvil buttons', async () => {
+  it('should switch device when clicking Desktop, Tablet, and Mobile buttons', async () => {
     await waitForRender()
     const editor = initGrapesJS.mock.results[0].value
 
-    fireEvent.click(screen.getByTitle('PC'))
+    fireEvent.click(screen.getByTitle('Desktop'))
     expect(editor.setDevice).toHaveBeenCalledWith('Desktop')
 
     fireEvent.click(screen.getByTitle('Tablet'))
     expect(editor.setDevice).toHaveBeenCalledWith('Tablet')
 
-    fireEvent.click(screen.getByTitle('Móvil'))
+    fireEvent.click(screen.getByTitle('Mobile'))
     expect(editor.setDevice).toHaveBeenCalledWith('Mobile')
   })
 
