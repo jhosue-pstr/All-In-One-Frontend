@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { plantillaService } from '../../services';
 import { CardPlantilla } from '../../components/CardPlantilla/CardPlantilla';
+import { ModalDialog } from '../../components/ModalDialog/ModalDialog';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 import type { Plantilla, PlantillaCreate, PlantillaUpdate, Visibilidad } from '../../models';
 import './Plantillas.css';
@@ -136,33 +137,7 @@ export function Plantillas() {
         </div>
       )}
 
-      {showModal && (
-        <div className="modal-overlay">
-          
-          {/* 1. Usamos un <button> nativo en lugar de un div con role="button" */}
-          <button 
-            type="button"
-            aria-label="Cerrar modal"
-            onClick={() => setShowModal(false)}
-            style={{ 
-              position: 'absolute', 
-              top: 0, left: 0, right: 0, bottom: 0, 
-              width: '100%', height: '100%',
-              background: 'transparent', 
-              border: 'none', 
-              padding: 0,
-              cursor: 'default' 
-            }}
-          />
-          
-          {/* 2. Usamos <dialog> nativo en lugar de div con role="dialog" */}
-          <dialog 
-            className="modal modal-lg" 
-            aria-labelledby="modal-title"
-            open
-            style={{ position: 'relative', zIndex: 1 }}
-            data-testid="modal-plantilla"
-          >
+      <ModalDialog isOpen={showModal} onClose={() => setShowModal(false)} testId="modal-plantilla">
             <div className="modal-header">
               <h2 id="modal-title">{editingPlantilla ? 'Editar Plantilla' : 'Nueva Plantilla'}</h2>
               <button type="button" className="modal-close" onClick={() => setShowModal(false)}>×</button>
@@ -240,9 +215,7 @@ export function Plantillas() {
                 </button>
               </div>
             </form>
-          </dialog>
-        </div>
-      )}
+          </ModalDialog>
     </div>
   );
 }

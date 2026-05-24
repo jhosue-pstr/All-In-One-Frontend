@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { sitioService, plantillaService, moduloService } from '../../services';
 import { sitioModuloService } from '../../services/sitioModulo';
 import { CardSitio } from '../../components/CardSitio/CardSitio';
+import { ModalDialog } from '../../components/ModalDialog/ModalDialog';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 import type { Sitio, SitioCreate, SitioUpdate, Plantilla, Modulo } from '../../models';
 import './Sitios.css';
@@ -149,33 +150,7 @@ export function Sitios() {
         </div>
       )}
 
-      {showModal && !editingSitio && (
-        <div className="modal-overlay">
-          
-          {/* 1. Usamos un <button> nativo para el fondo interactivo */}
-          <button 
-            type="button"
-            aria-label="Cerrar modal"
-            onClick={() => setShowModal(false)}
-            style={{ 
-              position: 'absolute', 
-              top: 0, left: 0, right: 0, bottom: 0, 
-              width: '100%', height: '100%',
-              background: 'transparent', 
-              border: 'none', 
-              padding: 0,
-              cursor: 'default' 
-            }}
-          />
-
-          {/* 2. Usamos <dialog> nativo con el atributo open */}
-          <dialog 
-            className="modal modal-lg" 
-            aria-labelledby="modal-title"
-            open
-            style={{ position: 'relative', zIndex: 1 }}
-            data-testid="modal-sitio"
-          >
+      <ModalDialog isOpen={showModal && !editingSitio} onClose={() => setShowModal(false)} testId="modal-sitio">
             <h2 id="modal-title">Nuevo Sitio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -262,9 +237,7 @@ export function Sitios() {
                 </button>
               </div>
             </form>
-          </dialog>
-        </div>
-      )}
+          </ModalDialog>
     </div>
   );
 }
