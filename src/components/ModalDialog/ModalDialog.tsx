@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
 
 interface ModalDialogProps {
-  isOpen: boolean
-  onClose: () => void
-  testId?: string
-  children: ReactNode
+  readonly isOpen: boolean
+  readonly onClose: () => void
+  readonly testId?: string
+  readonly children: ReactNode
 }
 
 export function ModalDialog({ isOpen, onClose, testId, children }: ModalDialogProps) {
