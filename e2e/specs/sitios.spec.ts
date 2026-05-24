@@ -41,9 +41,7 @@ test.describe('Sitios', () => {
     await expect(page).toHaveURL(/\/sitio\/\d+\/editar/);
   });
 
-  test('should show sitio card after creation', async ({ page }) => {
-    await page.goto('/sitios');
-    const cards = await sitiosPage.sitioCards.count();
-    expect(cards).toBeGreaterThan(0);
+  test('should show sitio card after creation', async () => {
+    await expect(sitiosPage.sitioCards.first()).toBeVisible();
   });
 });

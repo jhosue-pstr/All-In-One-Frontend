@@ -9,8 +9,9 @@ test.describe('WebEditor (GrapesJS)', () => {
   });
 
   test('should return 404 or redirect when accessing without valid id', async ({ page }) => {
-    const response = await page.goto('/plantillas/99999/editar', { waitUntil: 'networkidle' });
-    expect(response?.status() === 404 || page.url().includes('/inicio')).toBeTruthy();
+    await page.goto('/plantillas/99999/editar', { waitUntil: 'networkidle' });
+    await page.waitForURL(/\/inicio/, { timeout: 15000 });
+    expect(page.url()).toContain('/inicio');
   });
 
   test('should display editor container when valid plantilla accessed', async () => {
@@ -35,13 +36,13 @@ test.describe('WebEditor (GrapesJS)', () => {
     await editorPage.gotoPlantilla(1);
 
     await editorPage.selectDevice('Tablet');
-    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toContainText('Tablet');
+    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toHaveAttribute('title', 'Tablet');
 
     await editorPage.selectDevice('Mobile');
-    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toContainText('Móvil');
+    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toHaveAttribute('title', 'Mobile');
 
     await editorPage.selectDevice('Desktop');
-    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toContainText('PC');
+    await expect(editorPage.page.locator('.panel__devices .gjs-pn-active')).toHaveAttribute('title', 'Desktop');
   });
 
   test('should switch right panel tabs', async () => {

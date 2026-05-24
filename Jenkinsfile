@@ -10,6 +10,8 @@ pipeline {
         SONAR_TOKEN    = credentials('Sonar-qube')
         PROJECT_KEY    = 'All-In-One-Frontend'
         NODE_IMAGE     = 'node:20-alpine'
+        TEST_USER_EMAIL    = 'test@test.com'
+        TEST_USER_PASSWORD = 'test123'
     }
 
     stages {
@@ -71,16 +73,26 @@ pipeline {
                 branch 'develop'
             }
             steps {
-                sh 'docker compose -f docker-compose.yaml up -d db backend frontend'
+                sh 'docker compose -f docker-compose.yml up -d db backend frontend'
                 sh '''
+                    echo "Waiting for frontend to be ready..."
                     timeout=60
                     while [ $timeout -gt 0 ]; do
                         if curl -s http://frontend:5173 > /dev/null 2>&1; then
+                            echo "Frontend is ready!"
                             break
                         fi
                         sleep 2
                         timeout=$((timeout - 2))
                     done
+                '''
+                sh '''
+                    echo "Creating test user if not exists..."
+                    curl -X POST http://backend:8000/api/auth/registro \
+                        -H "Content-Type: application/json" \
+                        -d '{"correo":"test@test.com","contrasena":"test123","nombre":"Test","apellido":"User"}' \
+                        -w "\\nHTTP Status: %{http_code}\\n" \
+                        --connect-timeout 5 || true
                 '''
                 sh '''
                     docker run --rm \

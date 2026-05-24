@@ -5,6 +5,8 @@ test.describe('Login', () => {
   let loginPage: LoginPage;
 
   test.beforeEach(async ({ page }) => {
+    await page.context().clearCookies();
+    await page.evaluate(() => localStorage.clear());
     loginPage = new LoginPage(page);
     await loginPage.goto();
   });

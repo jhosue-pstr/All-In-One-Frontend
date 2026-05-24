@@ -63,11 +63,16 @@ export function WebEditor() {
   };
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      navigate('/inicio');
+      return;
+    }
 
     (globalThis as { siteId?: string }).siteId = id;
 
-    const loadData = async () => {
+    let cancelled = false;
+
+    const loadData = async (): Promise<{ html?: string; css?: string } | null | undefined> => {
       try {
         if (isTemplate) {
           const plantilla = await plantillaService.getById(Number.parseInt(id));
@@ -84,12 +89,15 @@ export function WebEditor() {
         }
       } catch (error) {
         console.error("Error al cargar:", error);
-        return null;
+        navigate('/inicio');
+        cancelled = true;
+        return undefined;
       }
     };
 
     const initEditor = async () => {
       const projectData = await loadData();
+      if (cancelled) return;
 
       if (!grapesEditorRef.current) {
         grapesEditorRef.current = initGrapesJS({
@@ -108,7 +116,7 @@ export function WebEditor() {
         grapesEditorRef.current = null;
       }
     };
-  }, [id, isTemplate]);
+  }, [id, isTemplate, navigate]);
 
   useEffect(() => {
     if (!grapesEditorRef.current) return;
@@ -168,7 +176,7 @@ export function WebEditor() {
               setCurrentDevice("Desktop");
               grapesEditorRef.current?.setDevice("Desktop");
             }}
-            title="PC"
+            title="Desktop"
           >
             <i className="fa fa-desktop"></i>
           </button>
@@ -188,7 +196,7 @@ export function WebEditor() {
               setCurrentDevice("Mobile");
               grapesEditorRef.current?.setDevice("Mobile");
             }}
-            title="Móvil"
+            title="Mobile"
           >
             <i className="fa fa-mobile"></i>
           </button>
