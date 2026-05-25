@@ -3,6 +3,16 @@ import * as Multimedia from "./Multimedia";
 import * as Seccion from "./Seccion";
 import * as Layout from "./Layout";
 import * as SiteAuth from "./SiteAuth";
+import * as Blog from "./Blog";
+
+export const BloqueBlogHeroDinamico = Blog.BloqueBlogHero;
+export const BloqueBlogGridDinamico = Blog.BloqueBlogGrid;
+export const BloqueBlogListaDinamica = Blog.BloqueBlogLista;
+export const BloqueBlogDestacado = Blog.BloqueBlogDestacado;
+export const BloqueBlogDetalle = Blog.BloqueBlogDetalle;
+export const BloqueBlogCategorias = Blog.BloqueBlogCategorias;
+export const BloqueBlogBuscador = Blog.BloqueBlogBuscador;
+export const BloqueBlogRecientes = Blog.BloqueBlogRecientes;
 
 export const BloqueTitulo = Basico.BloqueTitulo;
 export const BloqueTexto = Basico.BloqueTexto;
@@ -127,4 +137,13 @@ export const blocks = [
   BloqueLoginSocial,
   BloquePerfilSimple,
   BloquePerfilDetallado,
+
+  BloqueBlogHeroDinamico,
+  BloqueBlogGridDinamico,
+  BloqueBlogListaDinamica,
+  BloqueBlogDestacado,
+  BloqueBlogDetalle,
+  BloqueBlogCategorias,
+  BloqueBlogBuscador,
+  BloqueBlogRecientes,
 ];

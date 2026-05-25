@@ -14,6 +14,8 @@ const menuItems = [
   { path: '/plantillas', label: 'Plantillas', icon: HiOutlineTemplate },
   { path: '/modulos', label: 'Módulos', icon: HiOutlineCube },
   { path: '/configuraciones', label: 'Configuraciones', icon: HiOutlineCog },
+  { path: '/blog', label: 'Blog', icon: HiOutlineCog },
+
 ];
 
 export function Sidebar({ user }: Readonly<SidebarProps>) {

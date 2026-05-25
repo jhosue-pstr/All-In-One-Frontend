@@ -12,6 +12,7 @@ import { WebEditor } from './pages/WebEditor/WebEditor';
 import { authService } from './services';
 import type { User } from './models';
 import './App.css';
+import Blog from "./pages/Blog/Blog";
 
 function App() {
   const token = localStorage.getItem('token');
@@ -50,6 +51,7 @@ function App() {
           <Route path="/plantillas" element={<Plantillas />} />
           <Route path="/modulos" element={<Modulos />} />
           <Route path="/configuraciones" element={<Configuraciones />} />
+          <Route path="/blog" element={<Blog />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

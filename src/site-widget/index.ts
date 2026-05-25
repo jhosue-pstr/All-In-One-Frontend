@@ -1,5 +1,6 @@
 import { handleLogin, handleRegister, handleLogout } from './auth';
 import { loadProfile } from './perfil';
+import { initBlogBlocks } from "./blog";
 
 (
   () => {
@@ -39,6 +40,9 @@ import { loadProfile } from './perfil';
           // localStorage no disponible
         }
       });
+
+      // Inicializar bloques dinámicos del Blog
+      initBlogBlocks();
     }
 
     if (document.readyState === 'loading') {
