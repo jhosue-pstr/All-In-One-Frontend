@@ -1,27 +1,34 @@
-import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { Login } from './components/Login/Login';
-import { Register } from './components/Register/Register';
-import { Sidebar } from './components/Sidebar/Sidebar';
-import { Inicio } from './pages/Inicio/Inicio';
-import { Sitios } from './pages/Sitios/Sitios';
-import { Plantillas } from './pages/Plantillas/Plantillas';
-import { Modulos } from './pages/Modulos/Modulos';
-import { Configuraciones } from './pages/Configuraciones/Configuraciones';
-import { WebEditor } from './pages/WebEditor/WebEditor';
-import { authService } from './services';
-import type { User } from './models';
-import './App.css';
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { Login } from "./components/Login/Login";
+import { Register } from "./components/Register/Register";
+import { Sidebar } from "./components/Sidebar/Sidebar";
+import { Inicio } from "./pages/Inicio/Inicio";
+import { Sitios } from "./pages/Sitios/Sitios";
+import { Plantillas } from "./pages/Plantillas/Plantillas";
+import { Modulos } from "./pages/Modulos/Modulos";
+import { Configuraciones } from "./pages/Configuraciones/Configuraciones";
+import { WebEditor } from "./pages/WebEditor/WebEditor";
+import { authService } from "./services";
+import type { User } from "./models";
+import "./App.css";
 import Blog from "./pages/Blog/Blog";
 
 function App() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     if (token) {
-      authService.me()
+      authService
+        .me()
         .then(() => setIsAuthenticated(true))
         .catch(() => {
           authService.logout();
@@ -40,9 +47,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={
-          isAuthenticated ? <Navigate to="/inicio" replace /> : <AuthLayout />
-        } />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? <Navigate to="/inicio" replace /> : <AuthLayout />
+          }
+        />
         <Route path="/plantillas/:id/editar" element={<WebEditor />} />
         <Route path="/sitio/:id/editar" element={<WebEditor />} />
         <Route element={<AuthenticatedLayout />}>
@@ -64,11 +74,12 @@ function AuthenticatedLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    authService.me()
+    authService
+      .me()
       .then(setUser)
       .catch(() => {
         authService.logout();
-        globalThis.location.href = '/';
+        globalThis.location.href = "/";
       })
       .finally(() => setLoading(false));
   }, []);
@@ -91,7 +102,7 @@ function AuthLayout() {
   const [showRegister, setShowRegister] = useState(false);
 
   const handleAuthSuccess = () => {
-    globalThis.location.href = '/inicio';
+    globalThis.location.href = "/inicio";
   };
 
   return (
@@ -99,19 +110,19 @@ function AuthLayout() {
       <div className="auth-forms">
         <div className="forms-wrapper">
           {showRegister ? (
-            <Register 
-              onSwitchToLogin={() => setShowRegister(false)} 
+            <Register
+              onSwitchToLogin={() => setShowRegister(false)}
               onSuccess={() => setShowRegister(false)}
             />
           ) : (
             <Login onSuccess={handleAuthSuccess} />
           )}
-          
+
           {!showRegister && (
             <p className="switch-text">
-              ¿No tienes cuenta?{' '}
-              <button 
-                className="switch-btn" 
+              ¿No tienes cuenta?{" "}
+              <button
+                className="switch-btn"
                 onClick={() => setShowRegister(true)}
               >
                 Regístrate
@@ -120,7 +131,7 @@ function AuthLayout() {
           )}
         </div>
       </div>
-      
+
       <div className="auth-brand">
         <div className="brand-content">
           <h1>All in One</h1>
@@ -130,5 +141,7 @@ function AuthLayout() {
     </div>
   );
 }
+
+// holaaaaaaaa manooooooooo
 
 export default App;
