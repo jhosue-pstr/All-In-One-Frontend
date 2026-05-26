@@ -142,6 +142,4 @@ function AuthLayout() {
   );
 }
 
-// holaaaaaaaa manooooooooo
-
 export default App;
