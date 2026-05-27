@@ -30,6 +30,7 @@ export function WebEditor() {
       layers: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
       styles: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
       pages: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+      traits: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
     };
 
     const panelSelectors: Record<string, string> = {
@@ -37,6 +38,7 @@ export function WebEditor() {
       layers: ".layers-container",
       styles: ".styles-container",
       pages: ".pages-container",
+      traits: ".traits-container",
     };
 
     const cmdMap: Record<string, string> = {
@@ -44,6 +46,7 @@ export function WebEditor() {
       layers: "show-layers",
       styles: "show-styles",
       pages: "show-pages",
+      traits: "show-traits",
     };
 
     if (panel === "blocks") {
@@ -268,9 +271,28 @@ export function WebEditor() {
                   console.warn("No se pudo cargar site-auth.js", e);
                 }
 
+                // Collect all pages
+                const allPages = editor.Pages.getAll();
+                const currentPageId = editor.Pages.getSelected()?.id;
+                const pagesData: { id: string; name: string; html: string; css: string }[] = [];
+                for (const page of allPages) {
+                  editor.Pages.select(page.id);
+                  pagesData.push({
+                    id: page.id,
+                    name: page.get("name") || "Sin nombre",
+                    html: (editor.getHtml() || "").replaceAll("{{SITIO_ID}}", id),
+                    css: editor.getCss() || "",
+                  });
+                }
+                // Restore first page
+                if (currentPageId) editor.Pages.select(currentPageId);
+
+                const defaultPage = pagesData[0] || { html: "", css: "" };
+
                 const configuracion = {
-                  html: (editor.getHtml() || "").replaceAll("{{SITIO_ID}}", id),
-                  css: editor.getCss() || "",
+                  pages: pagesData,
+                  html: defaultPage.html,
+                  css: defaultPage.css,
                   js: jsContent,
                 };
                 
@@ -367,6 +389,9 @@ export function WebEditor() {
             <button className="tab-btn" data-panel="pages">
               <i className="fa fa-file-alt"></i>
             </button>
+            <button className="tab-btn" data-panel="traits">
+              <i className="fa fa-link"></i>
+            </button>
           </div>
 
           {/* Contenido del Panel */}
@@ -409,6 +434,10 @@ export function WebEditor() {
               + Nueva Página
             </button>
           </div>
+          <div
+            className="panel-content traits-container"
+            style={{ display: "none" }}
+          />
         </div>
       </div>
       {toast.show && (

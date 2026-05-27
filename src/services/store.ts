@@ -19,7 +19,7 @@ import type {
 } from '../models/store';
 import { fetchApi } from './api';
 
-const base = (sitioId: number) => `/api/v1/sitios/${sitioId}/tienda`;
+const base = (sitioId: number) => `/v1/sitios/${sitioId}/tienda`;
 
 export const storeService = {
   // ============ PRODUCTOS ============

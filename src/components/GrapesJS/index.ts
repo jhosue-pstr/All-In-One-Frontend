@@ -3,10 +3,12 @@ import { dispositivosDefaults } from "./Paneles/PanelDispositivos";
 import { blocks } from "./Bloques";
 import "./assets/editor.css";
 
+export type PageData = { id: string; name: string; html: string; css: string };
+
 export interface GrapesJSInitOptions {
   siteId: string;
   isTemplate?: boolean;
-  projectData?: { html?: string; css?: string } | null;
+  projectData?: { html?: string; css?: string; pages?: PageData[] } | null;
   onSave?: (data: any) => Promise<void>;
   onLoad?: (siteId: string) => Promise<any>;
 }
@@ -61,53 +63,63 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   faLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(faLink);
 
-  if (options.projectData?.html) editor.setComponents(options.projectData.html);
-  if (options.projectData?.css) editor.setStyle(options.projectData.css);
+  // Load pages: restore all saved pages, not just the first one
+  const savedPages = options.projectData?.pages;
+  if (savedPages && savedPages.length > 1) {
+    // Set first page
+    editor.setComponents(savedPages[0].html);
+    editor.setStyle(savedPages[0].css || "");
+    // Add remaining pages
+    for (let i = 1; i < savedPages.length; i++) {
+      editor.Pages.add({ name: savedPages[i].name, component: savedPages[i].html });
+    }
+  } else {
+    if (options.projectData?.html) editor.setComponents(options.projectData.html);
+    if (options.projectData?.css) editor.setStyle(options.projectData.css);
+  }
 
-  const createDeleteModalContent = (pageName: string) => `
-    <div style="padding:20px;text-align:center;">
+  const createDeleteModal = (pageId: string, pageName: string, container: HTMLElement) => {
+    const div = document.createElement("div");
+    div.style.cssText = "padding:20px;text-align:center;";
+    div.innerHTML = `
       <p style="margin-bottom:20px;font-size:16px;">¿Eliminar la página "<b>${pageName}</b>"?</p>
       <div style="display:flex;gap:10px;justify-content:center;">
-        <button id="cancel-del-btn" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-        <button id="confirm-del-btn" style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
-      </div>
-    </div>
-  `;
-
-  const createNewPageModalContent = () => `
-    <div style="padding:20px;">
-      <input type="text" id="new-page-name" placeholder="Nombre de la página" 
-        style="width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
-      <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button id="cancel-new-page" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-        <button id="save-new-page" style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
-      </div>
-    </div>
-  `;
-
-  const attachDeleteModalHandlers = (pageId: string, container: HTMLElement) => {
-    const content = editor.Modal.getContent() as HTMLElement | null;
-    content?.querySelector("#confirm-del-btn")?.addEventListener("click", () => {
+        <button style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
+      </div>`;
+    const [cancelBtn, confirmBtn] = [...div.querySelectorAll("button")];
+    cancelBtn.onclick = () => editor.Modal.close();
+    confirmBtn.onclick = () => {
       editor.Pages.remove(pageId);
       renderPagesList(container);
       editor.Modal.close();
-    });
-    content?.querySelector("#cancel-del-btn")?.addEventListener("click", () => editor.Modal.close());
+    };
+    return div;
   };
 
-  const attachNewPageModalHandlers = () => {
-    const content = editor.Modal.getContent() as HTMLElement | null;
-    const input = content?.querySelector<HTMLInputElement>("#new-page-name");
-    input?.focus();
-    content?.querySelector("#save-new-page")?.addEventListener("click", () => {
-      const name = input?.value.trim();
+  const createNewPageModal = () => {
+    const div = document.createElement("div");
+    div.style.cssText = "padding:20px;";
+    div.innerHTML = `
+      <input type="text" id="new-page-name" placeholder="Nombre de la página" 
+        style="width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
+      </div>`;
+    const input = div.querySelector<HTMLInputElement>("#new-page-name")!;
+    const [cancelBtn, createBtn] = [...div.querySelectorAll("button")];
+    input.focus();
+    cancelBtn.onclick = () => editor.Modal.close();
+    createBtn.onclick = () => {
+      const name = input.value.trim();
       if (name) {
         editor.Pages.add({ name, component: `<div></div>` });
         renderPagesList(document.getElementById(pagesListId));
       }
       editor.Modal.close();
-    });
-    content?.querySelector("#cancel-new-page")?.addEventListener("click", () => editor.Modal.close());
+    };
+    return div;
   };
 
   const addDeleteButton = (el: HTMLElement, page: any, container: HTMLElement) => {
@@ -117,8 +129,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     delBtn.onclick = (e) => {
       e.stopPropagation();
       const pageName = page.get("name") || page.id;
-      editor.Modal.setTitle("Eliminar Página").setContent(createDeleteModalContent(pageName)).open();
-      setTimeout(() => attachDeleteModalHandlers(page.id, container), 50);
+      editor.Modal.setTitle("Eliminar Página").setContent(createDeleteModal(page.id, pageName, container)).open();
     };
     el.appendChild(delBtn);
   };
@@ -158,8 +169,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     const b = document.getElementById(btnAddPageId);
     if (b) {
       b.onclick = () => {
-        editor.Modal.setTitle("Nueva Página").setContent(createNewPageModalContent()).open();
-        setTimeout(attachNewPageModalHandlers, 50);
+        editor.Modal.setTitle("Nueva Página").setContent(createNewPageModal()).open();
       };
     }
   };
@@ -266,9 +276,101 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     },
   });
 
-  editor.on("component:selected", (c) => {
-    c.set("resizable", true);
-    c.set("hoverable", true);
+  // Register custom trait type: dropdown of internal pages for href
+  editor.Traits.addType("page-href", {
+
+    createInput({ trait }: { trait: any }) {
+      const el = document.createElement("select");
+      el.style.width = "100%";
+
+      const renderOptions = () => {
+        const current = el.value || trait.getValue();
+        el.innerHTML = "";
+        const addOpt = (value: string, label: string) => {
+          const opt = document.createElement("option");
+          opt.value = value;
+          opt.textContent = label;
+          el.appendChild(opt);
+        };
+        addOpt("", "-- URL externa --");
+        editor.Pages.getAll().forEach((p: any) => {
+          const name = p.get("name") || p.id;
+          const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+          addOpt(`?page=${slug}`, `📄 ${name}`);
+        });
+        if (current && [...el.options].some((o) => o.value === current)) {
+          el.value = current;
+        }
+      };
+
+      renderOptions();
+      editor.on("page", renderOptions);
+
+      el.addEventListener("change", () => {
+        const val = el.value;
+        trait.setValue(val);
+        const component = (trait as any).getTarget();
+        if (component) component.set("href", val || "#");
+      });
+
+      return el;
+    },
+
+
+  });
+
+  // Override default link component type to use page-href trait
+  editor.DomComponents.addType("link", {
+    extend: "link",
+    model: {
+      defaults: {
+        traits: [
+          { type: "page-href", name: "href", label: "Vincular a página" },
+          { type: "select", name: "target", label: "Target", options: [
+            { id: "", value: "", name: "Misma ventana" },
+            { id: "_blank", value: "_blank", name: "Nueva ventana (_blank)" },
+          ]},
+        ],
+      },
+    },
+  });
+
+  editor.on("component:selected", (component: any) => {
+    component.set("resizable", true);
+    component.set("hoverable", true);
+
+    const tagName = (component.get("tagName") || "").toLowerCase();
+    if (tagName !== "a") return;
+
+    const existingTraits: any[] = component.get("traits") || [];
+    const hasPageHref = existingTraits.some((t: any) => t.type === "page-href");
+    const hasTarget = existingTraits.some((t: any) => t.name === "target");
+
+    if (hasPageHref && hasTarget) return;
+
+    const newTraits: any[] = [];
+    const seen = new Set<string>();
+    for (const t of existingTraits) {
+      const key = t.type || t.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        newTraits.push(t);
+      }
+    }
+    if (!hasPageHref) {
+      newTraits.push({ type: "page-href", name: "href", label: "Vincular a página" });
+    }
+    if (!hasTarget) {
+      newTraits.push({ type: "select", name: "target", label: "Target", options: [
+        { id: "", value: "", name: "Misma ventana" },
+        { id: "_blank", value: "_blank", name: "Nueva ventana (_blank)" },
+      ]});
+    }
+    component.set("traits", newTraits);
+  });
+
+  editor.on("page", () => {
+    renderPagesList(document.getElementById(pagesListId));
   });
 
   if (options.onLoad) {
