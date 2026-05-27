@@ -268,9 +268,28 @@ export function WebEditor() {
                   console.warn("No se pudo cargar site-auth.js", e);
                 }
 
+                // Collect all pages
+                const allPages = editor.Pages.getAll();
+                const currentPageId = editor.Pages.getSelected()?.id;
+                const pagesData: { id: string; name: string; html: string; css: string }[] = [];
+                for (const page of allPages) {
+                  editor.Pages.select(page.id);
+                  pagesData.push({
+                    id: page.id,
+                    name: page.get("name") || "Sin nombre",
+                    html: (editor.getHtml() || "").replaceAll("{{SITIO_ID}}", id),
+                    css: editor.getCss() || "",
+                  });
+                }
+                // Restore first page
+                if (currentPageId) editor.Pages.select(currentPageId);
+
+                const defaultPage = pagesData[0] || { html: "", css: "" };
+
                 const configuracion = {
-                  html: (editor.getHtml() || "").replaceAll("{{SITIO_ID}}", id),
-                  css: editor.getCss() || "",
+                  pages: pagesData,
+                  html: defaultPage.html,
+                  css: defaultPage.css,
                   js: jsContent,
                 };
                 

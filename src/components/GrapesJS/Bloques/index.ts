@@ -4,6 +4,7 @@ import * as Seccion from "./Seccion";
 import * as Layout from "./Layout";
 import * as SiteAuth from "./SiteAuth";
 import * as Blog from "./Blog";
+import * as Tienda from "./Tienda";
 
 export const BloqueBlogHeroDinamico = Blog.BloqueBlogHero;
 export const BloqueBlogGridDinamico = Blog.BloqueBlogGrid;
@@ -13,6 +14,14 @@ export const BloqueBlogDetalle = Blog.BloqueBlogDetalle;
 export const BloqueBlogCategorias = Blog.BloqueBlogCategorias;
 export const BloqueBlogBuscador = Blog.BloqueBlogBuscador;
 export const BloqueBlogRecientes = Blog.BloqueBlogRecientes;
+
+export const BloqueProductosGrid = Tienda.BloqueProductosGrid;
+export const BloqueProductoLista = Tienda.BloqueProductoLista;
+export const BloqueProductoDestacado = Tienda.BloqueProductoDestacado;
+export const BloqueProductoDetalle = Tienda.BloqueProductoDetalle;
+export const BloqueCategorias = Tienda.BloqueCategorias;
+export const BloqueCarrito = Tienda.BloqueCarrito;
+export const BloqueCheckout = Tienda.BloqueCheckout;
 
 export const BloqueTitulo = Basico.BloqueTitulo;
 export const BloqueTexto = Basico.BloqueTexto;
@@ -146,4 +155,12 @@ export const blocks = [
   BloqueBlogCategorias,
   BloqueBlogBuscador,
   BloqueBlogRecientes,
+
+  BloqueProductosGrid,
+  BloqueProductoLista,
+  BloqueProductoDestacado,
+  BloqueProductoDetalle,
+  BloqueCategorias,
+  BloqueCarrito,
+  BloqueCheckout,
 ];

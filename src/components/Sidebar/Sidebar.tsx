@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineGlobe, HiOutlineTemplate, HiOutlineCube, HiOutlineCog, HiOutlineLogout } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineGlobe, HiOutlineTemplate, HiOutlineCube, HiOutlineCog, HiOutlineShoppingCart, HiOutlineLogout } from 'react-icons/hi';
 import { USER_IMAGE_KEY } from '../../models';
 import type { User } from '../../models';
 import './Sidebar.css';
@@ -15,6 +15,7 @@ const menuItems = [
   { path: '/modulos', label: 'Módulos', icon: HiOutlineCube },
   { path: '/configuraciones', label: 'Configuraciones', icon: HiOutlineCog },
   { path: '/blog', label: 'Blog', icon: HiOutlineCog },
+  { path: '/tienda', label: 'Tienda', icon: HiOutlineShoppingCart },
 
 ];
 
