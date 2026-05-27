@@ -30,6 +30,7 @@ export function WebEditor() {
       layers: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
       styles: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
       pages: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
+      traits: "display: block; flex: 1; overflow-y: auto; padding: 10px;",
     };
 
     const panelSelectors: Record<string, string> = {
@@ -37,6 +38,7 @@ export function WebEditor() {
       layers: ".layers-container",
       styles: ".styles-container",
       pages: ".pages-container",
+      traits: ".traits-container",
     };
 
     const cmdMap: Record<string, string> = {
@@ -44,6 +46,7 @@ export function WebEditor() {
       layers: "show-layers",
       styles: "show-styles",
       pages: "show-pages",
+      traits: "show-traits",
     };
 
     if (panel === "blocks") {
@@ -386,6 +389,9 @@ export function WebEditor() {
             <button className="tab-btn" data-panel="pages">
               <i className="fa fa-file-alt"></i>
             </button>
+            <button className="tab-btn" data-panel="traits">
+              <i className="fa fa-link"></i>
+            </button>
           </div>
 
           {/* Contenido del Panel */}
@@ -428,6 +434,10 @@ export function WebEditor() {
               + Nueva Página
             </button>
           </div>
+          <div
+            className="panel-content traits-container"
+            style={{ display: "none" }}
+          />
         </div>
       </div>
       {toast.show && (

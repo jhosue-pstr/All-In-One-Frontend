@@ -278,7 +278,6 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
 
   // Register custom trait type: dropdown of internal pages for href
   editor.Traits.addType("page-href", {
-    events: { change: "onEvent" },
 
     createInput({ trait }: { trait: any }) {
       const el = document.createElement("select");
@@ -306,16 +305,18 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
 
       renderOptions();
       editor.on("page", renderOptions);
+
+      el.addEventListener("change", () => {
+        const val = el.value;
+        trait.setValue(val);
+        const component = (trait as any).getTarget();
+        if (component) component.set("href", val || "#");
+      });
+
       return el;
     },
 
-    onUpdate({ component, trait }: { component: any; trait: any }) {
-      component.set("href", trait.getValue() || "#");
-    },
 
-    onEvent({ component, elInput }: { component: any; elInput: HTMLInputElement }) {
-      component.set("href", elInput.value || "#");
-    },
   });
 
   // Override default link component type to use page-href trait
@@ -334,9 +335,38 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     },
   });
 
-  editor.on("component:selected", (c) => {
-    c.set("resizable", true);
-    c.set("hoverable", true);
+  editor.on("component:selected", (component: any) => {
+    component.set("resizable", true);
+    component.set("hoverable", true);
+
+    const tagName = (component.get("tagName") || "").toLowerCase();
+    if (tagName !== "a") return;
+
+    const existingTraits: any[] = component.get("traits") || [];
+    const hasPageHref = existingTraits.some((t: any) => t.type === "page-href");
+    const hasTarget = existingTraits.some((t: any) => t.name === "target");
+
+    if (hasPageHref && hasTarget) return;
+
+    const newTraits: any[] = [];
+    const seen = new Set<string>();
+    for (const t of existingTraits) {
+      const key = t.type || t.name;
+      if (!seen.has(key)) {
+        seen.add(key);
+        newTraits.push(t);
+      }
+    }
+    if (!hasPageHref) {
+      newTraits.push({ type: "page-href", name: "href", label: "Vincular a página" });
+    }
+    if (!hasTarget) {
+      newTraits.push({ type: "select", name: "target", label: "Target", options: [
+        { id: "", value: "", name: "Misma ventana" },
+        { id: "_blank", value: "_blank", name: "Nueva ventana (_blank)" },
+      ]});
+    }
+    component.set("traits", newTraits);
   });
 
   editor.on("page", () => {
