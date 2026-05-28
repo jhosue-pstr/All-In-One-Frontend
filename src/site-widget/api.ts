@@ -25,7 +25,17 @@ export function clearToken(): void {
 }
 
 export function isAuthenticated(): boolean {
-  return !!getToken();
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.exp) {
+      return payload.exp >= Math.floor(Date.now() / 1000);
+    }
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function apiFetch<T>(

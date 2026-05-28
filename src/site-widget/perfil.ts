@@ -1,13 +1,24 @@
 import { apiFetch } from './api';
 
+export interface PerfilData {
+  id: number;
+  nombre: string;
+  apellido: string;
+  correo: string;
+  telefono?: string | null;
+  direccion_envio?: string | null;
+  ciudad?: string | null;
+  pais?: string | null;
+  codigo_postal?: string | null;
+}
+
+export async function fetchProfile(): Promise<PerfilData> {
+  return apiFetch<PerfilData>('/site-auth/me');
+}
+
 export async function loadProfile(block: HTMLElement): Promise<void> {
   try {
-    const data = await apiFetch<{
-      id: number;
-      nombre: string;
-      apellido: string;
-      correo: string;
-    }>('/site-auth/me');
+    const data = await fetchProfile();
 
     const nombreEl = block.querySelector('[data-perfil="nombre_completo"]');
     if (nombreEl) {

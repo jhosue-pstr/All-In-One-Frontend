@@ -45,4 +45,10 @@ export const siteAuthService = {
       `/site-auth/verify?token=${encodeURIComponent(token)}`
     );
   },
+
+  async listBySite(siteId: number): Promise<UsuarioSitioResponse[]> {
+    return fetchApi<UsuarioSitioResponse[]>(
+      `/site-auth/usuarios?site_id=${siteId}`
+    );
+  },
 };

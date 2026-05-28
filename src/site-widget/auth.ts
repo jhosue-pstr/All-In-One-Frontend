@@ -1,5 +1,6 @@
 import { apiFetch, setToken, clearToken, isAuthenticated } from './api';
 import { loadProfile } from './perfil';
+import { refreshCarritoUI } from './tienda';
 
 function getSitioId(element: HTMLElement): number | null {
   const id = element.closest('[data-sitio-id]')?.getAttribute('data-sitio-id');
@@ -54,6 +55,7 @@ export function handleLogin(form: HTMLFormElement): void {
       });
 
       setToken(data.access_token);
+      refreshCarritoUI();
 
       const bloqueAuth = form.closest('[data-auth]') as HTMLElement;
       if (bloqueAuth) {
@@ -92,6 +94,7 @@ export function handleRegister(form: HTMLFormElement): void {
     const apellido = formData.get('apellido') as string;
     const correo = formData.get('correo') as string;
     const contrasena = formData.get('contrasena') as string;
+    const telefono = formData.get('telefono') as string;
 
     if (!nombre || !apellido || !correo || !contrasena) {
       showError(form, 'Todos los campos son obligatorios');
@@ -107,7 +110,7 @@ export function handleRegister(form: HTMLFormElement): void {
     try {
       await apiFetch('/site-auth/registro', {
         method: 'POST',
-        body: JSON.stringify({ nombre, apellido, correo, contrasena, id_sitio: sitioId }),
+        body: JSON.stringify({ nombre, apellido, correo, contrasena, telefono: telefono || null, id_sitio: sitioId }),
       });
 
       form.innerHTML = `
