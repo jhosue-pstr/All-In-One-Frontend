@@ -23,7 +23,8 @@ describe('site-widget api', () => {
 
   describe('isAuthenticated', () => {
     it('returns true when token exists', () => {
-      localStorage.setItem('site_token', 'tok')
+      const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))
+      localStorage.setItem('site_token', `header.${payload}.sig`)
       expect(isAuthenticated()).toBe(true)
     })
 

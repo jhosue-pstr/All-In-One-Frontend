@@ -237,7 +237,8 @@ describe('site-widget auth', () => {
     })
 
     it('hides login block when authenticated and shows perfil', () => {
-      localStorage.setItem('site_token', 'tok')
+      const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 }))
+      localStorage.setItem('site_token', `header.${payload}.sig`)
       ;(globalThis.fetch as any).mockResolvedValue({
         ok: true,
         json: () => Promise.resolve({ id: 1, nombre: 'A', apellido: 'B', correo: 'a@b.com' }),

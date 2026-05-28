@@ -3,6 +3,7 @@ import { blogService } from './blog'
 
 const mockFetchApi = vi.fn()
 vi.mock('./api', () => ({
+  API_URL: '',
   fetchApi: (...args: any[]) => mockFetchApi(...args),
 }))
 
