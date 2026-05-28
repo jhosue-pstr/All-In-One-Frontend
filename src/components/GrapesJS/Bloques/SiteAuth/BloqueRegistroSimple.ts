@@ -20,6 +20,10 @@ export const BloqueRegistroSimple = {
       <label style="display:block;margin-bottom:5px;font-size:14px;color:#555;">Email</label>
       <input type="email" name="correo" placeholder="tu@email.com" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:15px;box-sizing:border-box;">
     </div>
+    <div style="margin-bottom:15px;">
+      <label style="display:block;margin-bottom:5px;font-size:14px;color:#555;">Tel&eacute;fono</label>
+      <input type="tel" name="telefono" placeholder="+51 999 999 999" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:15px;box-sizing:border-box;">
+    </div>
     <div style="margin-bottom:20px;">
       <label style="display:block;margin-bottom:5px;font-size:14px;color:#555;">Contrase&ntilde;a</label>
       <input type="password" name="contrasena" placeholder="********" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:15px;box-sizing:border-box;">

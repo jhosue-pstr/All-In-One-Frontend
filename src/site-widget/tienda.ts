@@ -1,3 +1,5 @@
+import { isAuthenticated } from './api';
+
 type Product = {
   id: number;
   nombre: string;
@@ -37,17 +39,7 @@ type CarritoData = {
 };
 
 const API_BASE = "/api";
-const SESSION_KEY = "tienda_session_id";
 let cartItemTemplate: string | null = null;
-
-function getSessionId(): string {
-  let sid = localStorage.getItem(SESSION_KEY);
-  if (!sid) {
-    sid = crypto.randomUUID ? crypto.randomUUID() : "s-" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(SESSION_KEY, sid);
-  }
-  return sid;
-}
 
 function getSiteId(element: Element): number | null {
   const value = element.getAttribute("data-sitio-id");
@@ -73,23 +65,24 @@ function getLimit(element: Element, fallback: number): number {
 }
 
 function getUsuarioId(): number | null {
-  const bodyAttr = document.body.getAttribute("data-usuario-id");
-  if (bodyAttr) {
-    const parsed = Number(bodyAttr);
-    if (!Number.isNaN(parsed)) return parsed;
-  }
-
   try {
     const token = localStorage.getItem("site_token");
-    if (token) {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      if (payload.usuario_id || payload.sub) return payload.usuario_id || Number(payload.sub);
-    }
-  } catch {
-    // token inválido o no disponible
-  }
+    if (!token) return null;
 
-  return null;
+    const payload = JSON.parse(atob(token.split(".")[1]));
+
+    if (payload.exp) {
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp < now) {
+        localStorage.removeItem("site_token");
+        return null;
+      }
+    }
+
+    return payload.usuario_id || Number(payload.sub) || null;
+  } catch {
+    return null;
+  }
 }
 
 function formatPrice(value: number): string {
@@ -145,10 +138,20 @@ function showEmpty(container: Element): void {
   const list = container.querySelector<HTMLElement>("[data-tienda-list]");
   const item = container.querySelector<HTMLElement>("[data-tienda-item]");
   const empty = container.querySelector<HTMLElement>("[data-tienda-empty]");
+  const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
+  const checkoutLink = container.querySelector<HTMLElement>("[data-tienda-checkout-link]");
+  const pagarBtn = container.querySelector<HTMLElement>("[data-tienda-pagar]");
 
   if (list) list.innerHTML = "";
   if (item) item.style.display = "none";
   if (empty) empty.style.display = "block";
+  if (checkoutLink) checkoutLink.style.display = "none";
+  if (pagarBtn) pagarBtn.style.display = "none";
+  if (totalEl) {
+    totalEl.textContent = "";
+    const section = totalEl.parentElement?.parentElement;
+    if (section) section.style.display = "none";
+  }
 }
 
 async function fetchData<T>(url: string): Promise<T> {
@@ -184,19 +187,16 @@ async function fetchCategorias(siteId: number): Promise<Categoria[]> {
   return json.data;
 }
 
-async function fetchCarrito(siteId: number, usuarioId: number | null, sessionId?: string): Promise<CarritoData> {
-  const params = new URLSearchParams();
-  if (usuarioId) params.set("usuario_id", String(usuarioId));
-  else if (sessionId) params.set("session_id", sessionId);
+async function fetchCarrito(siteId: number, usuarioId: number | null): Promise<CarritoData> {
+  if (!usuarioId) return { id: 0, site_id: siteId, items: [], total: 0 };
   return fetchData<CarritoData>(
-    `${API_BASE}/v1/sitios/${siteId}/tienda/carrito?${params.toString()}`
+    `${API_BASE}/v1/sitios/${siteId}/tienda/carrito?usuario_id=${usuarioId}`
   );
 }
 
-async function addToCart(siteId: number, productoId: number, cantidad: number, usuarioId: number | null, sessionId?: string): Promise<string | null> {
+async function addToCart(siteId: number, productoId: number, cantidad: number, usuarioId: number | null): Promise<void> {
   const body: Record<string, unknown> = { producto_id: productoId, cantidad };
   if (usuarioId) body.usuario_id = usuarioId;
-  else body.session_id = sessionId;
 
   const response = await fetch(`${API_BASE}/v1/sitios/${siteId}/tienda/carrito/items`, {
     method: "POST",
@@ -204,9 +204,6 @@ async function addToCart(siteId: number, productoId: number, cantidad: number, u
     body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error("Error al agregar al carrito");
-  const data = await response.json();
-  if (data.session_id) localStorage.setItem(SESSION_KEY, data.session_id);
-  return data.session_id || null;
 }
 
 async function updateCartItem(siteId: number, itemId: number, cantidad: number): Promise<void> {
@@ -302,7 +299,7 @@ function renderProductCollection(container: Element, productos: Product[]): void
   if (empty) empty.style.display = "none";
 
   const siteId = getSiteId(container);
-  const sessionId = getSessionId();
+  const usuarioId = getUsuarioId();
 
   const clonedTemplate = template.cloneNode(true) as HTMLElement;
   list.innerHTML = "";
@@ -320,11 +317,15 @@ function renderProductCollection(container: Element, productos: Product[]): void
         event.stopPropagation();
 
         if (!siteId) return;
+        if (!usuarioId) {
+          showToast("Debes iniciar sesión para agregar al carrito");
+          return;
+        }
 
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, product.id, 1, null, sessionId);
+          await addToCart(siteId, product.id, 1, usuarioId);
           refreshCarritoUI();
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
@@ -403,16 +404,21 @@ async function initProductoDestacado(container: Element): Promise<void> {
     if (empty) empty.style.display = "none";
 
     const addBtn = item.querySelector<HTMLElement>("[data-tienda-add-cart]");
-    const sessionId = getSessionId();
+    const usuarioId = getUsuarioId();
 
     if (addBtn) {
       addBtn.addEventListener("click", async (event) => {
         event.preventDefault();
 
+        if (!usuarioId) {
+          showToast("Debes iniciar sesión para agregar al carrito");
+          return;
+        }
+
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, product.id, 1, null, sessionId);
+          await addToCart(siteId, product.id, 1, usuarioId);
           refreshCarritoUI();
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
@@ -492,17 +498,22 @@ async function initProductoDetalle(container: Element): Promise<void> {
       });
     }
 
-    const sessionId = getSessionId();
+    const usuarioId = getUsuarioId();
 
     const pid = productoId;
     if (addBtn && pid) {
       addBtn.addEventListener("click", async (event) => {
         event.preventDefault();
 
+        if (!usuarioId) {
+          showToast("Debes iniciar sesión para agregar al carrito");
+          return;
+        }
+
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, pid, cantidad, null, sessionId);
+          await addToCart(siteId, pid, cantidad, usuarioId);
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
             addBtn.textContent = "Agregar al carrito";
@@ -589,7 +600,6 @@ function filterByCategory(_container: Element, categoriaId: number | null): void
 
 async function initCarrito(container: Element): Promise<void> {
   const siteId = getSiteId(container);
-  const sessionId = getSessionId();
   const usuarioId = getUsuarioId();
 
   if (!siteId) {
@@ -602,7 +612,7 @@ async function initCarrito(container: Element): Promise<void> {
   const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
 
   try {
-    const carrito = await fetchCarrito(siteId, usuarioId, sessionId);
+    const carrito = await fetchCarrito(siteId, usuarioId);
 
     if (!carrito.items || !carrito.items.length) {
       showEmpty(container);
@@ -610,6 +620,13 @@ async function initCarrito(container: Element): Promise<void> {
     }
 
     if (empty) empty.style.display = "none";
+
+    const checkoutLink = container.querySelector<HTMLElement>("[data-tienda-checkout-link]");
+    if (checkoutLink) checkoutLink.style.display = "";
+    if (totalEl) {
+      const section = totalEl.parentElement?.parentElement;
+      if (section) section.style.display = "";
+    }
 
     if (!list) return;
     if (!cartItemTemplate) {
@@ -653,7 +670,7 @@ async function initCarrito(container: Element): Promise<void> {
             item.cantidad = newQty;
             if (qtyValue) qtyValue.textContent = String(newQty);
             if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * newQty);
-            refreshCartTotal(container, siteId, usuarioId, sessionId);
+            refreshCartTotal(container, siteId, usuarioId);
           } catch (error) {
             console.error("[Tienda Widget]", error);
           }
@@ -668,7 +685,7 @@ async function initCarrito(container: Element): Promise<void> {
             item.cantidad = newQty;
             if (qtyValue) qtyValue.textContent = String(newQty);
             if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * newQty);
-            refreshCartTotal(container, siteId, usuarioId, sessionId);
+            refreshCartTotal(container, siteId, usuarioId);
           } catch (error) {
             console.error("[Tienda Widget]", error);
           }
@@ -684,7 +701,7 @@ async function initCarrito(container: Element): Promise<void> {
             if (remaining.length === 0) {
               showEmpty(container);
             } else {
-              refreshCartTotal(container, siteId, usuarioId, sessionId);
+              refreshCartTotal(container, siteId, usuarioId);
             }
           } catch (error) {
             console.error("[Tienda Widget]", error);
@@ -736,8 +753,8 @@ async function initCarrito(container: Element): Promise<void> {
   }
 }
 
-function refreshCartTotal(container: Element, siteId: number, usuarioId: number | null, sessionId?: string): void {
-  fetchCarrito(siteId, usuarioId, sessionId)
+function refreshCartTotal(container: Element, siteId: number, usuarioId: number | null): void {
+  fetchCarrito(siteId, usuarioId)
     .then((carrito) => {
       const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
       if (totalEl) {
@@ -748,7 +765,7 @@ function refreshCartTotal(container: Element, siteId: number, usuarioId: number 
     .catch(() => {});
 }
 
-function refreshCarritoUI(): void {
+export function refreshCarritoUI(): void {
   const cartBlocks = document.querySelectorAll<HTMLElement>('[data-tienda="cart"]');
   cartBlocks.forEach((el) => {
     const list = el.querySelector("[data-tienda-list]");
@@ -765,12 +782,31 @@ function initCheckout(container: Element): void {
 
   if (!form) return;
 
+  if (isAuthenticated()) {
+    import('./perfil').then(({ fetchProfile }) => {
+      fetchProfile().then((profile) => {
+        const setField = (name: string, value: string | null | undefined) => {
+          const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+            `[data-tienda-field-${name}]`
+          );
+          if (el && value) el.value = value;
+        };
+        setField("nombre", `${profile.nombre} ${profile.apellido}`);
+        setField("email", profile.correo);
+        setField("telefono", profile.telefono);
+        setField("direccion", profile.direccion_envio);
+        setField("ciudad", profile.ciudad);
+        setField("pais", profile.pais);
+        setField("codigo-postal", profile.codigo_postal);
+      }).catch(() => {});
+    });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const siteId = getSiteId(container);
     const usuarioId = getUsuarioId();
-    const sessionId = getSessionId();
 
     if (!siteId) {
       if (errorEl) {
@@ -807,7 +843,6 @@ function initCheckout(container: Element): void {
       metodo_pago: getField("metodo-pago"),
       notas: getField("notas"),
       usuario_id: usuarioId,
-      session_id: sessionId,
     };
 
     const submitBtn = form.querySelector<HTMLElement>('button[type="submit"]');

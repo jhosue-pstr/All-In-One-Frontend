@@ -25,6 +25,9 @@ export const sitioService = {
       method: 'DELETE',
     });
   },
+  async getModulos(id: number): Promise<number[]> {
+    return fetchApi<number[]>(`/sitios/${id}/modulos/`);
+  },
   async uploadMinatura(id: number, file: File): Promise<string> {
     const token = localStorage.getItem('token');
     const formData = new FormData();
