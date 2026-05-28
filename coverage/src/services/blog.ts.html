@@ -30,9 +30,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">90.9% </span>
+                <span class="strong">88.88% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/11</span>
+                <span class='fraction'>8/9</span>
             </div>
         
             
@@ -146,7 +146,10 @@
 <a name='L81'></a><a href='#L81'>81</a>
 <a name='L82'></a><a href='#L82'>82</a>
 <a name='L83'></a><a href='#L83'>83</a>
-<a name='L84'></a><a href='#L84'>84</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L84'></a><a href='#L84'>84</a>
+<a name='L85'></a><a href='#L85'>85</a>
+<a name='L86'></a><a href='#L86'>86</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -194,6 +197,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -201,13 +207,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -223,11 +227,11 @@
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type {
   BlogPost,
@@ -236,12 +240,13 @@
   BlogCategory,
   BlogCategoryCreate,
   BlogImageResponse,
-} from '../models/blog';
-import { fetchApi } from './api';
+} from "../models/blog";
+&nbsp;
+import { API_URL, fetchApi } from "./api";
 &nbsp;
 export const blogService = {
   async getPosts(siteId: number, onlyPublished = false): Promise&lt;BlogPost[]&gt; {
-    const params = onlyPublished ? '?only_published=true' : '';
+    const params = onlyPublished ? "?only_published=true" : "";
     return fetchApi&lt;BlogPost[]&gt;(`/modules/blog/${siteId}/posts${params}`);
   },
 &nbsp;
@@ -251,7 +256,7 @@ export const blogService = {
 &nbsp;
   async createPost(siteId: number, data: BlogPostCreate): Promise&lt;BlogPost&gt; {
     return fetchApi&lt;BlogPost&gt;(`/modules/blog/${siteId}/posts`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
@@ -262,15 +267,18 @@ export const blogService = {
     data: BlogPostUpdate
   ): Promise&lt;BlogPost&gt; {
     return fetchApi&lt;BlogPost&gt;(`/modules/blog/${siteId}/posts/${postId}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
 &nbsp;
-  async deletePost(siteId: number, postId: number): Promise&lt;void&gt; {
-    return fetchApi&lt;void&gt;(`/modules/blog/${siteId}/posts/${postId}`, {
-      method: 'DELETE',
-    });
+  async deletePost(siteId: number, postId: number): Promise&lt;{ message: string }&gt; {
+    return fetchApi&lt;{ message: string }&gt;(
+      `/modules/blog/${siteId}/posts/${postId}`,
+      {
+        method: "DELETE",
+      }
+    );
   },
 &nbsp;
   async createCategory(
@@ -278,23 +286,21 @@ export const blogService = {
     data: BlogCategoryCreate
   ): Promise&lt;BlogCategory&gt; {
     return fetchApi&lt;BlogCategory&gt;(`/modules/blog/${siteId}/categories`, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
 &nbsp;
-  async uploadImage(
-    siteId: number,
-    file: File
-  ): Promise&lt;BlogImageResponse&gt; {
+  async uploadImage(siteId: number, file: File): Promise&lt;BlogImageResponse&gt; {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 &nbsp;
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
+&nbsp;
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}/modules/blog/${siteId}/upload-image`,
+      `${API_URL}/modules/blog/${siteId}/upload-image`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -305,21 +311,21 @@ export const blogService = {
     if (!response.ok) {
       const error = await response
         .json()
-        .catch(() =&gt; ({ detail: 'Error al subir la imagen' }));
-      throw new Error(error.detail || <span class="branch-1 cbranch-no" title="branch not covered" >'Error al subir la imagen');</span>
+        .catch(() =&gt; ({ detail: "Error al subir la imagen" }));
+&nbsp;
+      throw new Error(error.detail || <span class="branch-1 cbranch-no" title="branch not covered" >"Error al subir la imagen");</span>
     }
 &nbsp;
     return response.json();
   },
-};
-&nbsp;</pre></td></tr></table></pre>
+};</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-24T19:23:29.459Z
+                at 2026-05-28T16:01:42.010Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

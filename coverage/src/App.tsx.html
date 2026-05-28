@@ -194,7 +194,31 @@
 <a name='L129'></a><a href='#L129'>129</a>
 <a name='L130'></a><a href='#L130'>130</a>
 <a name='L131'></a><a href='#L131'>131</a>
-<a name='L132'></a><a href='#L132'>132</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L132'></a><a href='#L132'>132</a>
+<a name='L133'></a><a href='#L133'>133</a>
+<a name='L134'></a><a href='#L134'>134</a>
+<a name='L135'></a><a href='#L135'>135</a>
+<a name='L136'></a><a href='#L136'>136</a>
+<a name='L137'></a><a href='#L137'>137</a>
+<a name='L138'></a><a href='#L138'>138</a>
+<a name='L139'></a><a href='#L139'>139</a>
+<a name='L140'></a><a href='#L140'>140</a>
+<a name='L141'></a><a href='#L141'>141</a>
+<a name='L142'></a><a href='#L142'>142</a>
+<a name='L143'></a><a href='#L143'>143</a>
+<a name='L144'></a><a href='#L144'>144</a>
+<a name='L145'></a><a href='#L145'>145</a>
+<a name='L146'></a><a href='#L146'>146</a>
+<a name='L147'></a><a href='#L147'>147</a>
+<a name='L148'></a><a href='#L148'>148</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -217,6 +241,7 @@
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -254,11 +279,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -325,29 +356,39 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { Login } from './components/Login/Login';
-import { Register } from './components/Register/Register';
-import { Sidebar } from './components/Sidebar/Sidebar';
-import { Inicio } from './pages/Inicio/Inicio';
-import { Sitios } from './pages/Sitios/Sitios';
-import { Plantillas } from './pages/Plantillas/Plantillas';
-import { Modulos } from './pages/Modulos/Modulos';
-import { Configuraciones } from './pages/Configuraciones/Configuraciones';
-import { WebEditor } from './pages/WebEditor/WebEditor';
-import { authService } from './services';
-import type { User } from './models';
-import './App.css';
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import { Login } from "./components/Login/Login";
+import { Register } from "./components/Register/Register";
+import { Sidebar } from "./components/Sidebar/Sidebar";
+import { Inicio } from "./pages/Inicio/Inicio";
+import { Sitios } from "./pages/Sitios/Sitios";
+import { Plantillas } from "./pages/Plantillas/Plantillas";
+import { Modulos } from "./pages/Modulos/Modulos";
+import { Configuraciones } from "./pages/Configuraciones/Configuraciones";
+import { WebEditor } from "./pages/WebEditor/WebEditor";
+import { authService } from "./services";
+import type { User } from "./models";
+import "./App.css";
+import Blog from "./pages/Blog/Blog";
+import Tienda from "./pages/Tienda/Tienda";
 &nbsp;
 function App() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const [isChecking, setIsChecking] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 &nbsp;
   useEffect(() =&gt; {
     if (token) {
-      authService.me()
+      authService
+        .me()
         .then(() =&gt; setIsAuthenticated(true))
         .catch(() =&gt; {
           authService.logout();
@@ -366,9 +407,12 @@ function App() {
   return (
     &lt;BrowserRouter&gt;
       &lt;Routes&gt;
-        &lt;Route path="/" element={
-          isAuthenticated ? &lt;Navigate to="/inicio" replace /&gt; : &lt;AuthLayout /&gt;
-        } /&gt;
+        &lt;Route
+          path="/"
+          element={
+            isAuthenticated ? &lt;Navigate to="/inicio" replace /&gt; : &lt;AuthLayout /&gt;
+          }
+        /&gt;
         &lt;Route path="/plantillas/:id/editar" element={&lt;WebEditor /&gt;} /&gt;
         &lt;Route path="/sitio/:id/editar" element={&lt;WebEditor /&gt;} /&gt;
         &lt;Route element={&lt;AuthenticatedLayout /&gt;}&gt;
@@ -377,6 +421,8 @@ function App() {
           &lt;Route path="/plantillas" element={&lt;Plantillas /&gt;} /&gt;
           &lt;Route path="/modulos" element={&lt;Modulos /&gt;} /&gt;
           &lt;Route path="/configuraciones" element={&lt;Configuraciones /&gt;} /&gt;
+          &lt;Route path="/blog" element={&lt;Blog /&gt;} /&gt;
+          &lt;Route path="/tienda" element={&lt;Tienda /&gt;} /&gt;
         &lt;/Route&gt;
         &lt;Route path="*" element={&lt;Navigate to="/" replace /&gt;} /&gt;
       &lt;/Routes&gt;
@@ -389,11 +435,12 @@ function AuthenticatedLayout() {
   const [loading, setLoading] = useState(true);
 &nbsp;
   useEffect(() =&gt; {
-    authService.me()
+    authService
+      .me()
       .then(setUser)
       .catch(() =&gt; {
         authService.logout();
-        globalThis.location.href = '/';
+        globalThis.location.href = "/";
       })
       .finally(() =&gt; setLoading(false));
   }, []);
@@ -416,7 +463,7 @@ function AuthLayout() {
   const [showRegister, setShowRegister] = useState(false);
 &nbsp;
   const handleAuthSuccess = () =&gt; {
-    globalThis.location.href = '/inicio';
+    globalThis.location.href = "/inicio";
   };
 &nbsp;
   return (
@@ -424,19 +471,19 @@ function AuthLayout() {
       &lt;div className="auth-forms"&gt;
         &lt;div className="forms-wrapper"&gt;
           {showRegister ? (
-            &lt;Register 
-              onSwitchToLogin={() =&gt; setShowRegister(false)} 
+            &lt;Register
+              onSwitchToLogin={() =&gt; setShowRegister(false)}
               onSuccess={() =&gt; setShowRegister(false)}
             /&gt;
           ) : (
             &lt;Login onSuccess={handleAuthSuccess} /&gt;
           )}
-          
+&nbsp;
           {!showRegister &amp;&amp; (
             &lt;p className="switch-text"&gt;
-              ¿No tienes cuenta?{' '}
-              &lt;button 
-                className="switch-btn" 
+              ¿No tienes cuenta?{" "}
+              &lt;button
+                className="switch-btn"
                 onClick={() =&gt; setShowRegister(true)}
               &gt;
                 Regístrate
@@ -445,7 +492,7 @@ function AuthLayout() {
           )}
         &lt;/div&gt;
       &lt;/div&gt;
-      
+&nbsp;
       &lt;div className="auth-brand"&gt;
         &lt;div className="brand-content"&gt;
           &lt;h1&gt;All in One&lt;/h1&gt;
@@ -456,14 +503,15 @@ function AuthLayout() {
   );
 }
 &nbsp;
-export default App;</pre></td></tr></table></pre>
+export default App;
+&nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-24T19:23:29.459Z
+                at 2026-05-28T16:01:42.010Z
             </div>
         <script src="../prettify.js"></script>
         <script>

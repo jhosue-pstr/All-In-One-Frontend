@@ -3,6 +3,7 @@ import { initGrapesJS } from './index'
 
 const { mockEditor, commandsMap } = vi.hoisted(() => {
   const cmds = new Map<string, any>()
+  let storedContent: any = null
   const editor = {
     on: vi.fn().mockReturnThis(),
     setComponents: vi.fn(),
@@ -10,10 +11,13 @@ const { mockEditor, commandsMap } = vi.hoisted(() => {
     getContainer: vi.fn(),
     Modal: {
       setTitle: vi.fn().mockReturnThis(),
-      setContent: vi.fn().mockReturnThis(),
+      setContent: vi.fn((content: any) => {
+        storedContent = content
+        return editor.Modal
+      }),
       open: vi.fn(),
       close: vi.fn(),
-      getContent: vi.fn(),
+      getContent: vi.fn(() => storedContent),
     },
     Pages: {
       getAll: vi.fn(),
@@ -24,6 +28,12 @@ const { mockEditor, commandsMap } = vi.hoisted(() => {
     },
     Commands: {
       add: vi.fn((id: string, cmd: any) => { cmds.set(id, cmd) }),
+    },
+    Traits: {
+      addType: vi.fn(),
+    },
+    DomComponents: {
+      addType: vi.fn(),
     },
     setDevice: vi.fn(),
     getDevice: vi.fn().mockReturnValue('Desktop'),
@@ -114,7 +124,7 @@ describe('initGrapesJS', () => {
     it('sets resizable and hoverable on component selected', () => {
       initGrapesJS({ siteId: '1' })
       const handler = mockEditor.on.mock.calls.find(([e]: [string]) => e === 'component:selected')?.[1]
-      const comp = { set: vi.fn() }
+      const comp = { set: vi.fn(), get: vi.fn().mockReturnValue('div') }
       handler(comp)
       expect(comp.set).toHaveBeenCalledWith('resizable', true)
       expect(comp.set).toHaveBeenCalledWith('hoverable', true)
@@ -193,18 +203,11 @@ describe('initGrapesJS', () => {
       setupDom('1')
       mockEditor.Pages.getAll.mockReturnValue([makePage('p1', 'A'), makePage('p2', 'B')])
       mockEditor.Pages.getSelected.mockReturnValue({ id: 'p1' })
-      const modalContent = document.createElement('div')
-      modalContent.innerHTML = `
-        <button id="confirm-del-btn">Eliminar</button>
-        <button id="cancel-del-btn">Cancelar</button>
-      `
-      mockEditor.Modal.getContent.mockReturnValue(modalContent)
       initGrapesJS({ siteId: '1' })
-      return modalContent
     }
 
     it('opens delete modal when clicking delete span', () => {
-      const modalContent = setupDeleteTest()
+      setupDeleteTest()
       const spans = document.querySelectorAll('span')
       expect(spans.length).toBeGreaterThan(0)
       const event = new MouseEvent('click', { bubbles: true })
@@ -215,22 +218,24 @@ describe('initGrapesJS', () => {
     })
 
     it('calls remove on confirm', () => {
-      const modalContent = setupDeleteTest()
+      setupDeleteTest()
       const spans = document.querySelectorAll('span')
       spans[0].dispatchEvent(new MouseEvent('click', { bubbles: true }))
       vi.advanceTimersByTime(50)
-      modalContent.querySelector('#confirm-del-btn')?.dispatchEvent(new Event('click'))
+      const buttons = mockEditor.Modal.getContent().querySelectorAll('button')
+      buttons[1].click()
       expect(mockEditor.Pages.remove).toHaveBeenCalled()
       expect(mockEditor.Modal.close).toHaveBeenCalled()
       vi.useRealTimers()
     })
 
     it('calls close on cancel', () => {
-      const modalContent = setupDeleteTest()
+      setupDeleteTest()
       const spans = document.querySelectorAll('span')
       spans[0].dispatchEvent(new MouseEvent('click', { bubbles: true }))
       vi.advanceTimersByTime(50)
-      modalContent.querySelector('#cancel-del-btn')?.dispatchEvent(new Event('click'))
+      const buttons = mockEditor.Modal.getContent().querySelectorAll('button')
+      buttons[0].click()
       expect(mockEditor.Modal.close).toHaveBeenCalled()
       expect(mockEditor.Pages.remove).not.toHaveBeenCalled()
       vi.useRealTimers()
@@ -238,54 +243,48 @@ describe('initGrapesJS', () => {
   })
 
   describe('new page flow', () => {
-    function setupNewPageTest(name: string) {
+    function openNewPageModal(name = '') {
       vi.useFakeTimers()
       setupDom('1')
       mockEditor.Pages.getAll.mockReturnValue([])
-      const modalContent = document.createElement('div')
-      modalContent.innerHTML = `
-        <input id="new-page-name" value="${name}">
-        <button id="save-new-page">Crear</button>
-        <button id="cancel-new-page">Cancelar</button>
-      `
-      mockEditor.Modal.getContent.mockReturnValue(modalContent)
       initGrapesJS({ siteId: '1' })
-      return modalContent
+      document.getElementById('btn-add-page-1')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      vi.advanceTimersByTime(50)
+      const content = mockEditor.Modal.getContent()
+      const input = content.querySelector<HTMLInputElement>('#new-page-name')
+      if (input) input.value = name
+      return content
     }
 
     it('opens new page modal on add button click', () => {
-      setupNewPageTest('Test')
-      document.getElementById('btn-add-page-1')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      openNewPageModal()
       expect(mockEditor.Modal.setTitle).toHaveBeenCalledWith('Nueva Página')
       expect(mockEditor.Modal.open).toHaveBeenCalled()
       vi.useRealTimers()
     })
 
     it('creates page on save', () => {
-      const modalContent = setupNewPageTest('My Page')
-      document.getElementById('btn-add-page-1')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-      vi.advanceTimersByTime(50)
-      modalContent.querySelector('#save-new-page')?.dispatchEvent(new Event('click'))
+      const content = openNewPageModal('My Page')
+      const buttons = content.querySelectorAll('button')
+      buttons[1].click()
       expect(mockEditor.Pages.add).toHaveBeenCalledWith({ name: 'My Page', component: '<div></div>' })
       expect(mockEditor.Modal.close).toHaveBeenCalled()
       vi.useRealTimers()
     })
 
     it('no add when name empty', () => {
-      const modalContent = setupNewPageTest('')
-      document.getElementById('btn-add-page-1')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-      vi.advanceTimersByTime(50)
-      modalContent.querySelector('#save-new-page')?.dispatchEvent(new Event('click'))
+      const content = openNewPageModal('')
+      const buttons = content.querySelectorAll('button')
+      buttons[1].click()
       expect(mockEditor.Pages.add).not.toHaveBeenCalled()
       expect(mockEditor.Modal.close).toHaveBeenCalled()
       vi.useRealTimers()
     })
 
     it('cancels new page', () => {
-      const modalContent = setupNewPageTest('Test')
-      document.getElementById('btn-add-page-1')?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-      vi.advanceTimersByTime(50)
-      modalContent.querySelector('#cancel-new-page')?.dispatchEvent(new Event('click'))
+      const content = openNewPageModal('Test')
+      const buttons = content.querySelectorAll('button')
+      buttons[0].click()
       expect(mockEditor.Modal.close).toHaveBeenCalled()
       expect(mockEditor.Pages.add).not.toHaveBeenCalled()
       vi.useRealTimers()
