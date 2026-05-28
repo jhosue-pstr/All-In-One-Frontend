@@ -299,7 +299,6 @@ function renderProductCollection(container: Element, productos: Product[]): void
   if (empty) empty.style.display = "none";
 
   const siteId = getSiteId(container);
-  const usuarioId = getUsuarioId();
 
   const clonedTemplate = template.cloneNode(true) as HTMLElement;
   list.innerHTML = "";
@@ -317,7 +316,8 @@ function renderProductCollection(container: Element, productos: Product[]): void
         event.stopPropagation();
 
         if (!siteId) return;
-        if (!usuarioId) {
+        const uid = getUsuarioId();
+        if (!uid) {
           showToast("Debes iniciar sesión para agregar al carrito");
           return;
         }
@@ -325,7 +325,7 @@ function renderProductCollection(container: Element, productos: Product[]): void
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, product.id, 1, usuarioId);
+          await addToCart(siteId, product.id, 1, uid);
           refreshCarritoUI();
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
@@ -404,13 +404,13 @@ async function initProductoDestacado(container: Element): Promise<void> {
     if (empty) empty.style.display = "none";
 
     const addBtn = item.querySelector<HTMLElement>("[data-tienda-add-cart]");
-    const usuarioId = getUsuarioId();
 
     if (addBtn) {
       addBtn.addEventListener("click", async (event) => {
         event.preventDefault();
 
-        if (!usuarioId) {
+        const uid = getUsuarioId();
+        if (!uid) {
           showToast("Debes iniciar sesión para agregar al carrito");
           return;
         }
@@ -418,7 +418,7 @@ async function initProductoDestacado(container: Element): Promise<void> {
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, product.id, 1, usuarioId);
+          await addToCart(siteId, product.id, 1, uid);
           refreshCarritoUI();
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
@@ -498,14 +498,13 @@ async function initProductoDetalle(container: Element): Promise<void> {
       });
     }
 
-    const usuarioId = getUsuarioId();
-
     const pid = productoId;
     if (addBtn && pid) {
       addBtn.addEventListener("click", async (event) => {
         event.preventDefault();
 
-        if (!usuarioId) {
+        const uid = getUsuarioId();
+        if (!uid) {
           showToast("Debes iniciar sesión para agregar al carrito");
           return;
         }
@@ -513,7 +512,8 @@ async function initProductoDetalle(container: Element): Promise<void> {
         try {
           addBtn.textContent = "Agregando...";
           addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, pid, cantidad, usuarioId);
+          await addToCart(siteId, pid, cantidad, uid);
+          refreshCarritoUI();
           addBtn.textContent = "✓ Agregado";
           setTimeout(() => {
             addBtn.textContent = "Agregar al carrito";
@@ -611,6 +611,11 @@ async function initCarrito(container: Element): Promise<void> {
   const empty = container.querySelector<HTMLElement>("[data-tienda-empty]");
   const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
 
+  if (list && !cartItemTemplate) {
+    const te = list.querySelector<HTMLElement>("[data-tienda-item]");
+    if (te) cartItemTemplate = te.outerHTML;
+  }
+
   try {
     const carrito = await fetchCarrito(siteId, usuarioId);
 
@@ -629,10 +634,6 @@ async function initCarrito(container: Element): Promise<void> {
     }
 
     if (!list) return;
-    if (!cartItemTemplate) {
-      const te = list.querySelector<HTMLElement>("[data-tienda-item]");
-      if (te) cartItemTemplate = te.outerHTML;
-    }
     if (!cartItemTemplate) return;
     list.innerHTML = "";
 
@@ -736,7 +737,8 @@ async function initCarrito(container: Element): Promise<void> {
         cursor: "pointer",
       });
       pagarBtn.addEventListener("click", () => {
-        if (!usuarioId) {
+        const uid = getUsuarioId();
+        if (!uid) {
           showToast("Debes iniciar sesión para pagar");
           return;
         }
@@ -768,8 +770,6 @@ function refreshCartTotal(container: Element, siteId: number, usuarioId: number 
 export function refreshCarritoUI(): void {
   const cartBlocks = document.querySelectorAll<HTMLElement>('[data-tienda="cart"]');
   cartBlocks.forEach((el) => {
-    const list = el.querySelector("[data-tienda-list]");
-    if (list) list.innerHTML = "";
     initCarrito(el);
   });
 }
