@@ -18,7 +18,7 @@ vi.mock('../../components/GrapesJS', () => ({
     getProjectData: vi.fn().mockReturnValue({}),
     loadProjectData: vi.fn(),
     Modal: { setTitle: vi.fn().mockReturnThis(), setContent: vi.fn().mockReturnThis(), open: vi.fn(), close: vi.fn(), getContent: vi.fn() },
-    Pages: { getAll: vi.fn().mockReturnValue([]), select: vi.fn(), remove: vi.fn(), add: vi.fn() },
+    Pages: { getAll: vi.fn().mockReturnValue([]), select: vi.fn(), remove: vi.fn(), add: vi.fn(), getSelected: vi.fn().mockReturnValue(null) },
     Commands: { add: vi.fn() },
     setComponents: vi.fn(),
     setStyle: vi.fn(),
