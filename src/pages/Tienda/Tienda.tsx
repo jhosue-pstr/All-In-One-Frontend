@@ -915,17 +915,15 @@ export default function Tienda() {
     if (!hasPedidoDetail || !pedidoDetail) return null;
 
     return (
-      <dialog
-        open
-        className="tienda-modal-overlay"
-        onClick={handlePedidoDialogClick}
-        onCancel={handlePedidoDialogCancel}
-        aria-labelledby="pedido-modal-title"
-      >
-        <div
-          className="tienda-modal"
-          style={{ width: "min(700px, 100%)" }}
+        <dialog
+          open={isPedidoModalOpen}
+          className="tienda-modal-overlay"
+          onCancel={() => setIsPedidoModalOpen(false)}
         >
+          <div
+            className="tienda-modal"
+            style={{ width: "min(700px, 100%)" }}
+          >
           <div className="tienda-modal-header">
             <h2 id="pedido-modal-title">Pedido {pedidoDetail.numero_pedido}</h2>
             <button onClick={closePedidoModal}>×</button>
@@ -1001,13 +999,11 @@ export default function Tienda() {
     if (!isCategoriaModalVisible) return null;
 
     return (
-      <dialog
-        open
-        className="tienda-modal-overlay"
-        onClick={handleCategoriaDialogClick}
-        onCancel={handleCategoriaDialogCancel}
-        aria-labelledby="categoria-modal-title"
-      >
+        <dialog
+          open={isCategoriaModalOpen}
+          className="tienda-modal-overlay"
+          onCancel={closeCategoriaModal}
+        >
         <div className="tienda-modal">
           <div className="tienda-modal-header">
             <h2 id="categoria-modal-title">{getCategoriaFormTitle()}</h2>
