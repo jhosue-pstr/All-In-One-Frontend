@@ -65,7 +65,7 @@ function normalizeImage(url: string | null): string {
 }
 
 function getPostUrl(post: BlogPost): string {
-  const currentPath = window.location.pathname.replace(/\/$/, "");
+  const currentPath = globalThis.location.pathname.replace(/\/$/, "");
   return `${currentPath}?post=${encodeURIComponent(post.slug)}`;
 }
 
@@ -231,7 +231,7 @@ async function initFeaturedPost(container: Element): Promise<void> {
 
 async function initPostDetail(container: Element): Promise<void> {
   const siteId = getSiteId(container);
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(globalThis.location.search);
   const slug = params.get("post");
 
   if (!siteId || !slug) {
@@ -297,7 +297,7 @@ function initSearchBlock(container: Element): void {
 }
 
 function createBlogModal(): HTMLElement {
-  let modal = document.getElementById("blog-post-modal") as HTMLElement | null;
+  let modal = document.getElementById("blog-post-modal");
 
   if (modal) return modal;
 
@@ -389,20 +389,20 @@ function createBlogModal(): HTMLElement {
 
   const closeButton = modal.querySelector("[data-blog-modal-close]");
   closeButton?.addEventListener("click", () => {
-    modal!.style.display = "none";
+    modal.style.display = "none";
     document.body.style.overflow = "";
   });
 
   modal.addEventListener("click", (event) => {
     if (event.target === modal) {
-      modal!.style.display = "none";
+      modal.style.display = "none";
       document.body.style.overflow = "";
     }
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && modal!.style.display !== "none") {
-      modal!.style.display = "none";
+      if (event.key === "Escape" && modal.style.display !== "none") {
+        modal.style.display = "none";
       document.body.style.overflow = "";
     }
   });

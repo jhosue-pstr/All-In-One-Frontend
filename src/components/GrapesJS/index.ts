@@ -337,10 +337,12 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
       el.addEventListener("change", () => {
         const val = el.value;
         trait.setValue(val);
-        const component = (trait as any).getTarget();
-        /* v8 ignore next */
 
-        if (component) component.set("href", val || "#");
+        const component = trait.getTarget?.();
+
+        if (component) {
+          component.set("href", val || "#");
+        }
       });
 
       return el;
@@ -372,13 +374,13 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     const tagName = (component.get("tagName") || "").toLowerCase();
     if (tagName !== "a") return;
 
-    const existingTraits: any[] = component.get("traits") || [];
+    const existingTraits = component.get("traits") || [];
     const hasPageHref = existingTraits.some((t: any) => t.type === "page-href");
     const hasTarget = existingTraits.some((t: any) => t.name === "target");
 
     if (hasPageHref && hasTarget) return;
 
-    const newTraits: any[] = [];
+    const newTraits = [];
     const seen = new Set<string>();
     for (const t of existingTraits) {
       const key = t.type || t.name;
