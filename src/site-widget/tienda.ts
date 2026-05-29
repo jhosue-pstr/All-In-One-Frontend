@@ -42,10 +42,10 @@ const API_BASE = "/api";
 let cartItemTemplate: string | null = null;
 
 function getSiteId(element: Element): number | null {
-  const value = element.getAttribute("data-sitio-id");
+  const value = (element as HTMLElement).dataset.sitioId;
 
   if (!value || value === "{{SITIO_ID}}") {
-    const bodySiteId = document.body.getAttribute("data-sitio-id");
+    const bodySiteId = document.body.dataset.sitioId;
     if (!bodySiteId) return null;
 
     const parsedBodyId = Number(bodySiteId);
@@ -59,7 +59,7 @@ function getSiteId(element: Element): number | null {
 }
 
 function getLimit(element: Element, fallback: number): number {
-  const value = element.getAttribute("data-limit");
+  const value = (element as HTMLElement).dataset.limit;
   if (!value) return fallback;
 
   const parsed = Number(value);
@@ -236,55 +236,68 @@ async function postCheckout(siteId: number, data: Record<string, unknown>): Prom
   return response.json();
 }
 
-function fillProductItem(item: HTMLElement, product: Product): void {
-  const image = item.querySelector<HTMLImageElement>("[data-tienda-product-image]");
-  const name = item.querySelector<HTMLElement>("[data-tienda-product-name]");
-  const price = item.querySelector<HTMLElement>("[data-tienda-product-price]");
-  const compare = item.querySelector<HTMLElement>("[data-tienda-product-compare]");
-  const desc = item.querySelector<HTMLElement>("[data-tienda-product-desc]");
-  const stock = item.querySelector<HTMLElement>("[data-tienda-product-stock]");
-  const badge = item.querySelector<HTMLElement>("[data-tienda-badge-discount]");
-  const categoryName = item.querySelector<HTMLElement>("[data-tienda-category-name]");
+function toggleElement(element: HTMLElement | null, visible: boolean): void {
+  if (element) element.style.display = visible ? "" : "none";
+}
 
-  if (image) {
-    image.src = getFirstImage(product.imagenes);
-    image.alt = product.nombre;
+function hasDiscount(product: Product): boolean {
+  return Boolean(product.precio_comparacion && product.precio_comparacion > product.precio);
+}
+
+function setProductImage(item: HTMLElement, product: Product): void {
+  const image = item.querySelector<HTMLImageElement>("[data-tienda-product-image]");
+  if (!image) return;
+
+  image.src = getFirstImage(product.imagenes);
+  image.alt = product.nombre;
+}
+
+function setProductDiscount(item: HTMLElement, product: Product): void {
+  const compare = item.querySelector<HTMLElement>("[data-tienda-product-compare]");
+  const badge = item.querySelector<HTMLElement>("[data-tienda-badge-discount]");
+
+  if (!hasDiscount(product)) {
+    toggleElement(compare, false);
+    toggleElement(badge, false);
+    return;
   }
 
-  if (name) name.textContent = product.nombre;
-  if (price) price.textContent = formatPrice(product.precio);
-
-  if (compare && product.precio_comparacion && product.precio_comparacion > product.precio) {
+  if (compare && product.precio_comparacion) {
     compare.textContent = formatPrice(product.precio_comparacion);
     compare.style.display = "";
-  } else if (compare) {
-    compare.style.display = "none";
   }
 
-  if (badge && product.precio_comparacion && product.precio_comparacion > product.precio) {
+  if (badge && product.precio_comparacion) {
     const discount = Math.round((1 - product.precio / product.precio_comparacion) * 100);
     badge.textContent = `-${discount}%`;
     badge.style.display = "";
-  } else if (badge) {
-    badge.style.display = "none";
   }
+}
 
+function setProductStock(item: HTMLElement, product: Product): void {
+  const stock = item.querySelector<HTMLElement>("[data-tienda-product-stock]");
+  if (!stock) return;
+
+  stock.textContent = product.stock > 0 ? "Disponible" : "Agotado";
+  stock.style.color = product.stock > 0 ? "#16a34a" : "#ef4444";
+}
+
+function fillProductItem(item: HTMLElement, product: Product): void {
+  setProductImage(item, product);
+  setProductDiscount(item, product);
+  setProductStock(item, product);
+
+  const name = item.querySelector<HTMLElement>("[data-tienda-product-name]");
+  const price = item.querySelector<HTMLElement>("[data-tienda-product-price]");
+  const desc = item.querySelector<HTMLElement>("[data-tienda-product-desc]");
+  const categoryName = item.querySelector<HTMLElement>("[data-tienda-category-name]");
+
+  if (name) name.textContent = product.nombre;
+  if (price) price.textContent = formatPrice(product.precio);
   if (desc) desc.textContent = product.descripcion || "";
-  if (stock) {
-    if (product.stock > 0) {
-      stock.textContent = "Disponible";
-      stock.style.color = "#16a34a";
-    } else {
-      stock.textContent = "Agotado";
-      stock.style.color = "#ef4444";
-    }
-  }
+  if (categoryName && product.categoria) categoryName.textContent = product.categoria.nombre;
 
-  if (categoryName && product.categoria) {
-    categoryName.textContent = product.categoria.nombre;
-  }
-
-  item.setAttribute("data-tienda-product-id", String(product.id));
+  item.dataset.tiendaProductId = String(product.id);
 }
 
 function renderProductCollection(container: Element, productos: Product[]): void {
@@ -442,99 +455,104 @@ async function initProductoDestacado(container: Element): Promise<void> {
   }
 }
 
+async function resolveProductForDetail(
+  siteId: number,
+  productoId: number | null,
+  slug: string | null
+): Promise<Product | null> {
+  if (productoId) return fetchProducto(siteId, productoId);
+  if (!slug) return null;
+
+  const productos = await fetchProductos(siteId, { limit: 100 });
+  return productos.find((p) => p.slug === slug) || null;
+}
+
+function initQtyControls(container: Element, product: Product): () => number {
+  const qtyValue = container.querySelector<HTMLElement>("[data-tienda-qty-value]");
+  const qtyMinus = container.querySelector<HTMLElement>("[data-tienda-qty-minus]");
+  const qtyPlus = container.querySelector<HTMLElement>("[data-tienda-qty-plus]");
+  let cantidad = 1;
+
+  const renderQty = () => {
+    if (qtyValue) qtyValue.textContent = String(cantidad);
+  };
+
+  qtyMinus?.addEventListener("click", () => {
+    cantidad = Math.max(1, cantidad - 1);
+    renderQty();
+  });
+
+  qtyPlus?.addEventListener("click", () => {
+    cantidad = Math.min(product.stock, cantidad + 1);
+    renderQty();
+  });
+
+  return () => cantidad;
+}
+
+function bindDetailAddButton(
+  container: Element,
+  siteId: number,
+  productId: number,
+  getCantidad: () => number
+): void {
+  const addBtn = container.querySelector<HTMLElement>("[data-tienda-add-cart]");
+  if (!addBtn) return;
+
+  addBtn.addEventListener("click", async (event) => {
+    event.preventDefault();
+
+    const uid = getUsuarioId();
+    if (!uid) {
+      showToast("Debes iniciar sesión para agregar al carrito");
+      return;
+    }
+
+    try {
+      addBtn.textContent = "Agregando...";
+      addBtn.setAttribute("disabled", "true");
+      await addToCart(siteId, productId, getCantidad(), uid);
+      refreshCarritoUI();
+      addBtn.textContent = "✓ Agregado";
+      setTimeout(() => {
+        addBtn.textContent = "Agregar al carrito";
+        addBtn.removeAttribute("disabled");
+      }, 2000);
+    } catch (error) {
+      console.error("[Tienda Widget]", error);
+      addBtn.textContent = "Error";
+    }
+  });
+}
+
 async function initProductoDetalle(container: Element): Promise<void> {
   const siteId = getSiteId(container);
   if (!siteId) return;
 
   const params = new URLSearchParams(window.location.search);
   const slug = params.get("producto");
-  const productoIdAttr = container.getAttribute("data-producto-id");
-  let productoId: number | null = productoIdAttr ? Number(productoIdAttr) : null;
+  const productoIdAttr = (container as HTMLElement).dataset.productoId;
+  const productoId = productoIdAttr ? Number(productoIdAttr) : null;
 
   if (!productoId && !slug) return;
 
   const empty = container.querySelector<HTMLElement>("[data-tienda-empty]");
 
   try {
-    let product: Product;
-
-    if (productoId) {
-      product = await fetchProducto(siteId, productoId);
-    } else if (slug) {
-      const productos = await fetchProductos(siteId, { limit: 100 });
-      const found = productos.find((p) => p.slug === slug);
-      if (!found) {
-        if (empty) empty.style.display = "block";
-        return;
-      }
-      product = found;
-      productoId = product.id;
-    /* v8 ignore start */
-    } else {
-      if (empty) empty.style.display = "block";
+    const product = await resolveProductForDetail(siteId, productoId, slug);
+    if (!product) {
+      toggleElement(empty, true);
       return;
     }
-    /* v8 ignore stop */
 
     fillProductItem(container as HTMLElement, product);
+    toggleElement(empty, false);
 
-    if (empty) empty.style.display = "none";
-
-    const qtyValue = container.querySelector<HTMLElement>("[data-tienda-qty-value]");
-    const qtyMinus = container.querySelector<HTMLElement>("[data-tienda-qty-minus]");
-    const qtyPlus = container.querySelector<HTMLElement>("[data-tienda-qty-plus]");
-    const addBtn = container.querySelector<HTMLElement>("[data-tienda-add-cart]");
-
-    let cantidad = 1;
-
-    if (qtyMinus) {
-      qtyMinus.addEventListener("click", () => {
-        if (cantidad > 1) {
-          cantidad--;
-          if (qtyValue) qtyValue.textContent = String(cantidad);
-        }
-      });
-    }
-
-    if (qtyPlus) {
-      qtyPlus.addEventListener("click", () => {
-        if (cantidad < product.stock) {
-          cantidad++;
-          if (qtyValue) qtyValue.textContent = String(cantidad);
-        }
-      });
-    }
-
-    const pid = productoId;
-    if (addBtn && pid) {
-      addBtn.addEventListener("click", async (event) => {
-        event.preventDefault();
-
-        const uid = getUsuarioId();
-        if (!uid) {
-          showToast("Debes iniciar sesión para agregar al carrito");
-          return;
-        }
-
-        try {
-          addBtn.textContent = "Agregando...";
-          addBtn.setAttribute("disabled", "true");
-          await addToCart(siteId, pid, cantidad, uid);
-          refreshCarritoUI();
-          addBtn.textContent = "✓ Agregado";
-          setTimeout(() => {
-            addBtn.textContent = "Agregar al carrito";
-            addBtn.removeAttribute("disabled");
-          }, 2000);
-        } catch (error) {
-          console.error("[Tienda Widget]", error);
-          addBtn.textContent = "Error";
-        }
-      });
-    }
+    const getCantidad = initQtyControls(container, product);
+    bindDetailAddButton(container, siteId, product.id, getCantidad);
   } catch (error) {
     console.error("[Tienda Widget]", error);
-    if (empty) empty.style.display = "block";
+    toggleElement(empty, true);
   }
 }
 
@@ -566,7 +584,7 @@ async function initCategorias(container: Element): Promise<void> {
 
     const allBtn = clonedTemplate.cloneNode(true) as HTMLElement;
     const allName = allBtn.querySelector<HTMLElement>("[data-tienda-category-name]");
-    allBtn.setAttribute("data-categoria-id", "");
+    allBtn.dataset.categoriaId = "";
     if (allName) allName.textContent = "Todas";
     allBtn.addEventListener("click", () => filterByCategory(container, null));
     list.appendChild(allBtn);
@@ -574,7 +592,7 @@ async function initCategorias(container: Element): Promise<void> {
     categorias.forEach((cat) => {
       const btn = clonedTemplate.cloneNode(true) as HTMLElement;
       const name = btn.querySelector<HTMLElement>("[data-tienda-category-name]");
-      btn.setAttribute("data-categoria-id", String(cat.id));
+      btn.dataset.categoriaId = String(cat.id);
       if (name) name.textContent = cat.nombre;
 
       btn.addEventListener("click", () => filterByCategory(container, cat.id));
@@ -605,6 +623,183 @@ function filterByCategory(_container: Element, categoriaId: number | null): void
   });
 }
 
+function ensureCartTemplate(list: HTMLElement | null): void {
+  if (!list || cartItemTemplate) return;
+
+  const template = list.querySelector<HTMLElement>("[data-tienda-item]");
+  if (template) cartItemTemplate = template.outerHTML;
+}
+
+function showCartSummary(container: Element): void {
+  const checkoutLink = container.querySelector<HTMLElement>("[data-tienda-checkout-link]");
+  const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
+
+  toggleElement(checkoutLink, true);
+  if (totalEl) {
+    const section = totalEl.parentElement?.parentElement;
+    if (section) section.style.display = "";
+  }
+}
+
+function updateCartItemView(el: HTMLElement, item: CarritoItem): void {
+  const image = el.querySelector<HTMLImageElement>("[data-tienda-product-image]");
+  const name = el.querySelector<HTMLElement>("[data-tienda-product-name]");
+  const price = el.querySelector<HTMLElement>("[data-tienda-product-price]");
+  const qtyValue = el.querySelector<HTMLElement>("[data-tienda-qty-value]");
+  const subtotal = el.querySelector<HTMLElement>("[data-tienda-item-subtotal]");
+
+  if (image) {
+    image.src = getFirstImage(item.producto.imagenes);
+    image.alt = item.producto.nombre;
+  }
+  if (name) name.textContent = item.producto.nombre;
+  if (price) price.textContent = formatPrice(item.producto.precio);
+  if (qtyValue) qtyValue.textContent = String(item.cantidad);
+  if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * item.cantidad);
+}
+
+function renderCartTotal(container: Element, items: CarritoItem[]): void {
+  const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
+  if (!totalEl) return;
+
+  const total = items.reduce((sum, i) => sum + i.producto.precio * i.cantidad, 0);
+  totalEl.textContent = formatPrice(total);
+}
+
+function createCartElement(item: CarritoItem): HTMLElement | null {
+  if (!cartItemTemplate) return null;
+
+  const temp = document.createElement("div");
+  temp.innerHTML = cartItemTemplate;
+
+  const el = temp.firstElementChild as HTMLElement | null;
+  if (!el) return null;
+
+  el.style.display = "";
+  el.dataset.tiendaItemId = String(item.id);
+  updateCartItemView(el, item);
+  return el;
+}
+
+function bindCartQuantityButton(
+  button: HTMLElement | null,
+  container: Element,
+  siteId: number,
+  usuarioId: number | null,
+  item: CarritoItem,
+  getQuantity: () => number
+): void {
+  button?.addEventListener("click", async () => {
+    const newQty = getQuantity();
+    if (newQty === item.cantidad) return;
+
+    try {
+      await updateCartItem(siteId, item.id, newQty);
+      item.cantidad = newQty;
+      const cartItem = button?.closest<HTMLElement>("[data-tienda-item]");
+      if (cartItem) {
+        updateCartItemView(cartItem, item);
+      }
+      refreshCartTotal(container, siteId, usuarioId);
+    } catch (error) {
+      console.error("[Tienda Widget]", error);
+    }
+  });
+}
+
+function bindCartRemoveButton(
+  removeBtn: HTMLElement | null,
+  list: HTMLElement,
+  container: Element,
+  siteId: number,
+  usuarioId: number | null,
+  item: CarritoItem,
+  el: HTMLElement
+): void {
+  removeBtn?.addEventListener("click", async () => {
+    try {
+      await removeCartItem(siteId, item.id);
+      el.remove();
+
+      const remaining = list.querySelectorAll("[data-tienda-item]");
+      if (remaining.length === 0) showEmpty(container);
+      else refreshCartTotal(container, siteId, usuarioId);
+    } catch (error) {
+      console.error("[Tienda Widget]", error);
+    }
+  });
+}
+
+function bindCartItemActions(
+  el: HTMLElement,
+  list: HTMLElement,
+  container: Element,
+  siteId: number,
+  usuarioId: number | null,
+  item: CarritoItem
+): void {
+  const qtyMinus = el.querySelector<HTMLElement>("[data-tienda-qty-minus]");
+  const qtyPlus = el.querySelector<HTMLElement>("[data-tienda-qty-plus]");
+  const removeBtn = el.querySelector<HTMLElement>("[data-tienda-item-remove]");
+
+  bindCartQuantityButton(qtyMinus, container, siteId, usuarioId, item, () => Math.max(1, item.cantidad - 1));
+  bindCartQuantityButton(qtyPlus, container, siteId, usuarioId, item, () => item.cantidad + 1);
+  bindCartRemoveButton(removeBtn, list, container, siteId, usuarioId, item, el);
+}
+
+function renderCartItems(
+  list: HTMLElement,
+  container: Element,
+  siteId: number,
+  usuarioId: number | null,
+  items: CarritoItem[]
+): void {
+  list.innerHTML = "";
+
+  items.forEach((item) => {
+    const el = createCartElement(item);
+    if (!el) return;
+
+    bindCartItemActions(el, list, container, siteId, usuarioId, item);
+    list.appendChild(el);
+  });
+}
+
+function ensurePayButton(container: Element, usuarioId: number | null): void {
+  const existingBtn = container.querySelector<HTMLElement>("[data-tienda-pagar]");
+  if (existingBtn) return;
+
+  const pagarBtn = document.createElement("button");
+  pagarBtn.dataset.tiendaPagar = "";
+  pagarBtn.textContent = "Pagar ahora";
+  Object.assign(pagarBtn.style, {
+    width: "100%",
+    padding: "14px",
+    marginTop: "16px",
+    background: usuarioId ? "#16a34a" : "#f59e0b",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    fontSize: "16px",
+    fontWeight: "700",
+    cursor: "pointer",
+  });
+  pagarBtn.addEventListener("click", () => {
+    const uid = getUsuarioId();
+    if (!uid) {
+      showToast("Debes iniciar sesión para pagar");
+      return;
+    }
+
+    const checkout = document.querySelector<HTMLElement>('[data-tienda="checkout"]');
+    if (checkout) checkout.scrollIntoView({ behavior: "smooth" });
+    else showToast("Sección de checkout no disponible");
+  });
+
+  const totalSection = container.querySelector("[data-tienda-cart-total]")?.closest("div") || container;
+  totalSection.appendChild(pagarBtn);
+}
+
 async function initCarrito(container: Element): Promise<void> {
   const siteId = getSiteId(container);
   const usuarioId = getUsuarioId();
@@ -615,147 +810,23 @@ async function initCarrito(container: Element): Promise<void> {
   }
 
   const list = container.querySelector<HTMLElement>("[data-tienda-list]");
-  const empty = container.querySelector<HTMLElement>("[data-tienda-empty]");
-  const totalEl = container.querySelector<HTMLElement>("[data-tienda-cart-total]");
-
-  if (list && !cartItemTemplate) {
-    const te = list.querySelector<HTMLElement>("[data-tienda-item]");
-    if (te) cartItemTemplate = te.outerHTML;
-  }
+  ensureCartTemplate(list);
 
   try {
     const carrito = await fetchCarrito(siteId, usuarioId);
 
-    if (!carrito.items || !carrito.items.length) {
+    if (!carrito.items?.length) {
       showEmpty(container);
       return;
     }
 
-    if (empty) empty.style.display = "none";
+    if (!list || !cartItemTemplate) return;
 
-    const checkoutLink = container.querySelector<HTMLElement>("[data-tienda-checkout-link]");
-    if (checkoutLink) checkoutLink.style.display = "";
-    if (totalEl) {
-      const section = totalEl.parentElement?.parentElement;
-      if (section) section.style.display = "";
-    }
-
-    if (!list) return;
-    if (!cartItemTemplate) return;
-    list.innerHTML = "";
-
-    carrito.items.forEach((item) => {
-      const temp = document.createElement("div");
-      temp.innerHTML = cartItemTemplate!;
-      const el = temp.firstElementChild as HTMLElement;
-      el.style.display = "";
-      el.setAttribute("data-tienda-item-id", String(item.id));
-
-      const image = el.querySelector<HTMLImageElement>("[data-tienda-product-image]");
-      const name = el.querySelector<HTMLElement>("[data-tienda-product-name]");
-      const price = el.querySelector<HTMLElement>("[data-tienda-product-price]");
-      const qtyValue = el.querySelector<HTMLElement>("[data-tienda-qty-value]");
-      const qtyMinus = el.querySelector<HTMLElement>("[data-tienda-qty-minus]");
-      const qtyPlus = el.querySelector<HTMLElement>("[data-tienda-qty-plus]");
-      const subtotal = el.querySelector<HTMLElement>("[data-tienda-item-subtotal]");
-      const removeBtn = el.querySelector<HTMLElement>("[data-tienda-item-remove]");
-
-      if (image) {
-        image.src = getFirstImage(item.producto.imagenes);
-        image.alt = item.producto.nombre;
-      }
-      if (name) name.textContent = item.producto.nombre;
-      if (price) price.textContent = formatPrice(item.producto.precio);
-      if (qtyValue) qtyValue.textContent = String(item.cantidad);
-      if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * item.cantidad);
-
-      if (qtyMinus) {
-        qtyMinus.addEventListener("click", async () => {
-          const newQty = Math.max(1, item.cantidad - 1);
-          if (newQty === item.cantidad) return;
-          try {
-            await updateCartItem(siteId, item.id, newQty);
-            item.cantidad = newQty;
-            if (qtyValue) qtyValue.textContent = String(newQty);
-            if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * newQty);
-            refreshCartTotal(container, siteId, usuarioId);
-          } catch (error) {
-            console.error("[Tienda Widget]", error);
-          }
-        });
-      }
-
-      if (qtyPlus) {
-        qtyPlus.addEventListener("click", async () => {
-          const newQty = item.cantidad + 1;
-          try {
-            await updateCartItem(siteId, item.id, newQty);
-            item.cantidad = newQty;
-            if (qtyValue) qtyValue.textContent = String(newQty);
-            if (subtotal) subtotal.textContent = formatPrice(item.producto.precio * newQty);
-            refreshCartTotal(container, siteId, usuarioId);
-          } catch (error) {
-            console.error("[Tienda Widget]", error);
-          }
-        });
-      }
-
-      if (removeBtn) {
-        removeBtn.addEventListener("click", async () => {
-          try {
-            await removeCartItem(siteId, item.id);
-            el.remove();
-            const remaining = list.querySelectorAll("[data-tienda-item]");
-            if (remaining.length === 0) {
-              showEmpty(container);
-            } else {
-              refreshCartTotal(container, siteId, usuarioId);
-            }
-          } catch (error) {
-            console.error("[Tienda Widget]", error);
-          }
-        });
-      }
-
-      list.appendChild(el);
-    });
-
-    if (totalEl) {
-      const total = carrito.items.reduce((sum, i) => sum + i.producto.precio * i.cantidad, 0);
-      totalEl.textContent = formatPrice(total);
-    }
-
-    // "Pagar" button → scroll to checkout or prompt login
-    const existingBtn = container.querySelector<HTMLElement>("[data-tienda-pagar]");
-    if (!existingBtn) {
-      const pagarBtn = document.createElement("button");
-      pagarBtn.setAttribute("data-tienda-pagar", "");
-      pagarBtn.textContent = "Pagar ahora";
-      Object.assign(pagarBtn.style, {
-        width: "100%",
-        padding: "14px",
-        marginTop: "16px",
-        background: usuarioId ? "#16a34a" : "#f59e0b",
-        color: "white",
-        border: "none",
-        borderRadius: "10px",
-        fontSize: "16px",
-        fontWeight: "700",
-        cursor: "pointer",
-      });
-      pagarBtn.addEventListener("click", () => {
-        const uid = getUsuarioId();
-        if (!uid) {
-          showToast("Debes iniciar sesión para pagar");
-          return;
-        }
-        const checkout = document.querySelector<HTMLElement>('[data-tienda="checkout"]');
-        if (checkout) checkout.scrollIntoView({ behavior: "smooth" });
-        else showToast("Sección de checkout no disponible");
-      });
-      const totalSection = container.querySelector('[data-tienda-cart-total]')?.closest("div") || container;
-      totalSection.appendChild(pagarBtn);
-    }
+    toggleElement(container.querySelector<HTMLElement>("[data-tienda-empty]"), false);
+    showCartSummary(container);
+    renderCartItems(list, container, siteId, usuarioId, carrito.items);
+    renderCartTotal(container, carrito.items);
+    ensurePayButton(container, usuarioId);
   /* v8 ignore next 4 */
   } catch (error) {
     console.error("[Tienda Widget]", error);
@@ -782,6 +853,107 @@ export function refreshCarritoUI(): void {
   });
 }
 
+function showCheckoutError(errorEl: HTMLElement | null, message: string): void {
+  if (!errorEl) return;
+
+  errorEl.textContent = message;
+  errorEl.style.display = "block";
+}
+
+function getCheckoutField(form: HTMLFormElement, name: string): string {
+  const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+    `[data-tienda-field-${name}]`
+  );
+  return el?.value?.trim() || "";
+}
+
+function buildCheckoutData(form: HTMLFormElement, usuarioId: number): Record<string, unknown> {
+  return {
+    nombre_cliente: getCheckoutField(form, "nombre"),
+    email_cliente: getCheckoutField(form, "email"),
+    telefono_cliente: getCheckoutField(form, "telefono"),
+    direccion_envio: getCheckoutField(form, "direccion"),
+    ciudad_envio: getCheckoutField(form, "ciudad"),
+    pais_envio: getCheckoutField(form, "pais"),
+    codigo_postal: getCheckoutField(form, "codigo-postal"),
+    metodo_pago: getCheckoutField(form, "metodo-pago"),
+    notas: getCheckoutField(form, "notas"),
+    usuario_id: usuarioId,
+  };
+}
+
+function setSubmitLoading(submitBtn: HTMLElement | null, loading: boolean): void {
+  if (!submitBtn) return;
+
+  submitBtn.textContent = loading ? "Procesando..." : "Confirmar pedido";
+  (submitBtn as HTMLButtonElement).disabled = loading;
+}
+
+function fillCheckoutProfile(form: HTMLFormElement): void {
+  if (!isAuthenticated()) return;
+
+  import('./perfil').then(({ fetchProfile }) => {
+    fetchProfile().then((profile) => {
+      const setField = (name: string, value: string | null | undefined) => {
+        const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+          `[data-tienda-field-${name}]`
+        );
+        if (el && value) el.value = value;
+      };
+
+      setField("nombre", `${profile.nombre} ${profile.apellido}`);
+      setField("email", profile.correo);
+      setField("telefono", profile.telefono);
+      setField("direccion", profile.direccion_envio);
+      setField("ciudad", profile.ciudad);
+      setField("pais", profile.pais);
+      setField("codigo-postal", profile.codigo_postal);
+    }).catch(() => {});
+  });
+}
+
+async function handleCheckoutSubmit(
+  event: SubmitEvent,
+  container: Element,
+  form: HTMLFormElement,
+  successEl: HTMLElement | null,
+  errorEl: HTMLElement | null,
+  messageEl: HTMLElement | null
+): Promise<void> {
+  event.preventDefault();
+
+  const siteId = getSiteId(container);
+  const usuarioId = getUsuarioId();
+
+  if (!siteId) {
+    showCheckoutError(errorEl, "Sitio no identificado");
+    return;
+  }
+
+  if (!usuarioId) {
+    showCheckoutError(errorEl, "Debes iniciar sesión para finalizar la compra");
+    showToast("Debes iniciar sesión para finalizar la compra");
+    return;
+  }
+
+  const submitBtn = form.querySelector<HTMLElement>('button[type="submit"]');
+
+  try {
+    setSubmitLoading(submitBtn, true);
+    toggleElement(errorEl, false);
+
+    const result = await postCheckout(siteId, buildCheckoutData(form, usuarioId));
+
+    form.style.display = "none";
+    toggleElement(successEl, true);
+    if (messageEl) messageEl.textContent = result.mensaje || "Pedido confirmado exitosamente";
+  } catch (error) {
+    console.error("[Tienda Widget]", error);
+    showCheckoutError(errorEl, error instanceof Error ? error.message : "Error al procesar el pedido");
+    setSubmitLoading(submitBtn, false);
+  }
+}
+
 function initCheckout(container: Element): void {
   const form = container.querySelector<HTMLFormElement>("[data-tienda-checkout-form]");
   const successEl = container.querySelector<HTMLElement>("[data-tienda-checkout-success]");
@@ -790,95 +962,9 @@ function initCheckout(container: Element): void {
 
   if (!form) return;
 
-  if (isAuthenticated()) {
-    import('./perfil').then(({ fetchProfile }) => {
-      fetchProfile().then((profile) => {
-        const setField = (name: string, value: string | null | undefined) => {
-          const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-            `[data-tienda-field-${name}]`
-          );
-          if (el && value) el.value = value;
-        };
-        setField("nombre", `${profile.nombre} ${profile.apellido}`);
-        setField("email", profile.correo);
-        setField("telefono", profile.telefono);
-        setField("direccion", profile.direccion_envio);
-        setField("ciudad", profile.ciudad);
-        setField("pais", profile.pais);
-        setField("codigo-postal", profile.codigo_postal);
-      }).catch(() => {});
-    });
-  }
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const siteId = getSiteId(container);
-    const usuarioId = getUsuarioId();
-
-    if (!siteId) {
-      if (errorEl) {
-        errorEl.textContent = "Sitio no identificado";
-        errorEl.style.display = "block";
-      }
-      return;
-    }
-
-    if (!usuarioId) {
-      if (errorEl) {
-        errorEl.textContent = "Debes iniciar sesión para finalizar la compra";
-        errorEl.style.display = "block";
-      }
-      showToast("Debes iniciar sesión para finalizar la compra");
-      return;
-    }
-
-    const getField = (name: string): string => {
-      const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-        `[data-tienda-field-${name}]`
-      );
-      return el?.value?.trim() || "";
-    };
-
-    const data: Record<string, unknown> = {
-      nombre_cliente: getField("nombre"),
-      email_cliente: getField("email"),
-      telefono_cliente: getField("telefono"),
-      direccion_envio: getField("direccion"),
-      ciudad_envio: getField("ciudad"),
-      pais_envio: getField("pais"),
-      codigo_postal: getField("codigo-postal"),
-      metodo_pago: getField("metodo-pago"),
-      notas: getField("notas"),
-      usuario_id: usuarioId,
-    };
-
-    const submitBtn = form.querySelector<HTMLElement>('button[type="submit"]');
-
-    try {
-      if (submitBtn) {
-        submitBtn.textContent = "Procesando...";
-        (submitBtn as HTMLButtonElement).disabled = true;
-      }
-
-      if (errorEl) errorEl.style.display = "none";
-
-      const result = await postCheckout(siteId, data);
-
-      form.style.display = "none";
-      if (successEl) successEl.style.display = "block";
-      if (messageEl) messageEl.textContent = result.mensaje || "Pedido confirmado exitosamente";
-    } catch (error) {
-      console.error("[Tienda Widget]", error);
-      if (errorEl) {
-        errorEl.textContent = error instanceof Error ? error.message : "Error al procesar el pedido";
-        errorEl.style.display = "block";
-      }
-      if (submitBtn) {
-        submitBtn.textContent = "Confirmar pedido";
-        (submitBtn as HTMLButtonElement).disabled = false;
-      }
-    }
+  fillCheckoutProfile(form);
+  form.addEventListener("submit", (event) => {
+    handleCheckoutSubmit(event, container, form, successEl, errorEl, messageEl);
   });
 }
 

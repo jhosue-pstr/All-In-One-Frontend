@@ -60,10 +60,8 @@ export default function Blog() {
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      /* v8 ignore next */
       const matchesSearch =
         post.title.toLowerCase().includes(search.toLowerCase()) ||
-        /* v8 ignore next */
         (post.excerpt || "").toLowerCase().includes(search.toLowerCase());
 
       const matchesStatus = statusFilter === "all" || post.status === statusFilter;
@@ -126,7 +124,6 @@ export default function Blog() {
 
   function openEditForm(post: BlogPost) {
     setEditingPost(post);
-    /* v8 ignore start */
     setForm({
       title: post.title || "",
       content: post.content || "",
@@ -138,7 +135,6 @@ export default function Blog() {
       meta_title: post.meta_title || "",
       meta_description: post.meta_description || "",
     });
-    /* v8 ignore start */
     setIsFormOpen(true);
     setError(null);
     setSuccess(null);
@@ -162,7 +158,6 @@ export default function Blog() {
   }
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    /* v8 ignore next 3 */
     if (!selectedSiteId) {
       setError("Primero selecciona un sitio");
       return;
@@ -199,22 +194,36 @@ export default function Blog() {
       featured_image: form.featured_image.trim() || undefined,
       status: form.status,
       published_at: form.published_at
-  ? new Date(form.published_at).toISOString()
-  : undefined,
+        ? new Date(form.published_at).toISOString()
+        : undefined,
       category_id: form.category_id ? Number(form.category_id) : undefined,
       meta_title: form.meta_title.trim() || undefined,
       meta_description: form.meta_description.trim() || undefined,
     };
   }
 
+  function getPostDescription(post: BlogPost): string {
+    if (post.excerpt) return post.excerpt;
+    if (post.meta_description) return post.meta_description;
+
+    return `${post.content.replace(/<[^>]*>/g, "").slice(0, 120)}...`;
+  }
+
+  function getSubmitButtonText(): string {
+    if (saving) return "Guardando...";
+    if (editingPost) return "Actualizar";
+
+    return "Crear post";
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    /* v8 ignore next 4 */
+
     if (!selectedSiteId) {
       setError("Selecciona un sitio antes de guardar");
       return;
     }
-    /* v8 ignore stop */
+
     if (!form.title.trim()) {
       setError("El título es obligatorio");
       return;
@@ -224,10 +233,11 @@ export default function Blog() {
       setError("El contenido es obligatorio");
       return;
     }
+
     if (form.status === "scheduled" && !form.published_at) {
-    setError("Para programar un post debes indicar fecha y hora de publicación");
-    return;
-}
+      setError("Para programar un post debes indicar fecha y hora de publicación");
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -254,7 +264,6 @@ export default function Blog() {
   }
 
   async function handleDelete(post: BlogPost) {
-    /* v8 ignore next */
     if (!selectedSiteId) return;
 
     const confirmDelete = window.confirm(`¿Seguro que deseas eliminar "${post.title}"?`);
@@ -274,8 +283,12 @@ export default function Blog() {
   }
 
   async function quickChangeStatus(post: BlogPost, status: PostStatus) {
-    /* v8 ignore next */
     if (!selectedSiteId) return;
+
+    const publishedAt =
+      status === "published" && !post.published_at
+        ? new Date().toISOString()
+        : post.published_at || undefined;
 
     setError(null);
     setSuccess(null);
@@ -283,12 +296,7 @@ export default function Blog() {
     try {
       await blogService.updatePost(selectedSiteId, post.id, {
         status,
-        /* v8 ignore start */
-        published_at:
-          status === "published" && !post.published_at
-            ? new Date().toISOString()
-            : post.published_at || undefined,
-        /* v8 ignore stop */
+        published_at: publishedAt,
       });
 
       setSuccess(`Post marcado como ${statusLabels[status].toLowerCase()}`);
@@ -299,7 +307,6 @@ export default function Blog() {
   }
 
   function getPublicPostUrl(post: BlogPost) {
-    /* v8 ignore next */
     if (!selectedSite) return "#";
 
     return `http://localhost:8000/${selectedSite.slug}?post=${post.slug}`;
@@ -404,16 +411,16 @@ export default function Blog() {
                         <span className={`blog-status blog-status-${post.status}`}>
                           {statusLabels[post.status]}
                         </span>
-                        <span>{post.published_at ? new Date(post.published_at).toLocaleDateString() : "Sin fecha"}</span>
+                        <span>
+                          {post.published_at
+                            ? new Date(post.published_at).toLocaleDateString()
+                            : "Sin fecha"}
+                        </span>
                       </div>
 
                       <h3>{post.title}</h3>
 
-                      <p>
-                        {post.excerpt ||
-                          post.meta_description ||
-                          post.content.replace(/<[^>]*>/g, "").slice(0, 120) + "..."}
-                      </p>
+                      <p>{getPostDescription(post)}</p>
 
                       <div className="blog-post-actions">
                         <button onClick={() => openEditForm(post)}>Editar</button>
@@ -552,7 +559,7 @@ export default function Blog() {
                   </button>
 
                   <button type="submit" className="blog-primary-btn" disabled={saving}>
-                    {saving ? "Guardando..." : editingPost ? "Actualizar" : "Crear post"}
+                    {getSubmitButtonText()}
                   </button>
                 </div>
               </form>

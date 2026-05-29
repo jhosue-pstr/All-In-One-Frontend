@@ -84,16 +84,23 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     div.innerHTML = `
       <p style="margin-bottom:20px;font-size:16px;">¿Eliminar la página "<b>${pageName}</b>"?</p>
       <div style="display:flex;gap:10px;justify-content:center;">
-        <button style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-        <button style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
+        <button data-action="cancel" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button data-action="confirm" style="padding:10px 20px;background:#e74c3c;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Eliminar</button>
       </div>`;
-    const [cancelBtn, confirmBtn] = [...div.querySelectorAll("button")];
-    cancelBtn.onclick = () => editor.Modal.close();
-    confirmBtn.onclick = () => {
-      editor.Pages.remove(pageId);
-      renderPagesList(container);
-      editor.Modal.close();
-    };
+    const cancelBtn = div.querySelector<HTMLButtonElement>('[data-action="cancel"]');
+    const confirmBtn = div.querySelector<HTMLButtonElement>('[data-action="confirm"]');
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => editor.Modal.close();
+    }
+
+    if (confirmBtn) {
+      confirmBtn.onclick = () => {
+        editor.Pages.remove(pageId);
+        renderPagesList(container);
+        editor.Modal.close();
+      };
+    }
     return div;
   };
 
@@ -104,21 +111,29 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
       <input type="text" id="new-page-name" placeholder="Nombre de la página" 
         style="width:100%;padding:12px;margin:15px 0;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;">
       <div style="display:flex;gap:10px;justify-content:flex-end;">
-        <button style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
-        <button style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
+        <button data-action="cancel" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
+        <button data-action="create" style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
       </div>`;
     const input = div.querySelector<HTMLInputElement>("#new-page-name")!;
-    const [cancelBtn, createBtn] = [...div.querySelectorAll("button")];
+    const cancelBtn = div.querySelector<HTMLButtonElement>('[data-action="cancel"]');
+    const createBtn = div.querySelector<HTMLButtonElement>('[data-action="create"]');
+
     input.focus();
-    cancelBtn.onclick = () => editor.Modal.close();
-    createBtn.onclick = () => {
-      const name = input.value.trim();
-      if (name) {
-        editor.Pages.add({ name, component: `<div></div>` });
-        renderPagesList(document.getElementById(pagesListId));
-      }
-      editor.Modal.close();
-    };
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => editor.Modal.close();
+    }
+
+    if (createBtn) {
+      createBtn.onclick = () => {
+        const name = input.value.trim();
+        if (name) {
+          editor.Pages.add({ name, component: `<div></div>` });
+          renderPagesList(document.getElementById(pagesListId));
+        }
+        editor.Modal.close();
+      };
+    }
     return div;
   };
 

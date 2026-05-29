@@ -251,21 +251,58 @@ export default function Tienda() {
     setForm(initialProductoForm);
   }
 
-  function handleChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) {
-    const { name, value, type } = event.target;
-    if (type === "checkbox") {
-      const checked = (event.target as HTMLInputElement).checked;
-      setForm((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-        ...(name === "nombre" && !editingProducto ? { slug: slugify(value) } : {}),
-      }));
-    }
+function shouldGenerateSlug(fieldName: string): boolean {
+  return fieldName === "nombre" && !editingProducto;
+}
+
+function buildFormUpdate(
+  prev: ProductoFormState,
+  name: string,
+  value: string
+): ProductoFormState {
+  return {
+    ...prev,
+    [name]: value,
+    ...(shouldGenerateSlug(name)
+      ? { slug: slugify(value) }
+      : {}),
+  };
+}
+
+function handleCheckboxChange(
+  name: string,
+  checked: boolean
+): void {
+  setForm((prev) => ({
+    ...prev,
+    [name]: checked,
+  }));
+}
+
+function handleTextChange(
+  name: string,
+  value: string
+): void {
+  setForm((prev) => buildFormUpdate(prev, name, value));
+}
+
+function handleChange(
+  event: React.ChangeEvent<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >
+) {
+  const { name, value, type } = event.target;
+
+  if (type === "checkbox") {
+    handleCheckboxChange(
+      name,
+      (event.target as HTMLInputElement).checked
+    );
+    return;
   }
+
+  handleTextChange(name, value);
+}
 
   function buildProductoPayload(): StoreProductoCreate | StoreProductoUpdate {
     const payload: Record<string, unknown> = {
@@ -488,7 +525,7 @@ export default function Tienda() {
       await storeService.updatePedidoEstado(selectedSiteId, pedidoId, { estado: nuevoEstado });
       setSuccess(`Pedido actualizado a "${estadoLabels[nuevoEstado] || nuevoEstado}"`);
       await loadPedidos(selectedSiteId);
-      if (pedidoDetail && pedidoDetail.id === pedidoId) {
+      if (pedidoDetail?.id === pedidoId) {
         const updated = await storeService.getPedido(selectedSiteId, pedidoId);
         setPedidoDetail(updated);
       }
@@ -496,8 +533,24 @@ export default function Tienda() {
       setError(err instanceof Error ? err.message : "Error al actualizar pedido");
     }
   }
+  function getProductoSubmitText(): string {
+    if (savingProducto) return "Guardando...";
+    if (editingProducto) return "Actualizar";
+    return "Crear producto";
+  }
 
+  function getCategoriaSubmitText(): string {
+    if (savingCategoria) return "Guardando...";
+    if (editingCategoria) return "Actualizar";
+    return "Crear categoría";
+  }
+
+  function getPedidoEmptyText(): string {
+    if (pedidoEstadoFilter === "all") return "No hay pedidos todavía.";
+    return "No hay pedidos con este estado.";
+  }
   return (
+
     <div className="tienda-admin-page">
       <header className="tienda-admin-header">
         <div>
@@ -803,7 +856,7 @@ export default function Tienda() {
                       checked={form.es_activo}
                       onChange={handleChange}
                     />
-                    Activo
+                    <span>Activo</span>
                   </label>
                   <label>
                     <input
@@ -812,7 +865,7 @@ export default function Tienda() {
                       checked={form.es_featured}
                       onChange={handleChange}
                     />
-                    Destacado
+                    <span>Destacado</span>
                   </label>
                   <label>
                     <input
@@ -821,7 +874,7 @@ export default function Tienda() {
                       checked={form.controlar_alertas}
                       onChange={handleChange}
                     />
-                    Alertas stock
+                    <span>Alertas stock</span>
                   </label>
                 </div>
 
@@ -829,13 +882,9 @@ export default function Tienda() {
                   <button type="button" onClick={closeForm} className="tienda-secondary-btn">
                     Cancelar
                   </button>
-                  <button type="submit" className="tienda-primary-btn" disabled={savingProducto}>
-                    {savingProducto
-                      ? "Guardando..."
-                      : editingProducto
-                        ? "Actualizar"
-                        : "Crear producto"}
-                  </button>
+                    <button type="submit" className="tienda-primary-btn" disabled={savingProducto}>
+                      {getProductoSubmitText()}
+                    </button>
                 </div>
               </form>
             </aside>
@@ -948,11 +997,7 @@ export default function Tienda() {
                       Cancelar
                     </button>
                     <button type="submit" className="tienda-primary-btn" disabled={savingCategoria}>
-                      {savingCategoria
-                        ? "Guardando..."
-                        : editingCategoria
-                          ? "Actualizar"
-                          : "Crear categoría"}
+                      {getCategoriaSubmitText()}
                     </button>
                   </div>
                 </form>
@@ -990,9 +1035,7 @@ export default function Tienda() {
             <div className="tienda-empty-state">Cargando pedidos...</div>
           ) : filteredPedidos.length === 0 ? (
             <div className="tienda-empty-state">
-              {pedidoEstadoFilter === "all"
-                ? "No hay pedidos todavía."
-                : "No hay pedidos con este estado."}
+              {getPedidoEmptyText()}
             </div>
           ) : (
             <table className="tienda-table">

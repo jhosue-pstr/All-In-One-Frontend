@@ -3,7 +3,9 @@ import { loadProfile } from './perfil';
 import { refreshCarritoUI } from './tienda';
 
 function getSitioId(element: HTMLElement): number | null {
-  const id = element.closest('[data-sitio-id]')?.getAttribute('data-sitio-id');
+  const closestElement = element.closest<HTMLElement>('[data-sitio-id]');
+  const id = closestElement?.dataset.sitioId;
+
   return id ? Number(id) : null;
 }
 

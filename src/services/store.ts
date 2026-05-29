@@ -42,9 +42,13 @@ export const storeService = {
     if (params?.featured) query.set('featured', 'true');
 
     const qs = query.toString();
-    return fetchApi<ApiPaginatedResponse<StoreProductoListado>>(
-      `${base(sitioId)}/productos${qs ? `?${qs}` : ''}`
-    );
+    const endpoint = `${base(sitioId)}/productos`;
+
+    const url = qs
+      ? `${endpoint}?${qs}`
+      : endpoint;
+
+    return fetchApi<ApiPaginatedResponse<StoreProductoListado>>(url);
   },
 
   async getProduct(
@@ -153,9 +157,13 @@ export const storeService = {
     if (params?.por_pagina) query.set('por_pagina', String(params.por_pagina));
 
     const qs = query.toString();
-    return fetchApi<ApiPaginatedResponse<StorePedidoListado>>(
-      `${base(sitioId)}/pedidos${qs ? `?${qs}` : ''}`
-    );
+    const endpoint = `${base(sitioId)}/pedidos`;
+
+    const url = qs
+      ? `${endpoint}?${qs}`
+      : endpoint;
+
+    return fetchApi<ApiPaginatedResponse<StorePedidoListado>>(url);
   },
 
   async getPedido(sitioId: number, pedidoId: number): Promise<StorePedido> {

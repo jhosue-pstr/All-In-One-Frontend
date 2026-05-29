@@ -18,10 +18,10 @@ type BlogPost = {
 const API_BASE = "/api";
 
 function getSiteId(element: Element): number | null {
-  const value = element.getAttribute("data-sitio-id");
+  const value = (element as HTMLElement).dataset.sitioId;
 
   if (!value || value === "{{SITIO_ID}}") {
-    const bodySiteId = document.body.getAttribute("data-sitio-id");
+    const bodySiteId = document.body.dataset.sitioId;
     if (!bodySiteId) return null;
 
     const parsedBodyId = Number(bodySiteId);
@@ -33,7 +33,7 @@ function getSiteId(element: Element): number | null {
 }
 
 function getLimit(element: Element, fallback: number): number {
-  const value = element.getAttribute("data-limit");
+  const value = (element as HTMLElement).dataset.limit;
   if (!value) return fallback;
 
   const parsed = Number(value);
