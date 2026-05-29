@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
 import { blogService } from "../../services/blog";
 import { sitioService } from "../../services/sitio";
 import type {
@@ -252,7 +257,9 @@ export default function Blog() {
     return "Sin fecha";
   }
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>,
+  ) {
     event.preventDefault();
 
     if (!selectedSiteId) {
@@ -304,7 +311,7 @@ export default function Blog() {
   async function handleDelete(post: BlogPost) {
     if (!selectedSiteId) return;
 
-    const confirmDelete = window.confirm(
+    const confirmDelete = globalThis.confirm(
       `¿Seguro que deseas eliminar "${post.title}"?`,
     );
 
