@@ -541,7 +541,7 @@ async function initProductoDetalle(container: Element): Promise<void> {
   try {
     const product = await resolveProductForDetail(siteId, productoId, slug);
     if (!product) {
-      toggleElement(empty, true);
+      showEmpty(container);
       return;
     }
 
@@ -552,7 +552,7 @@ async function initProductoDetalle(container: Element): Promise<void> {
     bindDetailAddButton(container, siteId, product.id, getCantidad);
   } catch (error) {
     console.error("[Tienda Widget]", error);
-    toggleElement(empty, true);
+    showEmpty(container);
   }
 }
 
