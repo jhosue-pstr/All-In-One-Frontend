@@ -2,7 +2,6 @@ import {
   useEffect,
   useMemo,
   useState,
-  type FormEvent,
 } from "react";
 import { blogService } from "../../services/blog";
 import { sitioService } from "../../services/sitio";
@@ -258,7 +257,7 @@ export default function Blog() {
   }
 
   async function handleSubmit(
-    event: FormEvent<HTMLFormElement>,
+    event: React.FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 

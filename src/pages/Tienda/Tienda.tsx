@@ -81,9 +81,9 @@ const PEDIDOS_TAB: TabId = "pedidos";
 function slugify(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
+    .replaceAll(/[^\w\s-]/g, "")
+    .replaceAll(/\s+/g, "-")
+    .replaceAll(/-+/g, "-")
     .trim();
 }
 
@@ -95,7 +95,7 @@ function getFirstImage(product: StoreProductoListado | StoreProducto): string {
   const imagenes = product.imagenes;
 
   if (imagenes?.length && typeof imagenes[0] === "string") {
-    return imagenes[0] as string;
+    return imagenes[0];
   }
 
   return "";
@@ -351,7 +351,9 @@ export default function Tienda() {
     return payload as unknown as StoreProductoCreate;
   }
 
-  async function handleProductoSubmit(event: React.FormEvent) {
+  async function handleProductoSubmit(
+  event: React.SyntheticEvent<HTMLFormElement>
+) {
     event.preventDefault();
 
     if (!selectedSiteId) {
@@ -396,7 +398,7 @@ export default function Tienda() {
   async function handleDeleteProducto(producto: StoreProductoListado) {
     if (!selectedSiteId) return;
 
-    const confirmDelete = window.confirm(`¿Seguro que deseas eliminar "${producto.nombre}"?`);
+    const confirmDelete = globalThis.confirm(`¿Seguro que deseas eliminar "${producto.nombre}"?`);
     if (!confirmDelete) return;
 
     setError(null);
@@ -498,7 +500,9 @@ export default function Tienda() {
     setCategoriaForm((prev) => buildCategoriaFormUpdate(prev, name, value));
   }
 
-  async function handleCategoriaSubmit(event: React.FormEvent) {
+  async function handleCategoriaSubmit(
+  event: React.SyntheticEvent<HTMLFormElement>
+) {
     event.preventDefault();
 
     if (!selectedSiteId) return;
@@ -540,7 +544,7 @@ export default function Tienda() {
   async function handleDeleteCategoria(cat: StoreCategoria) {
     if (!selectedSiteId) return;
 
-    const confirmDelete = window.confirm(`¿Seguro que deseas eliminar "${cat.nombre}"?`);
+    const confirmDelete = globalThis.confirm(`¿Seguro que deseas eliminar "${cat.nombre}"?`);
     if (!confirmDelete) return;
 
     try {

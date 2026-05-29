@@ -119,7 +119,7 @@ export function handleRegister(form: HTMLFormElement): void {
         <div style="text-align:center;padding:20px;">
           <p style="color:#27ae60;font-size:18px;font-weight:600;">¡Registro exitoso!</p>
           <p style="color:#666;">Ahora puedes iniciar sesión.</p>
-          <button type="button" style="padding:12px 24px;background:#667eea;color:white;border:none;border-radius:6px;font-size:16px;cursor:pointer;" onclick="window.location.reload()">
+          <button type="button" style="padding:12px 24px;background:#667eea;color:white;border:none;border-radius:6px;font-size:16px;cursor:pointer;" onclick="globalThis.location.reload()">
             Iniciar Sesión
           </button>
         </div>
@@ -143,7 +143,7 @@ export function handleLogout(btn: HTMLElement): void {
       // Ignorar error de logout
     }
     clearToken();
-    window.location.reload();
+    globalThis.location.reload();
   });
 }
 
