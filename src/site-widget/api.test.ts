@@ -89,5 +89,45 @@ describe('site-widget api', () => {
       const result = await apiFetch('/test')
       expect(result).toEqual({})
     })
+
+    it('returns true when token has no exp', () => {
+  const payload = btoa(JSON.stringify({ usuario_id: 1 }))
+  localStorage.setItem('site_token', `header.${payload}.sig`)
+
+  expect(isAuthenticated()).toBe(true)
+})
+
+    it('returns false when token is invalid', () => {
+      localStorage.setItem('site_token', 'bad-token')
+
+      expect(isAuthenticated()).toBe(false)
+    })
+
+    it('returns false when localStorage getItem throws', () => {
+      const spy = vi
+        .spyOn(Storage.prototype, 'getItem')
+        .mockImplementation(() => {
+          throw new Error('localStorage error')
+        })
+
+      expect(isAuthenticated()).toBe(false)
+
+      spy.mockRestore()
+    })
+
+    it('throws fallback when detail is empty', async () => {
+      globalThis.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({
+          detail: ''
+        }),
+      })
+
+      await expect(
+        apiFetch('/test')
+      ).rejects.toThrow(
+        'Error en la solicitud'
+      )
+    })
   })
 })

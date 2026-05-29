@@ -59,4 +59,13 @@ describe('fetchApi', () => {
     })
     await expect(fetchApi('/test')).rejects.toThrow('Error en la solicitud')
   })
+
+  it('should use unknown fallback when error json throws', async () => {
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: false,
+    json: () => Promise.reject(new Error('json fail')),
+  })
+
+  await expect(fetchApi('/test')).rejects.toThrow('Error desconocido')
+  })
 })

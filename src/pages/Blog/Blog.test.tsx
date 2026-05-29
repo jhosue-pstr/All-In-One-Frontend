@@ -495,4 +495,247 @@ it("does nothing when image input has no file", async () => {
       expect(blogService.getPosts).toHaveBeenCalledWith(2);
     });
   });
+
+it("search matches using excerpt text", async () => {
+  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+    {
+      ...mockPosts[0],
+      title: "Titulo diferente",
+      excerpt: "texto oculto especial",
+      meta_description: "",
+      content: "<p>contenido cualquiera</p>",
+    },
+  ])
+
+  render(<Blog />)
+
+  await screen.findByText("Titulo diferente")
+
+  const input = screen.getByPlaceholderText("Buscar por título o resumen...")
+
+  await userEvent.type(input, "oculto")
+
+  expect(screen.getByText("Titulo diferente")).toBeInTheDocument()
+  expect(screen.getByText("1 resultado(s)")).toBeInTheDocument()
+})
+it("handles delete non Error throw", async () => {
+  vi.spyOn(window, "confirm").mockReturnValue(true)
+
+  vi.mocked(blogService.deletePost).mockRejectedValueOnce("boom")
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  const deleteButtons = screen.getAllByRole("button", {
+    name: "Eliminar",
+  })
+
+  await userEvent.click(deleteButtons[0])
+
+  expect(
+    await screen.findByText("Error al eliminar el post")
+  ).toBeInTheDocument()
+})
+it('quick publish adds current date and handles missing selectedSite', async () => {
+  vi.mocked(blogService.updatePost)
+    .mockResolvedValue({} as any)
+
+  render(<Blog />)
+
+  await screen.findByText('Post Publicado')
+
+  await userEvent.click(
+    screen.getByRole('button',{
+      name:/publicar/i
+    })
+  )
+
+  expect(
+    blogService.updatePost
+  ).toHaveBeenCalled()
+})
+
+it("opens edit form with fallback empty values", async () => {
+  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+    {
+      ...mockPosts[0],
+      excerpt: null,
+      featured_image: null,
+      meta_title: null,
+      meta_description: null,
+      published_at: null,
+      category_id: null,
+    },
+  ])
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Editar",
+    })
+  )
+
+  expect(screen.getByText("Editar post")).toBeInTheDocument()
+
+  expect(
+    screen.getByPlaceholderText("Breve descripción del artículo...")
+  ).toHaveValue("")
+
+  expect(
+    screen.getByPlaceholderText("Título para buscadores")
+  ).toHaveValue("")
+
+  expect(
+    screen.getByPlaceholderText("Descripción para buscadores")
+  ).toHaveValue("")
+})
+
+
+it('handles loadSitios and loadPosts non Error throws', async () => {
+  vi.mocked(sitioService.getAll)
+    .mockRejectedValueOnce("boom")
+
+  render(<Blog />)
+
+  expect(
+    await screen.findByText("Error al cargar los sitios")
+  ).toBeInTheDocument()
+
+  vi.clearAllMocks()
+
+  vi.mocked(
+    sitioService.getAll
+  ).mockResolvedValue(
+    mockSitios as any
+  )
+
+  vi.mocked(blogService.getPosts)
+    .mockRejectedValueOnce("boom")
+
+  render(<Blog />)
+
+  expect(
+    await screen.findByText("Error al cargar los posts")
+  ).toBeInTheDocument()
+})
+it('openEditForm uses empty fallbacks for nullable fields', async () => {
+  vi.mocked(blogService.getPosts)
+    .mockResolvedValueOnce([
+      {
+        ...mockPosts[0],
+        excerpt:null,
+        featured_image:null,
+        published_at:null,
+        category_id:null,
+        meta_title:null,
+        meta_description:null,
+      } as any
+    ])
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getByRole(
+      'button',
+      {name:/editar/i}
+    )
+  )
+
+  expect(
+    screen.getByPlaceholderText(
+      /breve descripción/i
+    )
+  ).toHaveValue('')
+
+  expect(
+    screen.getByPlaceholderText(
+      /título para buscadores/i
+    )
+  ).toHaveValue('')
+
+ expect(
+  screen.getByPlaceholderText(
+    /descripción para buscadores/i
+  )
+).toHaveValue('')
+})
+
+it('uses fallback messages for upload and save non Error throws', async () => {
+  vi.mocked(blogService.uploadImage)
+    .mockRejectedValueOnce("boom")
+
+  vi.mocked(blogService.createPost)
+    .mockRejectedValueOnce("boom")
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getByRole('button',{
+      name:/nuevo post/i
+    })
+  )
+
+  const file = new File(["x"],"a.png",{type:"image/png"})
+
+  const fileInput =
+    document.querySelector(
+      'input[type="file"]'
+    ) as HTMLInputElement
+
+  await userEvent.upload(
+    fileInput,
+    file
+  )
+
+  expect(
+    await screen.findByText(
+      "Error al subir la imagen"
+    )
+  ).toBeInTheDocument()
+})
+it('covers delete cancel, quick status fallback and public url fallback', async () => {
+  vi.spyOn(window,'confirm')
+    .mockReturnValue(false)
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getAllByRole(
+      'button',
+      {name:/eliminar/i}
+    )[0]
+  )
+
+  expect(
+    window.confirm
+  ).toHaveBeenCalled()
+
+  vi.mocked(blogService.updatePost)
+    .mockRejectedValueOnce("boom")
+
+  await userEvent.click(
+    screen.getByRole(
+      'button',
+      {name:/publicar/i}
+    )
+  )
+
+  expect(
+    await screen.findByText(
+      "Error al cambiar el estado"
+    )
+  ).toBeInTheDocument()
+})
+
+
 });

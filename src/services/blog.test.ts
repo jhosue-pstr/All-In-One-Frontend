@@ -116,4 +116,19 @@ describe('blogService', () => {
     const call = (globalThis.fetch as any).mock.calls[0]
     expect(call[1].headers.Authorization).toBe('Bearer my-token')
   })
+
+  it("uploadImage throws fallback when detail is empty", async () => {
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: false,
+    json: () => Promise.resolve({ detail: "" }),
+  })
+
+  const file = new File(["test"], "test.png", {
+    type: "image/png",
+  })
+
+  await expect(
+    blogService.uploadImage(1, file)
+  ).rejects.toThrow("Error al subir la imagen")
+  })
 })

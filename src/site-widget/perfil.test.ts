@@ -75,4 +75,37 @@ describe('site-widget perfil', () => {
 
     expect(perfilBlock.style.display).toBe('none')
   })
+
+  it('loadProfile uses U avatar fallback when nombre is empty', async () => {
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve({
+      id: 1,
+      nombre: '',
+      apellido: 'Perez',
+      correo: 'a@a.com',
+    }),
+  })
+
+  document.body.innerHTML = `
+    <div id="perfil">
+      <span data-perfil="nombre_completo"></span>
+      <span data-perfil="correo"></span>
+      <img data-perfil="avatar" />
+    </div>
+  `
+
+  const block =
+    document.getElementById('perfil') as HTMLElement
+
+  await loadProfile(block)
+
+  expect(
+    (
+      block.querySelector(
+        '[data-perfil="avatar"]'
+      ) as HTMLImageElement
+    ).src
+  ).toContain('text=U')
+})
 })

@@ -212,7 +212,7 @@ describe("Tienda page", () => {
 
     vi.spyOn(window, "confirm").mockReturnValue(true);
 
-    global.fetch = vi.fn().mockResolvedValue({
+    globalThis.fetch = vi.fn().mockResolvedValue({
       json: vi.fn().mockResolvedValue({
         url: "/uploads/tienda/producto.png",
       }),
@@ -448,7 +448,7 @@ describe("Tienda page", () => {
     await userEvent.upload(fileInput, file);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalled();
+      expect(globalThis.fetch).toHaveBeenCalled();
     });
 
     expect(await screen.findByText("Imagen subida correctamente")).toBeInTheDocument();
@@ -456,7 +456,7 @@ describe("Tienda page", () => {
   });
 
   it("handles product image upload error", async () => {
-    global.fetch = vi.fn().mockRejectedValueOnce(new Error("Error upload")) as any;
+    globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error("Error upload")) as any;
 
     render(<Tienda />);
 
@@ -487,7 +487,7 @@ describe("Tienda page", () => {
       },
     });
 
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
   it("shows loading sitios error", async () => {

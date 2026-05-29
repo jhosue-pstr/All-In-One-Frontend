@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { siteAuthService } from './siteAuth'
 
+import { fetchApi } from './api'
+
 const mockFetchApi = vi.fn()
 vi.mock('./api', () => ({
   fetchApi: (...args: any[]) => mockFetchApi(...args),
@@ -70,4 +72,20 @@ describe('siteAuthService', () => {
     await siteAuthService.verify('token/with+chars')
     expect(mockFetchApi).toHaveBeenCalledWith('/site-auth/verify?token=token%2Fwith%2Bchars')
   })
+  it('listBySite should call fetchApi with site id query', async () => {
+    const mockUsers = [
+      { id: 1, nombre: 'Juan' },
+    ]
+
+    mockFetchApi.mockResolvedValue(mockUsers)
+
+    const result = await siteAuthService.listBySite(99)
+
+    expect(mockFetchApi).toHaveBeenCalledWith(
+      '/site-auth/usuarios?site_id=99'
+    )
+
+    expect(result).toEqual(mockUsers)
+  })
+
 })

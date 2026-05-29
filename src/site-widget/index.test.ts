@@ -1,53 +1,153 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-describe('site-widget index', () => {
+const mocks = vi.hoisted(() => ({
+  handleLogin: vi.fn(),
+  handleRegister: vi.fn(),
+  handleLogout: vi.fn(),
+  loadProfile: vi.fn(),
+  initBlogBlocks: vi.fn(),
+  initTiendaBlocks: vi.fn(),
+}));
+
+vi.mock("./auth", () => ({
+  handleLogin: mocks.handleLogin,
+  handleRegister: mocks.handleRegister,
+  handleLogout: mocks.handleLogout,
+}));
+
+vi.mock("./perfil", () => ({
+  loadProfile: mocks.loadProfile,
+}));
+
+vi.mock("./blog", () => ({
+  initBlogBlocks: mocks.initBlogBlocks,
+}));
+
+vi.mock("./tienda", () => ({
+  initTiendaBlocks: mocks.initTiendaBlocks,
+}));
+
+async function importFreshIndex() {
+  vi.resetModules();
+  await import("./index");
+}
+
+describe("site-widget index", () => {
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn())
-    localStorage.clear()
-    document.body.innerHTML = ''
-  })
+    vi.clearAllMocks();
+    vi.resetModules();
+    document.body.innerHTML = "";
+    localStorage.clear();
 
-  afterEach(() => {
-    vi.unstubAllGlobals()
-  })
+    Object.defineProperty(document, "readyState", {
+      configurable: true,
+      value: "complete",
+    });
+  });
 
-  it('hides login blocks when token exists and shows perfil', async () => {
-    localStorage.setItem('site_token', 'tok123')
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ id: 1, nombre: 'A', apellido: 'B', correo: 'a@b.com' }),
-    })
+  it("initializes auth forms, profile, blog and tienda when document is complete", async () => {
+    localStorage.setItem("site_token", "abc");
 
-    const loginBlock = document.createElement('div')
-    loginBlock.setAttribute('data-auth', 'login')
-    loginBlock.style.display = ''
-    document.body.appendChild(loginBlock)
+    document.body.innerHTML = `
+      <div data-auth="login"><form></form></div>
+      <div data-auth="registro"><form></form></div>
+      <button data-auth="logout"></button>
+      <div data-auth="perfil"></div>
+    `;
 
-    const perfilBlock = document.createElement('div')
-    perfilBlock.setAttribute('data-auth', 'perfil')
-    perfilBlock.style.display = 'none'
-    document.body.appendChild(perfilBlock)
+    await importFreshIndex();
 
-    await import('./index')
+    expect(mocks.handleLogin).toHaveBeenCalledTimes(1);
+    expect(mocks.handleRegister).toHaveBeenCalledTimes(1);
+    expect(mocks.handleLogout).toHaveBeenCalledTimes(1);
+    expect(mocks.loadProfile).toHaveBeenCalledTimes(1);
+    expect(mocks.initBlogBlocks).toHaveBeenCalledTimes(1);
+    expect(mocks.initTiendaBlocks).toHaveBeenCalledTimes(1);
 
-    await vi.waitFor(() => {
-      expect(loginBlock.style.display).toBe('none')
-      expect(perfilBlock.style.display).toBe('')
-    })
-  })
+    expect(document.querySelector<HTMLElement>('[data-auth="login"]')!.style.display)
+      .toBe("none");
+    expect(document.querySelector<HTMLElement>('[data-auth="perfil"]')!.style.display)
+      .toBe("");
+  });
 
-  it('keeps login blocks visible when no token exists', async () => {
-    const loginBlock = document.createElement('div')
-    loginBlock.setAttribute('data-auth', 'login')
-    loginBlock.style.display = ''
-    const form = document.createElement('form')
-    loginBlock.appendChild(form)
-    document.body.appendChild(loginBlock)
+  it("hides perfil block when token does not exist", async () => {
+    document.body.innerHTML = `
+      <div data-auth="perfil"></div>
+      <div data-auth="login"></div>
+    `;
 
-    await import('./index')
+    await importFreshIndex();
 
-    await vi.waitFor(() => {
-      expect(loginBlock.style.display).toBe('')
-    })
-  })
-})
+    expect(document.querySelector<HTMLElement>('[data-auth="perfil"]')!.style.display)
+      .toBe("none");
+
+    expect(mocks.loadProfile).not.toHaveBeenCalled();
+  });
+
+  it("hides perfil block when localStorage throws", async () => {
+    document.body.innerHTML = `
+      <div data-auth="perfil"></div>
+    `;
+
+    const spy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("localStorage error");
+      });
+
+    await importFreshIndex();
+
+    expect(document.querySelector<HTMLElement>('[data-auth="perfil"]')!.style.display)
+      .toBe("none");
+
+    spy.mockRestore();
+  });
+
+  it("keeps login block visible when there is no token", async () => {
+    document.body.innerHTML = `
+      <div data-auth="login"></div>
+    `;
+
+    await importFreshIndex();
+
+    expect(document.querySelector<HTMLElement>('[data-auth="login"]')!.style.display)
+      .toBe("");
+  });
+
+  it("handles localStorage error in login block without crashing", async () => {
+    document.body.innerHTML = `
+      <div data-auth="login"></div>
+    `;
+
+    const spy = vi
+      .spyOn(Storage.prototype, "getItem")
+      .mockImplementation(() => {
+        throw new Error("localStorage error");
+      });
+
+    await expect(importFreshIndex()).resolves.toBeUndefined();
+
+    spy.mockRestore();
+  });
+
+  it("waits for DOMContentLoaded when document is loading", async () => {
+    Object.defineProperty(document, "readyState", {
+      configurable: true,
+      value: "loading",
+    });
+
+    document.body.innerHTML = `
+      <div data-auth="login"><form></form></div>
+    `;
+
+    await importFreshIndex();
+
+    expect(mocks.handleLogin).not.toHaveBeenCalled();
+
+    document.dispatchEvent(new Event("DOMContentLoaded"));
+
+    expect(mocks.handleLogin).toHaveBeenCalledTimes(1);
+    expect(mocks.initBlogBlocks).toHaveBeenCalledTimes(1);
+    expect(mocks.initTiendaBlocks).toHaveBeenCalledTimes(1);
+  });
+});

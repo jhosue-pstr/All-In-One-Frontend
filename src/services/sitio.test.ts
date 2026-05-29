@@ -86,4 +86,26 @@ describe('sitioService', () => {
       expect.objectContaining({ method: 'POST' })
     )
   })
+  it('getModulos should fetch /sitios/{id}/modulos/', async () => {
+  await sitioService.getModulos(5)
+
+  expect(globalThis.fetch).toHaveBeenCalledWith(
+    expect.stringContaining('/sitios/5/modulos/'),
+    expect.any(Object)
+  )
+  })
+
+  it('uploadMinatura should use fallback when error json throws', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.reject(new Error('json fail')),
+    })
+
+    const file = new File([''], 'test.png', { type: 'image/png' })
+
+    await expect(
+      sitioService.uploadMinatura(1, file)
+    ).rejects.toThrow('Error al subir la miniatura')
+  })
 })
