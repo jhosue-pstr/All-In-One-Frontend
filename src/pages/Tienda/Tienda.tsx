@@ -586,27 +586,6 @@ export default function Tienda() {
   }
 
 
-  function handlePedidoDialogClick(event: React.MouseEvent<HTMLDialogElement>) {
-    if (event.target === event.currentTarget) {
-      closePedidoModal();
-    }
-  }
-
-  function handleCategoriaDialogClick(event: React.MouseEvent<HTMLDialogElement>) {
-    if (event.target === event.currentTarget) {
-      closeCategoriaModal();
-    }
-  }
-
-  function handlePedidoDialogCancel(event: React.SyntheticEvent<HTMLDialogElement>) {
-    event.preventDefault();
-    closePedidoModal();
-  }
-
-  function handleCategoriaDialogCancel(event: React.SyntheticEvent<HTMLDialogElement>) {
-    event.preventDefault();
-    closeCategoriaModal();
-  }
 
   function getProductoSubmitText(): string {
     if (savingProducto) return "Guardando...";

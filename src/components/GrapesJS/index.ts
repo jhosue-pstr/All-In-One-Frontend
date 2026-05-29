@@ -114,9 +114,10 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
         <button data-action="cancel" style="padding:10px 20px;background:#95a5a6;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Cancelar</button>
         <button data-action="create" style="padding:10px 20px;background:#3498db;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px;">Crear</button>
       </div>`;
-    const input = div.querySelector<HTMLInputElement>("#new-page-name")!;
+    const input = div.querySelector<HTMLInputElement>("#new-page-name");
     const cancelBtn = div.querySelector<HTMLButtonElement>('[data-action="cancel"]');
     const createBtn = div.querySelector<HTMLButtonElement>('[data-action="create"]');
+    if (!input) return div;
 
     input.focus();
 
@@ -245,8 +246,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     run() {
       hideAll();
       showPanel(".pages-container", true);
-      const el = getRow()?.querySelector(".pages-container") as HTMLElement | null;
-      if (el) {
+        const el = getRow()?.querySelector<HTMLElement>(".pages-container") || null;      if (el) {
         renderPagesList(el.querySelector<HTMLElement>(`#pages-list-${siteId}`));
       }
     },
@@ -310,8 +310,21 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
         addOpt("", "-- URL externa --");
         editor.Pages.getAll().forEach((p: any) => {
           const name = p.get("name") || p.id;
-          const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-          addOpt(`?page=${slug}`, `📄 ${name}`);
+          const slug = name
+            .toLowerCase()
+            .replaceAll(" ", "-")
+            .replaceAll("_", "-")
+            .replaceAll("/", "-")
+            .replaceAll(".", "-")
+            .replaceAll(",", "-")
+            .replaceAll("--", "-")
+            .replaceAll("á", "a")
+            .replaceAll("é", "e")
+            .replaceAll("í", "i")
+            .replaceAll("ó", "o")
+            .replaceAll("ú", "u")
+            .replaceAll("ñ", "n");          
+            addOpt(`?page=${slug}`, `📄 ${name}`);
         });
         if (current && [...el.options].some((o) => o.value === current)) {
           el.value = current;
