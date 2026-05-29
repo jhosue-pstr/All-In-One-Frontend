@@ -257,8 +257,8 @@ export default function Blog() {
   }
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  event: React.SyntheticEvent<HTMLFormElement>,
+) {
     event.preventDefault();
 
     if (!selectedSiteId) {
