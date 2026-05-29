@@ -585,24 +585,27 @@ export default function Tienda() {
     setIsPedidoModalOpen(false);
   }
 
-  function handleModalContentClick(event: React.MouseEvent<HTMLDivElement>) {
-    event.stopPropagation();
+
+  function handlePedidoDialogClick(event: React.MouseEvent<HTMLDialogElement>) {
+    if (event.target === event.currentTarget) {
+      closePedidoModal();
+    }
   }
 
-  function handleModalContentKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    event.stopPropagation();
-  }
-
-  function handleCategoriaOverlayKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+  function handleCategoriaDialogClick(event: React.MouseEvent<HTMLDialogElement>) {
+    if (event.target === event.currentTarget) {
       closeCategoriaModal();
     }
   }
 
-  function handlePedidoOverlayKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
-      closePedidoModal();
-    }
+  function handlePedidoDialogCancel(event: React.SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault();
+    closePedidoModal();
+  }
+
+  function handleCategoriaDialogCancel(event: React.SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault();
+    closeCategoriaModal();
   }
 
   function getProductoSubmitText(): string {
@@ -912,22 +915,16 @@ export default function Tienda() {
     if (!hasPedidoDetail || !pedidoDetail) return null;
 
     return (
-      <div
+      <dialog
+        open
         className="tienda-modal-overlay"
-        onClick={closePedidoModal}
-        onKeyDown={handlePedidoOverlayKeyDown}
-        role="button"
-        tabIndex={0}
+        onClick={handlePedidoDialogClick}
+        onCancel={handlePedidoDialogCancel}
+        aria-labelledby="pedido-modal-title"
       >
         <div
           className="tienda-modal"
           style={{ width: "min(700px, 100%)" }}
-          onClick={handleModalContentClick}
-          onKeyDown={handleModalContentKeyDown}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="pedido-modal-title"
-          tabIndex={-1}
         >
           <div className="tienda-modal-header">
             <h2 id="pedido-modal-title">Pedido {pedidoDetail.numero_pedido}</h2>
@@ -996,7 +993,7 @@ export default function Tienda() {
             {renderPedidoNotas(pedidoDetail)}
           </div>
         </div>
-      </div>
+      </dialog>
     );
   }
 
@@ -1004,22 +1001,14 @@ export default function Tienda() {
     if (!isCategoriaModalVisible) return null;
 
     return (
-      <div
+      <dialog
+        open
         className="tienda-modal-overlay"
-        onClick={closeCategoriaModal}
-        onKeyDown={handleCategoriaOverlayKeyDown}
-        role="button"
-        tabIndex={0}
+        onClick={handleCategoriaDialogClick}
+        onCancel={handleCategoriaDialogCancel}
+        aria-labelledby="categoria-modal-title"
       >
-        <div
-          className="tienda-modal"
-          onClick={handleModalContentClick}
-          onKeyDown={handleModalContentKeyDown}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="categoria-modal-title"
-          tabIndex={-1}
-        >
+        <div className="tienda-modal">
           <div className="tienda-modal-header">
             <h2 id="categoria-modal-title">{getCategoriaFormTitle()}</h2>
             <button onClick={closeCategoriaModal}>×</button>
@@ -1087,7 +1076,7 @@ export default function Tienda() {
             </div>
           </form>
         </div>
-      </div>
+      </dialog>
     );
   }
 
