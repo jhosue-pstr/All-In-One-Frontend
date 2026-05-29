@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { blogService } from "../../services/blog";
 import { sitioService } from "../../services/sitio";
-import type { BlogPost, BlogPostCreate, BlogPostUpdate, PostStatus } from "../../models/blog";
+import type {
+  BlogPost,
+  BlogPostCreate,
+  BlogPostUpdate,
+  PostStatus,
+} from "../../models/blog";
 import type { Sitio } from "../../models/sitio";
 import "./Blog.css";
 
@@ -36,6 +41,11 @@ const statusLabels: Record<PostStatus, string> = {
   archived: "Archivado",
 };
 
+function stripHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return doc.body.textContent || "";
+}
+
 export default function Blog() {
   const [sitios, setSitios] = useState<Sitio[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
@@ -56,15 +66,22 @@ export default function Blog() {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [form, setForm] = useState<BlogFormState>(initialForm);
 
-  const selectedSite = sitios.find((sitio) => sitio.id === selectedSiteId) || null;
+  const selectedSite =
+    sitios.find((sitio) => sitio.id === selectedSiteId) || null;
+  const hasError = Boolean(error);
+  const hasSuccess = Boolean(success);
+  const hasSelectedSite = selectedSiteId !== null;
+  const hasFeaturedImage = Boolean(form.featured_image);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
+      const normalizedSearch = search.toLowerCase();
       const matchesSearch =
-        post.title.toLowerCase().includes(search.toLowerCase()) ||
-        (post.excerpt || "").toLowerCase().includes(search.toLowerCase());
+        post.title.toLowerCase().includes(normalizedSearch) ||
+        (post.excerpt || "").toLowerCase().includes(normalizedSearch);
 
-      const matchesStatus = statusFilter === "all" || post.status === statusFilter;
+      const matchesStatus =
+        statusFilter === "all" || post.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
@@ -94,7 +111,9 @@ export default function Blog() {
         setSelectedSiteId(data[0].id);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar los sitios");
+      setError(
+        err instanceof Error ? err.message : "Error al cargar los sitios",
+      );
     } finally {
       setLoadingSitios(false);
     }
@@ -108,7 +127,9 @@ export default function Blog() {
       const data = await blogService.getPosts(siteId);
       setPosts(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cargar los posts");
+      setError(
+        err instanceof Error ? err.message : "Error al cargar los posts",
+      );
     } finally {
       setLoadingPosts(false);
     }
@@ -147,7 +168,9 @@ export default function Blog() {
   }
 
   function handleChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) {
     const { name, value } = event.target;
 
@@ -206,7 +229,7 @@ export default function Blog() {
     if (post.excerpt) return post.excerpt;
     if (post.meta_description) return post.meta_description;
 
-    return `${post.content.replace(/<[^>]*>/g, "").slice(0, 120)}...`;
+    return `${stripHtml(post.content).slice(0, 120)}...`;
   }
 
   function getSubmitButtonText(): string {
@@ -214,6 +237,19 @@ export default function Blog() {
     if (editingPost) return "Actualizar";
 
     return "Crear post";
+  }
+
+  function getFormTitle(): string {
+    if (editingPost) return "Editar post";
+    return "Nuevo post";
+  }
+
+  function getPostDateText(post: BlogPost): string {
+    if (post.published_at) {
+      return new Date(post.published_at).toLocaleDateString();
+    }
+
+    return "Sin fecha";
   }
 
   async function handleSubmit(event: React.FormEvent) {
@@ -235,7 +271,9 @@ export default function Blog() {
     }
 
     if (form.status === "scheduled" && !form.published_at) {
-      setError("Para programar un post debes indicar fecha y hora de publicación");
+      setError(
+        "Para programar un post debes indicar fecha y hora de publicación",
+      );
       return;
     }
 
@@ -266,7 +304,9 @@ export default function Blog() {
   async function handleDelete(post: BlogPost) {
     if (!selectedSiteId) return;
 
-    const confirmDelete = window.confirm(`¿Seguro que deseas eliminar "${post.title}"?`);
+    const confirmDelete = window.confirm(
+      `¿Seguro que deseas eliminar "${post.title}"?`,
+    );
 
     if (!confirmDelete) return;
 
@@ -278,7 +318,9 @@ export default function Blog() {
       setSuccess("Post eliminado correctamente");
       await loadPosts(selectedSiteId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al eliminar el post");
+      setError(
+        err instanceof Error ? err.message : "Error al eliminar el post",
+      );
     }
   }
 
@@ -302,7 +344,9 @@ export default function Blog() {
       setSuccess(`Post marcado como ${statusLabels[status].toLowerCase()}`);
       await loadPosts(selectedSiteId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al cambiar el estado");
+      setError(
+        err instanceof Error ? err.message : "Error al cambiar el estado",
+      );
     }
   }
 
@@ -312,6 +356,81 @@ export default function Blog() {
     return `http://localhost:8000/${selectedSite.slug}?post=${post.slug}`;
   }
 
+  function renderPostImage(post: BlogPost) {
+    if (post.featured_image) {
+      return <img src={post.featured_image} alt={post.title} />;
+    }
+
+    return <div className="blog-post-placeholder">Blog</div>;
+  }
+
+  function renderPostsContent() {
+    if (loadingPosts) {
+      return <div className="blog-empty-state">Cargando posts...</div>;
+    }
+
+    if (filteredPosts.length === 0) {
+      return (
+        <div className="blog-empty-state">
+          No hay publicaciones. Crea tu primer post para este sitio.
+        </div>
+      );
+    }
+
+    return (
+      <div className="blog-posts-grid">
+        {filteredPosts.map((post) => (
+          <article className="blog-post-card" key={post.id}>
+            <div className="blog-post-image">{renderPostImage(post)}</div>
+
+            <div className="blog-post-body">
+              <div className="blog-post-meta">
+                <span className={`blog-status blog-status-${post.status}`}>
+                  {statusLabels[post.status]}
+                </span>
+                <span>{getPostDateText(post)}</span>
+              </div>
+
+              <h3>{post.title}</h3>
+              <p>{getPostDescription(post)}</p>
+
+              <div className="blog-post-actions">
+                <button onClick={() => openEditForm(post)}>Editar</button>
+
+                {post.status !== "published" && (
+                  <button onClick={() => quickChangeStatus(post, "published")}>
+                    Publicar
+                  </button>
+                )}
+
+                {post.status !== "draft" && (
+                  <button onClick={() => quickChangeStatus(post, "draft")}>
+                    Borrador
+                  </button>
+                )}
+
+                <a
+                  href={getPublicPostUrl(post)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ver
+                </a>
+
+                <button
+                  className="blog-danger-btn"
+                  onClick={() => handleDelete(post)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="blog-admin-page">
       <header className="blog-admin-header">
@@ -319,24 +438,31 @@ export default function Blog() {
           <span className="blog-admin-kicker">Módulo Blog</span>
           <h1>Administración visual del Blog</h1>
           <p>
-            Crea, edita, publica y administra los artículos que luego se mostrarán en los
-            bloques Blog del sitio publicado.
+            Crea, edita, publica y administra los artículos que luego se
+            mostrarán en los bloques Blog del sitio publicado.
           </p>
         </div>
 
-        <button className="blog-primary-btn" onClick={openCreateForm} disabled={!selectedSiteId}>
+        <button
+          className="blog-primary-btn"
+          onClick={openCreateForm}
+          disabled={!hasSelectedSite}
+        >
           + Nuevo post
         </button>
       </header>
 
-      {error && <div className="blog-alert blog-alert-error">{error}</div>}
-      {success && <div className="blog-alert blog-alert-success">{success}</div>}
+      {hasError && <div className="blog-alert blog-alert-error">{error}</div>}
+      {hasSuccess && (
+        <div className="blog-alert blog-alert-success">{success}</div>
+      )}
 
       <section className="blog-toolbar">
         <div className="blog-field">
-          <label>Sitio</label>
+          <label htmlFor="blog-site-select">Sitio</label>
           <select
-            value={selectedSiteId || ""}
+            id="blog-site-select"
+            value={selectedSiteId ?? ""}
             onChange={(event) => setSelectedSiteId(Number(event.target.value))}
             disabled={loadingSitios}
           >
@@ -350,8 +476,9 @@ export default function Blog() {
         </div>
 
         <div className="blog-field">
-          <label>Buscar</label>
+          <label htmlFor="blog-search-input">Buscar</label>
           <input
+            id="blog-search-input"
             type="search"
             placeholder="Buscar por título o resumen..."
             value={search}
@@ -360,10 +487,13 @@ export default function Blog() {
         </div>
 
         <div className="blog-field">
-          <label>Estado</label>
+          <label htmlFor="blog-status-filter">Estado</label>
           <select
+            id="blog-status-filter"
             value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as "all" | PostStatus)}
+            onChange={(event) =>
+              setStatusFilter(event.target.value as "all" | PostStatus)
+            }
           >
             <option value="all">Todos</option>
             <option value="draft">Borrador</option>
@@ -374,13 +504,13 @@ export default function Blog() {
         </div>
       </section>
 
-      {!selectedSiteId && (
+      {!hasSelectedSite && (
         <div className="blog-empty-state">
           Selecciona un sitio para administrar sus publicaciones.
         </div>
       )}
 
-      {selectedSiteId && (
+      {hasSelectedSite && (
         <section className="blog-content-layout">
           <div className="blog-posts-panel">
             <div className="blog-panel-title">
@@ -388,81 +518,23 @@ export default function Blog() {
               <span>{filteredPosts.length} resultado(s)</span>
             </div>
 
-            {loadingPosts ? (
-              <div className="blog-empty-state">Cargando posts...</div>
-            ) : filteredPosts.length === 0 ? (
-              <div className="blog-empty-state">
-                No hay publicaciones. Crea tu primer post para este sitio.
-              </div>
-            ) : (
-              <div className="blog-posts-grid">
-                {filteredPosts.map((post) => (
-                  <article className="blog-post-card" key={post.id}>
-                    <div className="blog-post-image">
-                      {post.featured_image ? (
-                        <img src={post.featured_image} alt={post.title} />
-                      ) : (
-                        <div className="blog-post-placeholder">Blog</div>
-                      )}
-                    </div>
-
-                    <div className="blog-post-body">
-                      <div className="blog-post-meta">
-                        <span className={`blog-status blog-status-${post.status}`}>
-                          {statusLabels[post.status]}
-                        </span>
-                        <span>
-                          {post.published_at
-                            ? new Date(post.published_at).toLocaleDateString()
-                            : "Sin fecha"}
-                        </span>
-                      </div>
-
-                      <h3>{post.title}</h3>
-
-                      <p>{getPostDescription(post)}</p>
-
-                      <div className="blog-post-actions">
-                        <button onClick={() => openEditForm(post)}>Editar</button>
-
-                        {post.status !== "published" && (
-                          <button onClick={() => quickChangeStatus(post, "published")}>
-                            Publicar
-                          </button>
-                        )}
-
-                        {post.status !== "draft" && (
-                          <button onClick={() => quickChangeStatus(post, "draft")}>
-                            Borrador
-                          </button>
-                        )}
-
-                        <a href={getPublicPostUrl(post)} target="_blank" rel="noreferrer">
-                          Ver
-                        </a>
-
-                        <button className="blog-danger-btn" onClick={() => handleDelete(post)}>
-                          Eliminar
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+            {renderPostsContent()}
           </div>
 
           {isFormOpen && (
             <aside className="blog-form-panel">
               <div className="blog-form-header">
-                <h2>{editingPost ? "Editar post" : "Nuevo post"}</h2>
-                <button onClick={closeForm}>×</button>
+                <h2>{getFormTitle()}</h2>
+                <button type="button" onClick={closeForm}>
+                  ×
+                </button>
               </div>
 
               <form onSubmit={handleSubmit} className="blog-form">
                 <div className="blog-field">
-                  <label>Título *</label>
+                  <label htmlFor="blog-title-input">Título *</label>
                   <input
+                    id="blog-title-input"
                     name="title"
                     value={form.title}
                     onChange={handleChange}
@@ -471,8 +543,9 @@ export default function Blog() {
                 </div>
 
                 <div className="blog-field">
-                  <label>Resumen</label>
+                  <label htmlFor="blog-excerpt-input">Resumen</label>
                   <textarea
+                    id="blog-excerpt-input"
                     name="excerpt"
                     value={form.excerpt}
                     onChange={handleChange}
@@ -482,25 +555,41 @@ export default function Blog() {
                 </div>
 
                 <div className="blog-field">
-                  <label>Contenido *</label>
+                  <label htmlFor="blog-content-input">Contenido *</label>
                   <textarea
+                    id="blog-content-input"
                     name="content"
                     value={form.content}
                     onChange={handleChange}
                     rows={10}
                     placeholder="<p>Escribe el contenido del artículo...</p>"
                   />
-                  <small>Puedes escribir HTML básico como &lt;p&gt;, &lt;strong&gt;, &lt;h2&gt;.</small>
+                  <small>
+                    Puedes escribir HTML básico como &lt;p&gt;, &lt;strong&gt;,
+                    &lt;h2&gt;.
+                  </small>
                 </div>
 
                 <div className="blog-field">
-                  <label>Imagen destacada</label>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} />
+                  <label htmlFor="blog-image-input">Imagen destacada</label>
+                  <input
+                    id="blog-image-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+
                   {uploadingImage && <small>Subiendo imagen...</small>}
-                  {form.featured_image && (
+
+                  {hasFeaturedImage && (
                     <div className="blog-image-preview">
                       <img src={form.featured_image} alt="Vista previa" />
+
+                      <label htmlFor="blog-featured-image-input">
+                        URL de imagen
+                      </label>
                       <input
+                        id="blog-featured-image-input"
                         name="featured_image"
                         value={form.featured_image}
                         onChange={handleChange}
@@ -512,8 +601,13 @@ export default function Blog() {
 
                 <div className="blog-form-row">
                   <div className="blog-field">
-                    <label>Estado</label>
-                    <select name="status" value={form.status} onChange={handleChange}>
+                    <label htmlFor="blog-form-status-select">Estado</label>
+                    <select
+                      id="blog-form-status-select"
+                      name="status"
+                      value={form.status}
+                      onChange={handleChange}
+                    >
                       <option value="draft">Borrador</option>
                       <option value="published">Publicado</option>
                       <option value="scheduled">Programado</option>
@@ -522,8 +616,11 @@ export default function Blog() {
                   </div>
 
                   <div className="blog-field">
-                    <label>Fecha publicación</label>
+                    <label htmlFor="blog-published-at-input">
+                      Fecha publicación
+                    </label>
                     <input
+                      id="blog-published-at-input"
                       type="datetime-local"
                       name="published_at"
                       value={form.published_at}
@@ -533,8 +630,9 @@ export default function Blog() {
                 </div>
 
                 <div className="blog-field">
-                  <label>Meta título SEO</label>
+                  <label htmlFor="blog-meta-title-input">Meta título SEO</label>
                   <input
+                    id="blog-meta-title-input"
                     name="meta_title"
                     value={form.meta_title}
                     onChange={handleChange}
@@ -543,8 +641,11 @@ export default function Blog() {
                 </div>
 
                 <div className="blog-field">
-                  <label>Meta descripción SEO</label>
+                  <label htmlFor="blog-meta-description-input">
+                    Meta descripción SEO
+                  </label>
                   <textarea
+                    id="blog-meta-description-input"
                     name="meta_description"
                     value={form.meta_description}
                     onChange={handleChange}
@@ -554,11 +655,19 @@ export default function Blog() {
                 </div>
 
                 <div className="blog-form-actions">
-                  <button type="button" onClick={closeForm} className="blog-secondary-btn">
+                  <button
+                    type="button"
+                    onClick={closeForm}
+                    className="blog-secondary-btn"
+                  >
                     Cancelar
                   </button>
 
-                  <button type="submit" className="blog-primary-btn" disabled={saving}>
+                  <button
+                    type="submit"
+                    className="blog-primary-btn"
+                    disabled={saving}
+                  >
                     {getSubmitButtonText()}
                   </button>
                 </div>

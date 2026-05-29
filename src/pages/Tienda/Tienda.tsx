@@ -74,6 +74,10 @@ const estadoLabels: Record<string, string> = {
   reembolsado: "Reembolsado",
 };
 
+const PRODUCTOS_TAB: TabId = "productos";
+const CATEGORIAS_TAB: TabId = "categorias";
+const PEDIDOS_TAB: TabId = "pedidos";
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -89,14 +93,16 @@ function formatPrice(value: number): string {
 
 function getFirstImage(product: StoreProductoListado | StoreProducto): string {
   const imagenes = product.imagenes;
-  if (imagenes && imagenes.length > 0 && typeof imagenes[0] === "string") {
+
+  if (imagenes?.length && typeof imagenes[0] === "string") {
     return imagenes[0] as string;
   }
+
   return "";
 }
 
 export default function Tienda() {
-  const [activeTab, setActiveTab] = useState<TabId>("productos");
+  const [activeTab, setActiveTab] = useState<TabId>(PRODUCTOS_TAB);
 
   const [sitios, setSitios] = useState<Sitio[]>([]);
   const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
@@ -130,19 +136,33 @@ export default function Tienda() {
 
   const [isPedidoModalOpen, setIsPedidoModalOpen] = useState(false);
 
+  const hasError = Boolean(error);
+  const hasSuccess = Boolean(success);
+  const hasSelectedSite = selectedSiteId !== null;
+  const isProductosTab = activeTab === PRODUCTOS_TAB;
+  const isCategoriasTab = activeTab === CATEGORIAS_TAB;
+  const isPedidosTab = activeTab === PEDIDOS_TAB;
+  const isProductoFormVisible = Boolean(isFormOpen);
+  const isCategoriaModalVisible = Boolean(isCategoriaModalOpen);
+  const hasImagenPreview = Boolean(form.imagen_url);
+  const hasPedidoDetail = isPedidoModalOpen && pedidoDetail !== null;
+
   const filteredProductos = useMemo(() => {
     if (!search) return productos;
+
     const q = search.toLowerCase();
+
     return productos.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(q) ||
-        p.slug.toLowerCase().includes(q)
+      (producto) =>
+        producto.nombre.toLowerCase().includes(q) ||
+        producto.slug.toLowerCase().includes(q)
     );
   }, [productos, search]);
 
   const filteredPedidos = useMemo(() => {
     if (pedidoEstadoFilter === "all") return pedidos;
-    return pedidos.filter((p) => p.estado === pedidoEstadoFilter);
+
+    return pedidos.filter((pedido) => pedido.estado === pedidoEstadoFilter);
   }, [pedidos, pedidoEstadoFilter]);
 
   useEffect(() => {
@@ -154,19 +174,22 @@ export default function Tienda() {
       loadProductos(selectedSiteId);
       loadCategorias(selectedSiteId);
       loadPedidos(selectedSiteId);
-    } else {
-      setProductos([]);
-      setCategorias([]);
-      setPedidos([]);
+      return;
     }
+
+    setProductos([]);
+    setCategorias([]);
+    setPedidos([]);
   }, [selectedSiteId]);
 
   async function loadSitios() {
     setLoadingSitios(true);
     setError(null);
+
     try {
       const data = await sitioService.getAll();
       setSitios(data);
+
       if (data.length > 0) {
         setSelectedSiteId(data[0].id);
       }
@@ -180,6 +203,7 @@ export default function Tienda() {
   async function loadProductos(siteId: number) {
     setLoadingProductos(true);
     setError(null);
+
     try {
       const res = await storeService.getProducts(siteId, { solo_activos: false });
       setProductos(res.data);
@@ -192,6 +216,7 @@ export default function Tienda() {
 
   async function loadCategorias(siteId: number) {
     setLoadingCategorias(true);
+
     try {
       const res = await storeService.getCategorias(siteId, false);
       setCategorias(res.data);
@@ -204,6 +229,7 @@ export default function Tienda() {
 
   async function loadPedidos(siteId: number) {
     setLoadingPedidos(true);
+
     try {
       const res = await storeService.getPedidos(siteId);
       setPedidos(res.data);
@@ -251,58 +277,55 @@ export default function Tienda() {
     setForm(initialProductoForm);
   }
 
-function shouldGenerateSlug(fieldName: string): boolean {
-  return fieldName === "nombre" && !editingProducto;
-}
-
-function buildFormUpdate(
-  prev: ProductoFormState,
-  name: string,
-  value: string
-): ProductoFormState {
-  return {
-    ...prev,
-    [name]: value,
-    ...(shouldGenerateSlug(name)
-      ? { slug: slugify(value) }
-      : {}),
-  };
-}
-
-function handleCheckboxChange(
-  name: string,
-  checked: boolean
-): void {
-  setForm((prev) => ({
-    ...prev,
-    [name]: checked,
-  }));
-}
-
-function handleTextChange(
-  name: string,
-  value: string
-): void {
-  setForm((prev) => buildFormUpdate(prev, name, value));
-}
-
-function handleChange(
-  event: React.ChangeEvent<
-    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  >
-) {
-  const { name, value, type } = event.target;
-
-  if (type === "checkbox") {
-    handleCheckboxChange(
-      name,
-      (event.target as HTMLInputElement).checked
-    );
-    return;
+  function shouldGenerateSlug(fieldName: string): boolean {
+    return fieldName === "nombre" && !editingProducto;
   }
 
-  handleTextChange(name, value);
-}
+  function buildFormUpdate(
+    prev: ProductoFormState,
+    name: string,
+    value: string
+  ): ProductoFormState {
+    const nextState = {
+      ...prev,
+      [name]: value,
+    };
+
+    if (shouldGenerateSlug(name)) {
+      return {
+        ...nextState,
+        slug: slugify(value),
+      };
+    }
+
+    return nextState;
+  }
+
+  function handleCheckboxChange(name: string, checked: boolean): void {
+    setForm((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  }
+
+  function handleTextChange(name: string, value: string): void {
+    setForm((prev) => buildFormUpdate(prev, name, value));
+  }
+
+  function handleChange(
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) {
+    const { name, value, type } = event.target;
+
+    if (type === "checkbox") {
+      handleCheckboxChange(name, (event.target as HTMLInputElement).checked);
+      return;
+    }
+
+    handleTextChange(name, value);
+  }
 
   function buildProductoPayload(): StoreProductoCreate | StoreProductoUpdate {
     const payload: Record<string, unknown> = {
@@ -409,6 +432,7 @@ function handleChange(
       );
       const json = await response.json();
       const url = json.url || json.image_url || "";
+
       if (url) {
         setForm((prev) => ({ ...prev, imagen_url: url }));
         setSuccess("Imagen subida correctamente");
@@ -443,15 +467,35 @@ function handleChange(
     setCategoriaForm(initialCategoriaForm);
   }
 
+  function shouldGenerateCategoriaSlug(fieldName: string): boolean {
+    return fieldName === "nombre" && !editingCategoria;
+  }
+
+  function buildCategoriaFormUpdate(
+    prev: CategoriaFormState,
+    name: string,
+    value: string
+  ): CategoriaFormState {
+    const nextState = {
+      ...prev,
+      [name]: value,
+    };
+
+    if (shouldGenerateCategoriaSlug(name)) {
+      return {
+        ...nextState,
+        slug: slugify(value),
+      };
+    }
+
+    return nextState;
+  }
+
   function handleCategoriaChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) {
     const { name, value } = event.target;
-    setCategoriaForm((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === "nombre" && !editingCategoria ? { slug: slugify(value) } : {}),
-    }));
+    setCategoriaForm((prev) => buildCategoriaFormUpdate(prev, name, value));
   }
 
   async function handleCategoriaSubmit(event: React.FormEvent) {
@@ -510,6 +554,7 @@ function handleChange(
 
   async function openPedidoDetail(pedido: StorePedidoListado) {
     if (!selectedSiteId) return;
+
     try {
       const detail = await storeService.getPedido(selectedSiteId, pedido.id);
       setPedidoDetail(detail);
@@ -521,10 +566,12 @@ function handleChange(
 
   async function handleCambiarEstadoPedido(pedidoId: number, nuevoEstado: string) {
     if (!selectedSiteId) return;
+
     try {
       await storeService.updatePedidoEstado(selectedSiteId, pedidoId, { estado: nuevoEstado });
       setSuccess(`Pedido actualizado a "${estadoLabels[nuevoEstado] || nuevoEstado}"`);
       await loadPedidos(selectedSiteId);
+
       if (pedidoDetail?.id === pedidoId) {
         const updated = await storeService.getPedido(selectedSiteId, pedidoId);
         setPedidoDetail(updated);
@@ -533,42 +580,535 @@ function handleChange(
       setError(err instanceof Error ? err.message : "Error al actualizar pedido");
     }
   }
+
+  function closePedidoModal() {
+    setIsPedidoModalOpen(false);
+  }
+
+  function handleModalContentClick(event: React.MouseEvent<HTMLDivElement>) {
+    event.stopPropagation();
+  }
+
+  function handleModalContentKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    event.stopPropagation();
+  }
+
+  function handleCategoriaOverlayKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+      closeCategoriaModal();
+    }
+  }
+
+  function handlePedidoOverlayKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+      closePedidoModal();
+    }
+  }
+
   function getProductoSubmitText(): string {
     if (savingProducto) return "Guardando...";
     if (editingProducto) return "Actualizar";
+
     return "Crear producto";
   }
 
   function getCategoriaSubmitText(): string {
     if (savingCategoria) return "Guardando...";
     if (editingCategoria) return "Actualizar";
+
     return "Crear categoría";
   }
 
   function getPedidoEmptyText(): string {
     if (pedidoEstadoFilter === "all") return "No hay pedidos todavía.";
+
     return "No hay pedidos con este estado.";
   }
-  return (
 
+  function getProductoFormTitle(): string {
+    if (editingProducto) return "Editar producto";
+
+    return "Nuevo producto";
+  }
+
+  function getCategoriaFormTitle(): string {
+    if (editingCategoria) return "Editar categoría";
+
+    return "Nueva categoría";
+  }
+
+  function renderProductoImage(producto: StoreProductoListado) {
+    const imgUrl = getFirstImage(producto);
+
+    if (imgUrl) {
+      return <img src={imgUrl} alt={producto.nombre} />;
+    }
+
+    return <div className="tienda-card-placeholder">Producto</div>;
+  }
+
+  function renderProductosContent() {
+    if (loadingProductos) {
+      return <div className="tienda-empty-state">Cargando productos...</div>;
+    }
+
+    if (filteredProductos.length === 0) {
+      return (
+        <div className="tienda-empty-state">
+          No hay productos. Crea tu primer producto para este sitio.
+        </div>
+      );
+    }
+
+    return (
+      <div className="tienda-grid">
+        {filteredProductos.map((producto) => (
+          <article className="tienda-card" key={producto.id}>
+            <div className="tienda-card-image">
+              {renderProductoImage(producto)}
+              {producto.es_featured && (
+                <span className="tienda-card-badge tienda-card-badge-featured">
+                  Destacado
+                </span>
+              )}
+              {!producto.es_activo && (
+                <span
+                  className="tienda-card-badge tienda-card-badge-inactive"
+                  style={{ left: "auto", right: "10px" }}
+                >
+                  Inactivo
+                </span>
+              )}
+            </div>
+
+            <div className="tienda-card-body">
+              <div className="tienda-card-meta">
+                <span>Stock: {producto.stock}</span>
+              </div>
+              <h3>{producto.nombre}</h3>
+              <div className="tienda-card-price">
+                {formatPrice(producto.precio)}
+              </div>
+
+              <div className="tienda-card-actions">
+                <button onClick={() => openEditForm(producto)}>Editar</button>
+                <button
+                  className="tienda-danger-btn"
+                  onClick={() => handleDeleteProducto(producto)}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  function renderCategoriasContent() {
+    if (loadingCategorias) {
+      return <div className="tienda-empty-state">Cargando categorías...</div>;
+    }
+
+    if (categorias.length === 0) {
+      return (
+        <div className="tienda-empty-state">
+          No hay categorías. Crea la primera categoría para organizar tus productos.
+        </div>
+      );
+    }
+
+    return (
+      <div className="tienda-categoria-list">
+        {categorias.map((cat) => (
+          <div className="tienda-categoria-item" key={cat.id}>
+            <div className="tienda-categoria-info">
+              <span className="tienda-categoria-name">
+                {cat.nombre}
+                {!cat.activa && (
+                  <span style={{ color: "#ef4444", fontSize: "12px", marginLeft: "8px" }}>
+                    (inactiva)
+                  </span>
+                )}
+              </span>
+              <span className="tienda-categoria-slug">/{cat.slug}</span>
+            </div>
+            <div className="tienda-categoria-actions">
+              <button onClick={() => openEditCategoria(cat)}>Editar</button>
+              <button
+                style={{ background: "#fee2e2", color: "#991b1b" }}
+                onClick={() => handleDeleteCategoria(cat)}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function renderPedidosContent() {
+    if (loadingPedidos) {
+      return <div className="tienda-empty-state">Cargando pedidos...</div>;
+    }
+
+    if (filteredPedidos.length === 0) {
+      return (
+        <div className="tienda-empty-state">
+          {getPedidoEmptyText()}
+        </div>
+      );
+    }
+
+    return (
+      <table className="tienda-table">
+        <thead>
+          <tr>
+            <th>N° Pedido</th>
+            <th>Cliente</th>
+            <th>Email</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Pago</th>
+            <th>Fecha</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredPedidos.map((pedido) => (
+            <tr key={pedido.id}>
+              <td style={{ fontWeight: 700 }}>{pedido.numero_pedido}</td>
+              <td>{pedido.nombre_cliente}</td>
+              <td>{pedido.email_cliente}</td>
+              <td style={{ fontWeight: 700 }}>{formatPrice(pedido.total)}</td>
+              <td>
+                <span className={`tienda-status tienda-status-${pedido.estado}`}>
+                  {estadoLabels[pedido.estado] || pedido.estado}
+                </span>
+              </td>
+              <td>{pedido.estado_pago}</td>
+              <td>{new Date(pedido.created_at).toLocaleDateString()}</td>
+              <td>
+                <button onClick={() => openPedidoDetail(pedido)}>Ver</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+
+  function renderDireccionEnvio(detail: StorePedido) {
+    const hasAddress = Boolean(
+      detail.direccion_envio ||
+      detail.ciudad_envio ||
+      detail.pais_envio
+    );
+
+    if (!hasAddress) return null;
+
+    return (
+      <div style={{ marginTop: "12px" }}>
+        <h4 style={{ margin: "0 0 6px", fontSize: "12px", color: "#64748b" }}>
+          DIRECCIÓN DE ENVÍO
+        </h4>
+        <p style={{ margin: 0, color: "#0f172a", fontSize: "14px" }}>
+          {[detail.direccion_envio, detail.ciudad_envio, detail.pais_envio]
+            .filter(Boolean)
+            .join(", ")}
+          {detail.codigo_postal ? ` - ${detail.codigo_postal}` : ""}
+        </p>
+      </div>
+    );
+  }
+
+  function renderPedidoNotas(detail: StorePedido) {
+    if (!detail.notas) return null;
+
+    return (
+      <div style={{ marginTop: "12px" }}>
+        <h4 style={{ margin: "0 0 4px", fontSize: "12px", color: "#64748b" }}>
+          NOTAS DEL PEDIDO
+        </h4>
+        <p style={{ margin: 0, color: "#0f172a", fontSize: "14px" }}>
+          {detail.notas}
+        </p>
+      </div>
+    );
+  }
+
+  function renderTelefonoCliente(detail: StorePedido) {
+    if (!detail.telefono_cliente) return null;
+
+    return (
+      <div className="tienda-pedido-detail-item">
+        <h4>Teléfono</h4>
+        <p>{detail.telefono_cliente}</p>
+      </div>
+    );
+  }
+
+  function renderPedidoItems(detail: StorePedido) {
+    return (
+      <div style={{ marginTop: "12px" }}>
+        <h4 style={{ margin: "0 0 8px", fontSize: "12px", color: "#64748b" }}>
+          ITEMS DEL PEDIDO
+        </h4>
+        <table className="tienda-pedido-items-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>SKU</th>
+              <th>Cantidad</th>
+              <th>Precio unit.</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {detail.items.map((item) => (
+              <tr key={item.id}>
+                <td>{item.nombre_producto}</td>
+                <td>{item.sku_producto || "—"}</td>
+                <td>{item.cantidad}</td>
+                <td>{formatPrice(item.precio_unitario)}</td>
+                <td style={{ fontWeight: 700 }}>{formatPrice(item.total)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  function renderEstadoButtons(detail: StorePedido) {
+    return Object.entries(estadoLabels).map(([key, label]) => {
+      const isCurrentEstado = key === detail.estado;
+
+      return (
+        <button
+          key={key}
+          onClick={() => handleCambiarEstadoPedido(detail.id, key)}
+          disabled={isCurrentEstado}
+          style={{
+            padding: "6px 10px",
+            borderRadius: "8px",
+            border: "1px solid #e2e8f0",
+            background: isCurrentEstado ? "#2563eb" : "white",
+            color: isCurrentEstado ? "white" : "#334155",
+            fontSize: "12px",
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          {label}
+        </button>
+      );
+    });
+  }
+
+  function renderPedidoModal() {
+    if (!hasPedidoDetail || !pedidoDetail) return null;
+
+    return (
+      <div
+        className="tienda-modal-overlay"
+        onClick={closePedidoModal}
+        onKeyDown={handlePedidoOverlayKeyDown}
+        role="button"
+        tabIndex={0}
+      >
+        <div
+          className="tienda-modal"
+          style={{ width: "min(700px, 100%)" }}
+          onClick={handleModalContentClick}
+          onKeyDown={handleModalContentKeyDown}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pedido-modal-title"
+          tabIndex={-1}
+        >
+          <div className="tienda-modal-header">
+            <h2 id="pedido-modal-title">Pedido {pedidoDetail.numero_pedido}</h2>
+            <button onClick={closePedidoModal}>×</button>
+          </div>
+
+          <div className="tienda-modal-body">
+            <div className="tienda-pedido-detail-grid">
+              <div className="tienda-pedido-detail-item">
+                <h4>Cliente</h4>
+                <p>{pedidoDetail.nombre_cliente}</p>
+              </div>
+              <div className="tienda-pedido-detail-item">
+                <h4>Email</h4>
+                <p>{pedidoDetail.email_cliente}</p>
+              </div>
+              {renderTelefonoCliente(pedidoDetail)}
+              <div className="tienda-pedido-detail-item">
+                <h4>Estado</h4>
+                <p>
+                  <span className={`tienda-status tienda-status-${pedidoDetail.estado}`}>
+                    {estadoLabels[pedidoDetail.estado] || pedidoDetail.estado}
+                  </span>
+                </p>
+              </div>
+              <div className="tienda-pedido-detail-item">
+                <h4>Método de pago</h4>
+                <p>{pedidoDetail.metodo_pago || "—"}</p>
+              </div>
+              <div className="tienda-pedido-detail-item">
+                <h4>Estado del pago</h4>
+                <p>{pedidoDetail.estado_pago}</p>
+              </div>
+            </div>
+
+            {renderDireccionEnvio(pedidoDetail)}
+            {renderPedidoItems(pedidoDetail)}
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "12px",
+                padding: "16px",
+                background: "#f8fafc",
+                borderRadius: "12px",
+              }}
+            >
+              <div>
+                <h4 style={{ margin: 0, fontSize: "14px", color: "#64748b" }}>
+                  Cambiar estado
+                </h4>
+                <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                  {renderEstadoButtons(pedidoDetail)}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: "13px", color: "#64748b" }}>Total</div>
+                <div style={{ fontSize: "26px", fontWeight: 800, color: "#0f172a" }}>
+                  {formatPrice(pedidoDetail.total)}
+                </div>
+              </div>
+            </div>
+
+            {renderPedidoNotas(pedidoDetail)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderCategoriaModal() {
+    if (!isCategoriaModalVisible) return null;
+
+    return (
+      <div
+        className="tienda-modal-overlay"
+        onClick={closeCategoriaModal}
+        onKeyDown={handleCategoriaOverlayKeyDown}
+        role="button"
+        tabIndex={0}
+      >
+        <div
+          className="tienda-modal"
+          onClick={handleModalContentClick}
+          onKeyDown={handleModalContentKeyDown}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="categoria-modal-title"
+          tabIndex={-1}
+        >
+          <div className="tienda-modal-header">
+            <h2 id="categoria-modal-title">{getCategoriaFormTitle()}</h2>
+            <button onClick={closeCategoriaModal}>×</button>
+          </div>
+
+          <form onSubmit={handleCategoriaSubmit}>
+            <div className="tienda-modal-body">
+              <div className="tienda-field">
+                <label htmlFor="categoria-nombre">Nombre *</label>
+                <input
+                  id="categoria-nombre"
+                  name="nombre"
+                  value={categoriaForm.nombre}
+                  onChange={handleCategoriaChange}
+                  placeholder="Ej: Ropa"
+                />
+              </div>
+
+              <div className="tienda-field">
+                <label htmlFor="categoria-slug">Slug</label>
+                <input
+                  id="categoria-slug"
+                  name="slug"
+                  value={categoriaForm.slug}
+                  onChange={handleCategoriaChange}
+                  placeholder="ropa"
+                />
+              </div>
+
+              <div className="tienda-field">
+                <label htmlFor="categoria-descripcion">Descripción</label>
+                <textarea
+                  id="categoria-descripcion"
+                  name="descripcion"
+                  value={categoriaForm.descripcion}
+                  onChange={handleCategoriaChange}
+                  rows={2}
+                  placeholder="Descripción de la categoría..."
+                />
+              </div>
+
+              <div className="tienda-field">
+                <label htmlFor="categoria-imagen">Imagen (URL)</label>
+                <input
+                  id="categoria-imagen"
+                  name="imagen"
+                  value={categoriaForm.imagen}
+                  onChange={handleCategoriaChange}
+                  placeholder="https://ejemplo.com/imagen.jpg"
+                />
+              </div>
+            </div>
+
+            <div className="tienda-modal-actions">
+              <button
+                type="button"
+                className="tienda-secondary-btn"
+                onClick={closeCategoriaModal}
+              >
+                Cancelar
+              </button>
+              <button type="submit" className="tienda-primary-btn" disabled={savingCategoria}>
+                {getCategoriaSubmitText()}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="tienda-admin-page">
       <header className="tienda-admin-header">
         <div>
           <span className="tienda-admin-kicker">Módulo Tienda</span>
           <h1>Administración de Tienda</h1>
-          <p>
-            Gestiona productos, categorías y pedidos de tu tienda online.
-          </p>
+          <p>Gestiona productos, categorías y pedidos de tu tienda online.</p>
         </div>
       </header>
 
-      {error && <div className="tienda-alert tienda-alert-error">{error}</div>}
-      {success && <div className="tienda-alert tienda-alert-success">{success}</div>}
+      {hasError && <div className="tienda-alert tienda-alert-error">{error}</div>}
+      {hasSuccess && <div className="tienda-alert tienda-alert-success">{success}</div>}
 
       <section className="tienda-toolbar">
         <div className="tienda-field">
-          <label>Sitio</label>
+          <label htmlFor="tienda-site-select">Sitio</label>
           <select
+            id="tienda-site-select"
             value={selectedSiteId || ""}
             onChange={(event) => setSelectedSiteId(Number(event.target.value))}
             disabled={loadingSitios}
@@ -585,32 +1125,32 @@ function handleChange(
 
       <nav className="tienda-tabs">
         <button
-          className={`tienda-tab ${activeTab === "productos" ? "active" : ""}`}
-          onClick={() => setActiveTab("productos")}
+          className={`tienda-tab ${isProductosTab ? "active" : ""}`}
+          onClick={() => setActiveTab(PRODUCTOS_TAB)}
         >
           Productos
         </button>
         <button
-          className={`tienda-tab ${activeTab === "categorias" ? "active" : ""}`}
-          onClick={() => setActiveTab("categorias")}
+          className={`tienda-tab ${isCategoriasTab ? "active" : ""}`}
+          onClick={() => setActiveTab(CATEGORIAS_TAB)}
         >
           Categorías
         </button>
         <button
-          className={`tienda-tab ${activeTab === "pedidos" ? "active" : ""}`}
-          onClick={() => setActiveTab("pedidos")}
+          className={`tienda-tab ${isPedidosTab ? "active" : ""}`}
+          onClick={() => setActiveTab(PEDIDOS_TAB)}
         >
           Pedidos
         </button>
       </nav>
 
-      {!selectedSiteId && (
+      {!hasSelectedSite && (
         <div className="tienda-empty-state">
           Selecciona un sitio para administrar su tienda.
         </div>
       )}
 
-      {selectedSiteId && activeTab === "productos" && (
+      {hasSelectedSite && isProductosTab && (
         <section className="tienda-content-layout">
           <div className="tienda-list-panel">
             <div className="tienda-panel-title">
@@ -624,7 +1164,11 @@ function handleChange(
             </div>
 
             <div style={{ marginBottom: "16px" }}>
+              <label className="sr-only" htmlFor="producto-search">
+                Buscar productos
+              </label>
               <input
+                id="producto-search"
                 type="search"
                 placeholder="Buscar productos..."
                 value={search}
@@ -641,76 +1185,21 @@ function handleChange(
               />
             </div>
 
-            {loadingProductos ? (
-              <div className="tienda-empty-state">Cargando productos...</div>
-            ) : filteredProductos.length === 0 ? (
-              <div className="tienda-empty-state">
-                No hay productos. Crea tu primer producto para este sitio.
-              </div>
-            ) : (
-              <div className="tienda-grid">
-                {filteredProductos.map((producto) => {
-                  const imgUrl = getFirstImage(producto);
-                  return (
-                    <article className="tienda-card" key={producto.id}>
-                      <div className="tienda-card-image">
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={producto.nombre} />
-                        ) : (
-                          <div className="tienda-card-placeholder">Producto</div>
-                        )}
-                        {producto.es_featured && (
-                          <span className="tienda-card-badge tienda-card-badge-featured">
-                            Destacado
-                          </span>
-                        )}
-                        {!producto.es_activo && (
-                          <span
-                            className="tienda-card-badge tienda-card-badge-inactive"
-                            style={{ left: "auto", right: "10px" }}
-                          >
-                            Inactivo
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="tienda-card-body">
-                        <div className="tienda-card-meta">
-                          <span>Stock: {producto.stock}</span>
-                        </div>
-                        <h3>{producto.nombre}</h3>
-                        <div className="tienda-card-price">
-                          {formatPrice(producto.precio)}
-                        </div>
-
-                        <div className="tienda-card-actions">
-                          <button onClick={() => openEditForm(producto)}>Editar</button>
-                          <button
-                            className="tienda-danger-btn"
-                            onClick={() => handleDeleteProducto(producto)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+            {renderProductosContent()}
           </div>
 
-          {isFormOpen && (
+          {isProductoFormVisible && (
             <aside className="tienda-form-panel">
               <div className="tienda-form-header">
-                <h2>{editingProducto ? "Editar producto" : "Nuevo producto"}</h2>
+                <h2>{getProductoFormTitle()}</h2>
                 <button onClick={closeForm}>×</button>
               </div>
 
               <form onSubmit={handleProductoSubmit} className="tienda-form">
                 <div className="tienda-field">
-                  <label>Nombre *</label>
+                  <label htmlFor="producto-nombre">Nombre *</label>
                   <input
+                    id="producto-nombre"
                     name="nombre"
                     value={form.nombre}
                     onChange={handleChange}
@@ -719,8 +1208,9 @@ function handleChange(
                 </div>
 
                 <div className="tienda-field">
-                  <label>Slug</label>
+                  <label htmlFor="producto-slug">Slug</label>
                   <input
+                    id="producto-slug"
                     name="slug"
                     value={form.slug}
                     onChange={handleChange}
@@ -730,8 +1220,9 @@ function handleChange(
                 </div>
 
                 <div className="tienda-field">
-                  <label>Descripción</label>
+                  <label htmlFor="producto-descripcion">Descripción</label>
                   <textarea
+                    id="producto-descripcion"
                     name="descripcion"
                     value={form.descripcion}
                     onChange={handleChange}
@@ -741,8 +1232,9 @@ function handleChange(
                 </div>
 
                 <div className="tienda-field">
-                  <label>SKU</label>
+                  <label htmlFor="producto-sku">SKU</label>
                   <input
+                    id="producto-sku"
                     name="sku"
                     value={form.sku}
                     onChange={handleChange}
@@ -752,8 +1244,9 @@ function handleChange(
 
                 <div className="tienda-form-row">
                   <div className="tienda-field">
-                    <label>Precio * (S/)</label>
+                    <label htmlFor="producto-precio">Precio * (S/)</label>
                     <input
+                      id="producto-precio"
                       name="precio"
                       type="number"
                       step="0.01"
@@ -765,8 +1258,9 @@ function handleChange(
                   </div>
 
                   <div className="tienda-field">
-                    <label>Precio comparación (S/)</label>
+                    <label htmlFor="producto-precio-comparacion">Precio comparación (S/)</label>
                     <input
+                      id="producto-precio-comparacion"
                       name="precio_comparacion"
                       type="number"
                       step="0.01"
@@ -780,8 +1274,9 @@ function handleChange(
 
                 <div className="tienda-form-row-3">
                   <div className="tienda-field">
-                    <label>Costo (S/)</label>
+                    <label htmlFor="producto-costo">Costo (S/)</label>
                     <input
+                      id="producto-costo"
                       name="costo"
                       type="number"
                       step="0.01"
@@ -793,8 +1288,9 @@ function handleChange(
                   </div>
 
                   <div className="tienda-field">
-                    <label>Stock</label>
+                    <label htmlFor="producto-stock">Stock</label>
                     <input
+                      id="producto-stock"
                       name="stock"
                       type="number"
                       min="0"
@@ -804,8 +1300,9 @@ function handleChange(
                   </div>
 
                   <div className="tienda-field">
-                    <label>Stock mínimo</label>
+                    <label htmlFor="producto-stock-minimo">Stock mínimo</label>
                     <input
+                      id="producto-stock-minimo"
                       name="stock_minimo"
                       type="number"
                       min="0"
@@ -816,8 +1313,9 @@ function handleChange(
                 </div>
 
                 <div className="tienda-field">
-                  <label>Categoría</label>
+                  <label htmlFor="producto-categoria">Categoría</label>
                   <select
+                    id="producto-categoria"
                     name="categoria_id"
                     value={form.categoria_id}
                     onChange={handleChange}
@@ -832,16 +1330,25 @@ function handleChange(
                 </div>
 
                 <div className="tienda-field">
-                  <label>Imagen</label>
-                  <input type="file" accept="image/*" onChange={handleImageUpload} />
-                  {uploadingImage && <small>Subiendo imagen...</small>}
+                  <label htmlFor="producto-imagen-file">Imagen</label>
                   <input
+                    id="producto-imagen-file"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  {uploadingImage && <small>Subiendo imagen...</small>}
+
+                  <label htmlFor="producto-imagen-url">URL de imagen</label>
+                  <input
+                    id="producto-imagen-url"
                     name="imagen_url"
                     value={form.imagen_url}
                     onChange={handleChange}
                     placeholder="URL de imagen"
                   />
-                  {form.imagen_url && (
+
+                  {hasImagenPreview && (
                     <div className="tienda-image-preview">
                       <img src={form.imagen_url} alt="Vista previa" />
                     </div>
@@ -882,9 +1389,9 @@ function handleChange(
                   <button type="button" onClick={closeForm} className="tienda-secondary-btn">
                     Cancelar
                   </button>
-                    <button type="submit" className="tienda-primary-btn" disabled={savingProducto}>
-                      {getProductoSubmitText()}
-                    </button>
+                  <button type="submit" className="tienda-primary-btn" disabled={savingProducto}>
+                    {getProductoSubmitText()}
+                  </button>
                 </div>
               </form>
             </aside>
@@ -892,7 +1399,7 @@ function handleChange(
         </section>
       )}
 
-      {selectedSiteId && activeTab === "categorias" && (
+      {hasSelectedSite && isCategoriasTab && (
         <section className="tienda-list-panel">
           <div className="tienda-panel-title">
             <h2>Categorías</h2>
@@ -901,113 +1408,12 @@ function handleChange(
             </button>
           </div>
 
-          {loadingCategorias ? (
-            <div className="tienda-empty-state">Cargando categorías...</div>
-          ) : categorias.length === 0 ? (
-            <div className="tienda-empty-state">
-              No hay categorías. Crea la primera categoría para organizar tus productos.
-            </div>
-          ) : (
-            <div className="tienda-categoria-list">
-              {categorias.map((cat) => (
-                <div className="tienda-categoria-item" key={cat.id}>
-                  <div className="tienda-categoria-info">
-                    <span className="tienda-categoria-name">
-                      {cat.nombre}
-                      {!cat.activa && (
-                        <span style={{ color: "#ef4444", fontSize: "12px", marginLeft: "8px" }}>
-                          (inactiva)
-                        </span>
-                      )}
-                    </span>
-                    <span className="tienda-categoria-slug">/{cat.slug}</span>
-                  </div>
-                  <div className="tienda-categoria-actions">
-                    <button onClick={() => openEditCategoria(cat)}>Editar</button>
-                    <button
-                      style={{ background: "#fee2e2", color: "#991b1b" }}
-                      onClick={() => handleDeleteCategoria(cat)}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {isCategoriaModalOpen && (
-            <div className="tienda-modal-overlay" onClick={closeCategoriaModal}>
-              <div className="tienda-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="tienda-modal-header">
-                  <h2>{editingCategoria ? "Editar categoría" : "Nueva categoría"}</h2>
-                  <button onClick={closeCategoriaModal}>×</button>
-                </div>
-
-                <form onSubmit={handleCategoriaSubmit}>
-                  <div className="tienda-modal-body">
-                    <div className="tienda-field">
-                      <label>Nombre *</label>
-                      <input
-                        name="nombre"
-                        value={categoriaForm.nombre}
-                        onChange={handleCategoriaChange}
-                        placeholder="Ej: Ropa"
-                      />
-                    </div>
-
-                    <div className="tienda-field">
-                      <label>Slug</label>
-                      <input
-                        name="slug"
-                        value={categoriaForm.slug}
-                        onChange={handleCategoriaChange}
-                        placeholder="ropa"
-                      />
-                    </div>
-
-                    <div className="tienda-field">
-                      <label>Descripción</label>
-                      <textarea
-                        name="descripcion"
-                        value={categoriaForm.descripcion}
-                        onChange={handleCategoriaChange}
-                        rows={2}
-                        placeholder="Descripción de la categoría..."
-                      />
-                    </div>
-
-                    <div className="tienda-field">
-                      <label>Imagen (URL)</label>
-                      <input
-                        name="imagen"
-                        value={categoriaForm.imagen}
-                        onChange={handleCategoriaChange}
-                        placeholder="https://ejemplo.com/imagen.jpg"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="tienda-modal-actions">
-                    <button
-                      type="button"
-                      className="tienda-secondary-btn"
-                      onClick={closeCategoriaModal}
-                    >
-                      Cancelar
-                    </button>
-                    <button type="submit" className="tienda-primary-btn" disabled={savingCategoria}>
-                      {getCategoriaSubmitText()}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+          {renderCategoriasContent()}
+          {renderCategoriaModal()}
         </section>
       )}
 
-      {selectedSiteId && activeTab === "pedidos" && (
+      {hasSelectedSite && isPedidosTab && (
         <section className="tienda-list-panel">
           <div className="tienda-panel-title">
             <h2>Pedidos</h2>
@@ -1016,8 +1422,9 @@ function handleChange(
 
           <div className="tienda-toolbar-left">
             <div className="tienda-field">
-              <label>Filtrar por estado</label>
+              <label htmlFor="pedido-estado-filter">Filtrar por estado</label>
               <select
+                id="pedido-estado-filter"
                 value={pedidoEstadoFilter}
                 onChange={(event) => setPedidoEstadoFilter(event.target.value)}
               >
@@ -1031,200 +1438,8 @@ function handleChange(
             </div>
           </div>
 
-          {loadingPedidos ? (
-            <div className="tienda-empty-state">Cargando pedidos...</div>
-          ) : filteredPedidos.length === 0 ? (
-            <div className="tienda-empty-state">
-              {getPedidoEmptyText()}
-            </div>
-          ) : (
-            <table className="tienda-table">
-              <thead>
-                <tr>
-                  <th>N° Pedido</th>
-                  <th>Cliente</th>
-                  <th>Email</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                  <th>Pago</th>
-                  <th>Fecha</th>
-                  <th>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPedidos.map((pedido) => (
-                  <tr key={pedido.id}>
-                    <td style={{ fontWeight: 700 }}>{pedido.numero_pedido}</td>
-                    <td>{pedido.nombre_cliente}</td>
-                    <td>{pedido.email_cliente}</td>
-                    <td style={{ fontWeight: 700 }}>{formatPrice(pedido.total)}</td>
-                    <td>
-                      <span className={`tienda-status tienda-status-${pedido.estado}`}>
-                        {estadoLabels[pedido.estado] || pedido.estado}
-                      </span>
-                    </td>
-                    <td>{pedido.estado_pago}</td>
-                    <td>{new Date(pedido.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <button onClick={() => openPedidoDetail(pedido)}>Ver</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {isPedidoModalOpen && pedidoDetail && (
-            <div className="tienda-modal-overlay" onClick={() => setIsPedidoModalOpen(false)}>
-              <div
-                className="tienda-modal"
-                style={{ width: "min(700px, 100%)" }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="tienda-modal-header">
-                  <h2>Pedido {pedidoDetail.numero_pedido}</h2>
-                  <button onClick={() => setIsPedidoModalOpen(false)}>×</button>
-                </div>
-
-                <div className="tienda-modal-body">
-                  <div className="tienda-pedido-detail-grid">
-                    <div className="tienda-pedido-detail-item">
-                      <h4>Cliente</h4>
-                      <p>{pedidoDetail.nombre_cliente}</p>
-                    </div>
-                    <div className="tienda-pedido-detail-item">
-                      <h4>Email</h4>
-                      <p>{pedidoDetail.email_cliente}</p>
-                    </div>
-                    {pedidoDetail.telefono_cliente && (
-                      <div className="tienda-pedido-detail-item">
-                        <h4>Teléfono</h4>
-                        <p>{pedidoDetail.telefono_cliente}</p>
-                      </div>
-                    )}
-                    <div className="tienda-pedido-detail-item">
-                      <h4>Estado</h4>
-                      <p>
-                        <span
-                          className={`tienda-status tienda-status-${pedidoDetail.estado}`}
-                        >
-                          {estadoLabels[pedidoDetail.estado] || pedidoDetail.estado}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="tienda-pedido-detail-item">
-                      <h4>Método de pago</h4>
-                      <p>{pedidoDetail.metodo_pago || "—"}</p>
-                    </div>
-                    <div className="tienda-pedido-detail-item">
-                      <h4>Estado del pago</h4>
-                      <p>{pedidoDetail.estado_pago}</p>
-                    </div>
-                  </div>
-
-                  {(pedidoDetail.direccion_envio ||
-                    pedidoDetail.ciudad_envio ||
-                    pedidoDetail.pais_envio) && (
-                    <div style={{ marginTop: "12px" }}>
-                      <h4 style={{ margin: "0 0 6px", fontSize: "12px", color: "#64748b" }}>
-                        DIRECCIÓN DE ENVÍO
-                      </h4>
-                      <p style={{ margin: 0, color: "#0f172a", fontSize: "14px" }}>
-                        {[pedidoDetail.direccion_envio, pedidoDetail.ciudad_envio, pedidoDetail.pais_envio]
-                          .filter(Boolean)
-                          .join(", ")}
-                        {pedidoDetail.codigo_postal && ` - ${pedidoDetail.codigo_postal}`}
-                      </p>
-                    </div>
-                  )}
-
-                  <div style={{ marginTop: "12px" }}>
-                    <h4 style={{ margin: "0 0 8px", fontSize: "12px", color: "#64748b" }}>
-                      ITEMS DEL PEDIDO
-                    </h4>
-                    <table className="tienda-pedido-items-table">
-                      <thead>
-                        <tr>
-                          <th>Producto</th>
-                          <th>SKU</th>
-                          <th>Cantidad</th>
-                          <th>Precio unit.</th>
-                          <th>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pedidoDetail.items.map((item) => (
-                          <tr key={item.id}>
-                            <td>{item.nombre_producto}</td>
-                            <td>{item.sku_producto || "—"}</td>
-                            <td>{item.cantidad}</td>
-                            <td>{formatPrice(item.precio_unitario)}</td>
-                            <td style={{ fontWeight: 700 }}>{formatPrice(item.total)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginTop: "12px",
-                      padding: "16px",
-                      background: "#f8fafc",
-                      borderRadius: "12px",
-                    }}
-                  >
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: "14px", color: "#64748b" }}>
-                        Cambiar estado
-                      </h4>
-                      <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
-                        {Object.entries(estadoLabels).map(([key, label]) => (
-                          <button
-                            key={key}
-                            onClick={() => handleCambiarEstadoPedido(pedidoDetail.id, key)}
-                            disabled={key === pedidoDetail.estado}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: "8px",
-                              border: "1px solid #e2e8f0",
-                              background: key === pedidoDetail.estado ? "#2563eb" : "white",
-                              color: key === pedidoDetail.estado ? "white" : "#334155",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                            }}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: "13px", color: "#64748b" }}>Total</div>
-                      <div style={{ fontSize: "26px", fontWeight: 800, color: "#0f172a" }}>
-                        {formatPrice(pedidoDetail.total)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {pedidoDetail.notas && (
-                    <div style={{ marginTop: "12px" }}>
-                      <h4 style={{ margin: "0 0 4px", fontSize: "12px", color: "#64748b" }}>
-                        NOTAS DEL PEDIDO
-                      </h4>
-                      <p style={{ margin: 0, color: "#0f172a", fontSize: "14px" }}>
-                        {pedidoDetail.notas}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {renderPedidosContent()}
+          {renderPedidoModal()}
         </section>
       )}
     </div>

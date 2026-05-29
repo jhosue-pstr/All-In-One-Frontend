@@ -102,7 +102,10 @@ function showEmpty(container: Element): void {
   if (item) item.style.display = "none";
   if (empty) empty.style.display = "block";
 }
-
+function stripHtml(html: string): string {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  return doc.body.textContent || "";
+}
 function fillPostItem(item: HTMLElement, post: BlogPost): void {
   const image = item.querySelector<HTMLImageElement>("[data-blog-image]");
   const title = item.querySelector<HTMLElement>("[data-blog-title]");
@@ -123,7 +126,7 @@ function fillPostItem(item: HTMLElement, post: BlogPost): void {
     excerpt.textContent =
       post.excerpt ||
       post.meta_description ||
-      post.content.replace(/<[^>]*>/g, "").slice(0, 150) + "...";
+      `${stripHtml(post.content).slice(0, 150)}...`
   }
 
   if (content) {
