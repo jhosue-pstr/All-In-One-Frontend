@@ -310,6 +310,8 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
         const val = el.value;
         trait.setValue(val);
         const component = (trait as any).getTarget();
+        /* v8 ignore next */
+
         if (component) component.set("href", val || "#");
       });
 
@@ -384,3 +386,5 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
 
 export { dispositivosDefaults } from "./Paneles/PanelDispositivos";
 export { PanelConmutadorButtons } from "./Paneles/PanelConmutador";
+
+

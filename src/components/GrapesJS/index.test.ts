@@ -106,7 +106,9 @@ describe('initGrapesJS', () => {
       expect(mockEditor.setComponents).toHaveBeenCalledWith('<div>')
       expect(mockEditor.setStyle).not.toHaveBeenCalled()
     })
+    
   })
+  
 
   describe('device commands', () => {
     it('adds device commands for desktop, mobile, tablet', () => {
@@ -420,4 +422,678 @@ describe('initGrapesJS', () => {
       expect(() => initGrapesJS({ siteId: '1' })).not.toThrow()
     })
   })
+
+describe('page-href traits and link behavior', () => {
+
+  it('registers page-href trait type', () => {
+    initGrapesJS({ siteId: '1' })
+
+    expect(mockEditor.Traits.addType)
+      .toHaveBeenCalledWith(
+        'page-href',
+        expect.objectContaining({
+          createInput: expect.any(Function),
+        }),
+      )
+  })
+
+  it('creates page-href select input and updates href', () => {
+    mockEditor.Pages.getAll.mockReturnValue([
+      makePage('p1', 'Inicio'),
+      makePage('p2', 'Contacto'),
+    ])
+
+    initGrapesJS({ siteId: '1' })
+
+    const traitCfg =
+      mockEditor.Traits.addType.mock.calls[0][1]
+
+    const target = { set: vi.fn() }
+
+    const trait = {
+      getValue: vi.fn().mockReturnValue(''),
+      setValue: vi.fn(),
+      getTarget: vi.fn().mockReturnValue(target),
+    }
+
+    const select =
+      traitCfg.createInput({ trait })
+
+    expect(select.tagName).toBe('SELECT')
+
+    select.value = '?page=inicio'
+
+    select.dispatchEvent(
+      new Event('change'),
+    )
+
+    expect(trait.setValue)
+      .toHaveBeenCalledWith('?page=inicio')
+
+    expect(target.set)
+      .toHaveBeenCalledWith(
+        'href',
+        '?page=inicio',
+      )
+  })
+
+  it('registers custom link component type', () => {
+    initGrapesJS({ siteId: '1' })
+
+    expect(mockEditor.DomComponents.addType)
+      .toHaveBeenCalledWith(
+        'link',
+        expect.any(Object),
+      )
+  })
+
+  it('component:selected adds missing link traits', () => {
+    initGrapesJS({ siteId: '1' })
+
+    const handler =
+      mockEditor.on.mock.calls.find(
+        ([e]: [string]) =>
+          e === 'component:selected',
+      )?.[1]
+
+    const component = {
+      get: vi.fn((key) => {
+        if (key === 'tagName') return 'a'
+        if (key === 'traits') return []
+      }),
+      set: vi.fn(),
+    }
+
+    handler(component)
+
+    expect(component.set)
+      .toHaveBeenCalledWith(
+        'traits',
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: 'page-href',
+          }),
+        ]),
+      )
+  })
+
+    it('component:selected returns early when link traits already exist', () => {
+    initGrapesJS({ siteId: '1' })
+
+    const handler = mockEditor.on.mock.calls.find(
+      ([e]: [string]) => e === 'component:selected',
+    )?.[1]
+
+    const component = {
+      get: vi.fn((key) => {
+        if (key === 'tagName') return 'a'
+        if (key === 'traits') {
+          return [
+            { type: 'page-href' },
+            { name: 'target' },
+          ]
+        }
+      }),
+      set: vi.fn(),
+    }
+
+    handler(component)
+
+    expect(component.set).toHaveBeenCalledWith('resizable', true)
+    expect(component.set).toHaveBeenCalledWith('hoverable', true)
+
+    expect(component.set).not.toHaveBeenCalledWith(
+      'traits',
+      expect.anything(),
+    )
+  })
+})
+
+describe('extra GrapesJS missing branches', () => {
+  it('loads multiple saved pages', () => {
+    mockEditor.Pages.getAll.mockReturnValue([])
+
+    initGrapesJS({
+      siteId: '1',
+      projectData: {
+        pages: [
+          {
+            id: 'p1',
+            name: 'Inicio',
+            html: '<h1>Inicio</h1>',
+            css: 'h1{}',
+          },
+          {
+            id: 'p2',
+            name: 'Contacto',
+            html: '<h1>Contacto</h1>',
+            css: 'h1{}',
+          },
+        ],
+      },
+    })
+
+    expect(mockEditor.setComponents).toHaveBeenCalledWith('<h1>Inicio</h1>')
+    expect(mockEditor.setStyle).toHaveBeenCalledWith('h1{}')
+    expect(mockEditor.Pages.add).toHaveBeenCalledWith({
+      name: 'Contacto',
+      component: '<h1>Contacto</h1>',
+    })
+  })
+
+  it('page-href select uses current value when option exists', () => {
+    mockEditor.Pages.getAll.mockReturnValue([
+      makePage('p1', 'Mi Pagina'),
+    ])
+
+    initGrapesJS({ siteId: '1' })
+
+    const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+    const trait = {
+      getValue: vi.fn().mockReturnValue('?page=mi-pagina'),
+      setValue: vi.fn(),
+      getTarget: vi.fn().mockReturnValue(null),
+    }
+
+    const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+    expect(select.value).toBe('?page=mi-pagina')
+  })
+
+  it('component:selected removes duplicate traits before adding missing ones', () => {
+    initGrapesJS({ siteId: '1' })
+
+    const handler = mockEditor.on.mock.calls.find(
+      ([e]: [string]) => e === 'component:selected',
+    )?.[1]
+
+    const component = {
+      get: vi.fn((key) => {
+        if (key === 'tagName') return 'a'
+        if (key === 'traits') {
+          return [
+            { name: 'href' },
+            { name: 'href' },
+          ]
+        }
+      }),
+      set: vi.fn(),
+    }
+
+    handler(component)
+
+    const traitsCall = component.set.mock.calls.find(
+      ([key]) => key === 'traits',
+    )
+
+    expect(traitsCall).toBeTruthy()
+    expect(traitsCall[1]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'page-href' }),
+        expect.objectContaining({ name: 'target' }),
+      ]),
+    )
+  })
+})
+
+it('page-href change sets href to # when value is empty', () => {
+  mockEditor.Pages.getAll.mockReturnValue([
+    makePage('p1', 'Inicio'),
+  ])
+
+  initGrapesJS({ siteId: '1' })
+
+  const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+  const target = {
+    set: vi.fn(),
+  }
+
+  const trait = {
+    getValue: vi.fn().mockReturnValue(''),
+    setValue: vi.fn(),
+    getTarget: vi.fn().mockReturnValue(target),
+  }
+
+  const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+  select.value = ''
+
+  select.dispatchEvent(new Event('change'))
+
+  expect(trait.setValue).toHaveBeenCalledWith('')
+  expect(target.set).toHaveBeenCalledWith('href', '#')
+})
+
+it('page-href re-renders options when page event is emitted', () => {
+  mockEditor.Pages.getAll.mockReturnValue([
+    makePage('p1', 'Inicio'),
+  ])
+
+  initGrapesJS({ siteId: '1' })
+
+  const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+  const trait = {
+    getValue: vi.fn().mockReturnValue(''),
+    setValue: vi.fn(),
+    getTarget: vi.fn().mockReturnValue(null),
+  }
+
+  const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+  expect(select.options.length).toBe(2)
+
+  mockEditor.Pages.getAll.mockReturnValue([
+    makePage('p1', 'Inicio'),
+    makePage('p2', 'Contacto'),
+  ])
+
+  const pageHandlers = mockEditor.on.mock.calls
+    .filter(([eventName]: [string]) => eventName === 'page')
+    .map(([, handler]) => handler)
+
+  pageHandlers.forEach((handler) => handler())
+
+  expect(select.options.length).toBe(3)
+  expect([...select.options].map((o) => o.value)).toContain('?page=contacto')
+})
+
+it('component:selected keeps existing page-href and only adds target', () => {
+  initGrapesJS({ siteId: '1' })
+
+  const handler = mockEditor.on.mock.calls.find(
+    ([eventName]: [string]) => eventName === 'component:selected',
+  )?.[1]
+
+  const component = {
+    get: vi.fn((key) => {
+      if (key === 'tagName') return 'a'
+      if (key === 'traits') {
+        return [
+          { type: 'page-href', name: 'href' },
+        ]
+      }
+    }),
+    set: vi.fn(),
+  }
+
+  handler(component)
+
+  const traitsCall = component.set.mock.calls.find(
+    ([key]) => key === 'traits',
+  )
+
+  expect(traitsCall).toBeTruthy()
+  expect(traitsCall[1]).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ type: 'page-href' }),
+      expect.objectContaining({ name: 'target' }),
+    ]),
+  )
+})
+describe('page event callback', () => {
+  it('renders pages list when page event is triggered', () => {
+    setupDom('1')
+
+    mockEditor.Pages.getAll.mockReturnValue([
+      {
+        id: 'p1',
+        get: vi.fn((k) => (k === 'name' ? 'Inicio' : '')),
+      },
+    ])
+
+    mockEditor.Pages.getSelected.mockReturnValue({
+      id: 'p1',
+    })
+
+    initGrapesJS({ siteId: '1' })
+
+    const handler = mockEditor.on.mock.calls.find(
+      ([event]: [string]) => event === 'page',
+    )?.[1]
+
+    expect(handler).toBeTruthy()
+
+    handler()
+
+    expect(mockEditor.Pages.getAll).toHaveBeenCalled()
+
+    const list =
+      document.getElementById('pages-list-1')
+
+    expect(list).not.toBeNull()
+  })
+})
+describe('extra branch coverage for GrapesJS', () => {
+  it('showPanel does nothing when row does not exist', () => {
+    mockEditor.getContainer.mockReturnValue(null)
+
+    initGrapesJS({ siteId: '1' })
+
+    expect(() => {
+      commandsMap.get('show-layers').run()
+      commandsMap.get('show-styles').run()
+      commandsMap.get('show-traits').run()
+      commandsMap.get('show-blocks').run()
+    }).not.toThrow()
+  })
+
+  it('page-href option uses page id when name is empty', () => {
+    mockEditor.Pages.getAll.mockReturnValue([
+      {
+        id: 'pagina-sin-nombre',
+        get: vi.fn(() => ''),
+      },
+    ])
+
+    initGrapesJS({ siteId: '1' })
+
+    const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+    const trait = {
+      getValue: vi.fn().mockReturnValue(''),
+      setValue: vi.fn(),
+      getTarget: vi.fn().mockReturnValue(null),
+    }
+
+    const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+    expect([...select.options].map((o) => o.value)).toContain(
+      '?page=pagina-sin-nombre',
+    )
+  })
+
+  it('page-href keeps empty value when current option does not exist', () => {
+    mockEditor.Pages.getAll.mockReturnValue([
+      makePage('p1', 'Inicio'),
+    ])
+
+    initGrapesJS({ siteId: '1' })
+
+    const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+    const trait = {
+      getValue: vi.fn().mockReturnValue('?page-no-existe'),
+      setValue: vi.fn(),
+      getTarget: vi.fn().mockReturnValue(null),
+    }
+
+    const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+    expect(select.value).toBe('')
+  })
+
+  it('component:selected adds only page-href when target already exists', () => {
+    initGrapesJS({ siteId: '1' })
+
+    const handler = mockEditor.on.mock.calls.find(
+      ([eventName]: [string]) => eventName === 'component:selected',
+    )?.[1]
+
+    const component = {
+      get: vi.fn((key) => {
+        if (key === 'tagName') return 'a'
+        if (key === 'traits') {
+          return [
+            { name: 'target' },
+          ]
+        }
+      }),
+      set: vi.fn(),
+    }
+
+    handler(component)
+
+    const traitsCall = component.set.mock.calls.find(
+      ([key]) => key === 'traits',
+    )
+
+    expect(traitsCall).toBeTruthy()
+    expect(traitsCall[1]).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'page-href' }),
+        expect.objectContaining({ name: 'target' }),
+      ]),
+    )
+  })
+
+  it('component:selected handles null traits', () => {
+    initGrapesJS({ siteId: '1' })
+
+    const handler = mockEditor.on.mock.calls.find(
+      ([eventName]: [string]) => eventName === 'component:selected',
+    )?.[1]
+
+    const component = {
+      get: vi.fn((key) => {
+        if (key === 'tagName') return 'a'
+        if (key === 'traits') return null
+      }),
+      set: vi.fn(),
+    }
+
+    handler(component)
+
+    expect(component.set).toHaveBeenCalledWith(
+      'traits',
+      expect.arrayContaining([
+        expect.objectContaining({ type: 'page-href' }),
+        expect.objectContaining({ name: 'target' }),
+      ]),
+    )
+  })
+  
+})
+
+it('loads saved pages with empty css fallback', () => {
+  initGrapesJS({
+    siteId: '1',
+    projectData: {
+      pages: [
+        {
+          id: 'p1',
+          name: 'Inicio',
+          html: '<h1>x</h1>',
+          css: '',
+        },
+        {
+          id: 'p2',
+          name: 'Otro',
+          html: '<h1>y</h1>',
+        },
+      ],
+    },
+  })
+
+  expect(mockEditor.setStyle)
+    .toHaveBeenCalledWith('')
+})
+
+it('delete modal uses page id when page name is empty', () => {
+  vi.useFakeTimers()
+
+  setupDom('1')
+
+  mockEditor.Pages.getAll.mockReturnValue([
+    {
+      id: 'page-id-only',
+      get: vi.fn(() => ''),
+    },
+    makePage('p2','B'),
+  ])
+
+  mockEditor.Pages.getSelected.mockReturnValue({
+    id:'page-id-only',
+  })
+
+  initGrapesJS({ siteId:'1' })
+
+  document
+    .querySelectorAll('span')[0]
+    .dispatchEvent(
+      new MouseEvent('click',{bubbles:true}),
+    )
+
+  expect(mockEditor.Modal.setContent)
+    .toHaveBeenCalled()
+
+  vi.useRealTimers()
+})
+
+it('page element uses page id when name is empty', () => {
+  setupDom('1')
+
+  mockEditor.Pages.getAll.mockReturnValue([
+    {
+      id: 'solo-id',
+      get: vi.fn(() => ''),
+    },
+  ])
+
+  mockEditor.Pages.getSelected.mockReturnValue({
+    id: 'solo-id',
+  })
+
+  initGrapesJS({ siteId: '1' })
+
+  const list = document.getElementById('pages-list-1')!
+  const firstChild = list.children[0] as HTMLElement
+
+  expect(firstChild).toBeTruthy()
+  expect(firstChild.innerText).toBe('solo-id')
+})
+
+it('skips setStyle when css is empty string', () => {
+  initGrapesJS({
+    siteId:'1',
+    projectData:{
+      html:'<div>x</div>',
+      css:'',
+    },
+  })
+
+  expect(mockEditor.setStyle)
+    .not.toHaveBeenCalled()
+})
+
+it('component:selected deduplicates by type before name', () => {
+  initGrapesJS({ siteId:'1' })
+
+  const handler =
+    mockEditor.on.mock.calls.find(
+      ([e]:[string]) =>
+        e === 'component:selected',
+    )?.[1]
+
+  const component = {
+    get: vi.fn((key) => {
+
+      if (key === 'tagName')
+        return 'a'
+
+      if (key === 'traits') {
+        return [
+          { type:'page-href', name:'href' },
+          { type:'page-href', name:'otro' },
+          { name:'target' },
+        ]
+      }
+    }),
+    set:vi.fn(),
+  }
+
+  handler(component)
+
+  expect(component.set)
+    .not.toHaveBeenCalledWith(
+      'traits',
+      expect.arrayContaining([
+        expect.objectContaining({
+          name:'otro',
+        }),
+      ]),
+    )
+})
+it('component:selected handles trait without type or name', () => {
+  initGrapesJS({ siteId:'1' })
+
+  const handler =
+    mockEditor.on.mock.calls.find(
+      ([e]:[string]) =>
+        e === 'component:selected',
+    )?.[1]
+
+  const component = {
+    get: vi.fn((key) => {
+
+      if (key === 'tagName')
+        return 'a'
+
+      if (key === 'traits') {
+        return [
+          {},
+        ]
+      }
+    }),
+    set:vi.fn(),
+  }
+
+  handler(component)
+
+  expect(component.set)
+    .toHaveBeenCalled()
+})
+
+it('component:selected handles empty tagName fallback', () => {
+  initGrapesJS({ siteId: '1' })
+
+  const handler =
+    mockEditor.on.mock.calls.find(
+      ([eventName]: [string]) => eventName === 'component:selected',
+    )?.[1]
+
+  const component = {
+    get: vi.fn((key) => {
+      if (key === 'tagName') return null
+    }),
+    set: vi.fn(),
+  }
+
+  handler(component)
+
+  expect(component.set).toHaveBeenCalledWith('resizable', true)
+  expect(component.set).toHaveBeenCalledWith('hoverable', true)
+  expect(component.set).not.toHaveBeenCalledWith('traits', expect.anything())
+})
+
+it('page-href change with default empty option sets href fallback', () => {
+  mockEditor.Pages.getAll.mockReturnValue([
+    makePage('p1', 'Inicio'),
+  ])
+
+  initGrapesJS({ siteId: '1' })
+
+  const traitCfg = mockEditor.Traits.addType.mock.calls[0][1]
+
+  const target = {
+    set: vi.fn(),
+  }
+
+  const trait = {
+    getValue: vi.fn().mockReturnValue('?page=inicio'),
+    setValue: vi.fn(),
+    getTarget: vi.fn().mockReturnValue(target),
+  }
+
+  const select = traitCfg.createInput({ trait }) as HTMLSelectElement
+
+  select.value = ''
+
+  select.dispatchEvent(new Event('change'))
+
+  expect(trait.setValue).toHaveBeenCalledWith('')
+  expect(target.set).toHaveBeenCalledWith('href', '#')
+})
 })

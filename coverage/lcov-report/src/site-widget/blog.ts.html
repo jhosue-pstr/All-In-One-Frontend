@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.07% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/214</span>
+                <span class='fraction'>0/214</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.12% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/32</span>
+                <span class='fraction'>0/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">6.56% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/198</span>
+                <span class='fraction'>0/198</span>
             </div>
         
             
@@ -551,7 +551,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -976,33 +976,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">type BlogPost = {
@@ -1022,7 +1022,7 @@
   updated_at: string;
 };
 &nbsp;
-const API_BASE = "/api";
+const API_BASE = <span class="cstat-no" title="statement not covered" >"/api";</span>
 &nbsp;
 function <span class="fstat-no" title="function not covered" >getSiteId(e</span>lement: Element): number | null {
   const value = <span class="cstat-no" title="statement not covered" >element.getAttribute("data-sitio-id");</span>
@@ -1446,34 +1446,34 @@ function <span class="fstat-no" title="function not covered" >openBlogModal(p</s
 <span class="cstat-no" title="statement not covered" >  document.body.style.overflow = "hidden";</span>
 }
 &nbsp;
-export function initBlogBlocks(): void {
-  const gridBlocks = document.querySelectorAll('[data-blog="posts-grid"]');
-  gridBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+export function <span class="fstat-no" title="function not covered" >initBlogBlocks(): void {</span>
+  const gridBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="posts-grid"]');</span>
+<span class="cstat-no" title="statement not covered" >  gridBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initPostsBlock(block, 6);</span>
   });
 &nbsp;
-  const listBlocks = document.querySelectorAll('[data-blog="posts-list"]');
-  listBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+  const listBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="posts-list"]');</span>
+<span class="cstat-no" title="statement not covered" >  listBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initPostsBlock(block, 8);</span>
   });
 &nbsp;
-  const recentBlocks = document.querySelectorAll('[data-blog="recent-posts"]');
-  recentBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+  const recentBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="recent-posts"]');</span>
+<span class="cstat-no" title="statement not covered" >  recentBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initPostsBlock(block, 5);</span>
   });
 &nbsp;
-  const featuredBlocks = document.querySelectorAll('[data-blog="featured-post"]');
-  featuredBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+  const featuredBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="featured-post"]');</span>
+<span class="cstat-no" title="statement not covered" >  featuredBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initFeaturedPost(block);</span>
   });
 &nbsp;
-  const detailBlocks = document.querySelectorAll('[data-blog="post-detail"]');
-  detailBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+  const detailBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="post-detail"]');</span>
+<span class="cstat-no" title="statement not covered" >  detailBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initPostDetail(block);</span>
   });
 &nbsp;
-  const searchBlocks = document.querySelectorAll('[data-blog="search"]');
-  searchBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {
+  const searchBlocks = <span class="cstat-no" title="statement not covered" >document.querySelectorAll('[data-blog="search"]');</span>
+<span class="cstat-no" title="statement not covered" >  searchBlocks.<span class="fstat-no" title="function not covered" >forEach((b</span>lock) =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    initSearchBlock(block);</span>
   });
 }</pre></td></tr></table></pre>
@@ -1483,7 +1483,7 @@ export function initBlogBlocks(): void {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-28T16:01:41.928Z
+                at 2026-05-29T01:16:38.040Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

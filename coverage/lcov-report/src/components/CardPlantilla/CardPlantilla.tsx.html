@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>15/15</span>
+                <span class='fraction'>0/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>4/4</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>9/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -138,23 +138,23 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">14x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -200,24 +200,24 @@ interface CardPlantillaProps {
   readonly onEdit?: (plantilla: Plantilla) =&gt; void;
 }
 &nbsp;
-export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit }: Readonly&lt;CardPlantillaProps&gt;) {
-  const navigate = useNavigate();
+export function <span class="fstat-no" title="function not covered" >CardPlantilla({</span> plantilla, showActions = <span class="branch-0 cbranch-no" title="branch not covered" >true, o</span>nDelete, onEdit }: Readonly&lt;CardPlantillaProps&gt;) {
+  const <span class="cstat-no" title="statement not covered" >navigate = useNavigate();</span>
 &nbsp;
-  const handleEdit = () =&gt; {
-    navigate(`/plantillas/${plantilla.id}/editar`);
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleEdit = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    navigate(`/plantillas/${plantilla.id}/editar`);</span>
   };
 &nbsp;
-  const handleEditBasic = () =&gt; {
-    onEdit?.(plantilla);
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleEditBasic = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    onEdit?.(plantilla);</span>
   };
 &nbsp;
-  const handleDelete = () =&gt; {
-    if (confirm("¿Estás seguro de eliminar esta plantilla?")) {
-      onDelete?.(plantilla.id);
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleDelete = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (confirm("¿Estás seguro de eliminar esta plantilla?")) {</span>
+<span class="cstat-no" title="statement not covered" >      onDelete?.(plantilla.id);</span>
     }
   };
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className="plantilla-card" data-testid={`plantilla-card-${plantilla.id}`}&gt;
       {plantilla.miniatura &amp;&amp; (
         &lt;div className="plantilla-miniatura"&gt;
@@ -259,7 +259,7 @@ export function CardPlantilla({ plantilla, showActions = true, onDelete, onEdit 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-05-28T16:01:41.928Z
+                at 2026-05-29T01:16:38.040Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
