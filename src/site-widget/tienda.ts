@@ -529,7 +529,7 @@ async function initProductoDetalle(container: Element): Promise<void> {
   const siteId = getSiteId(container);
   if (!siteId) return;
 
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(globalThis.location.search);
   const slug = params.get("producto");
   const productoIdAttr = (container as HTMLElement).dataset.productoId;
   const productoId = productoIdAttr ? Number(productoIdAttr) : null;

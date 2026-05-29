@@ -116,14 +116,30 @@ export function handleRegister(form: HTMLFormElement): void {
       });
 
       form.innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <p style="color:#27ae60;font-size:18px;font-weight:600;">¡Registro exitoso!</p>
-          <p style="color:#666;">Ahora puedes iniciar sesión.</p>
-          <button type="button" style="padding:12px 24px;background:#667eea;color:white;border:none;border-radius:6px;font-size:16px;cursor:pointer;" onclick="globalThis.location.reload()">
-            Iniciar Sesión
-          </button>
-        </div>
-      `;
+      <div style="text-align:center;padding:20px;">
+        <p style="color:#27ae60;font-size:18px;font-weight:600;">
+          ¡Registro exitoso!
+        </p>
+        <p style="color:#666;">
+          Ahora puedes iniciar sesión.
+        </p>
+        <button
+          id="auth-login-reload-btn"
+          type="button"
+          style="padding:12px 24px;background:#667eea;color:white;border:none;border-radius:6px;font-size:16px;cursor:pointer;"
+        >
+          Iniciar Sesión
+        </button>
+      </div>
+    `;
+
+    const reloadBtn = form.querySelector<HTMLButtonElement>(
+      "#auth-login-reload-btn",
+    );
+
+    reloadBtn?.addEventListener("click", () => {
+      globalThis.location.reload();
+    });
     } catch (err) {
       showError(form, err instanceof Error ? err.message : 'Error al registrarse');
     } finally {
