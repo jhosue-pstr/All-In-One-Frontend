@@ -92,7 +92,7 @@ pipeline {
                         -e TEST_USER_PASSWORD=test123 \
                         -e CI=true \
                         -w "$WORKSPACE" \
-                        mcr.microsoft.com/playwright:v1.52.0-jammy \
+                        mcr.microsoft.com/playwright:v1.60.0-jammy \
                         sh -c "npm install && npx playwright test"
                 '''
                 junit 'test-results/results.xml'
