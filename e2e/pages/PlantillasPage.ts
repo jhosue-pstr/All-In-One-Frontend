@@ -67,10 +67,11 @@ export class PlantillasPage {
   }
 
   async selectVisibilidad(visibilidad: 'PUBLICA' | 'PRIVADA') {
-    await this.modal.locator(`input[name="visibilidad"][value="${visibilidad}"]`).check({ force: true });
+    await this.modal.waitFor({ state: 'visible' });
+    await this.page.locator(`label.visibility-option:has(input[value="${visibilidad}"])`).click();
   }
 
-  async getPlantillaCardByName(nombre: string) {
+  getPlantillaCardByName(nombre: string) {
     return this.page.locator('.plantilla-card').filter({ hasText: nombre });
   }
 

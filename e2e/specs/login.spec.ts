@@ -6,9 +6,9 @@ test.describe('Login', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.context().clearCookies();
-    await page.evaluate(() => localStorage.clear());
     loginPage = new LoginPage(page);
     await loginPage.goto();
+    await page.evaluate(() => localStorage.clear());
   });
 
   test('should show login form', async () => {

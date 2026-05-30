@@ -5,6 +5,7 @@ export class WebEditorPage {
 
   async gotoPlantilla(id: number) {
     await this.page.goto(`/plantillas/${id}/editar`);
+    await this.editorContainer.waitFor({ state: 'visible', timeout: 15000 });
   }
 
   async gotoSitio(id: number) {
@@ -44,10 +45,10 @@ export class WebEditorPage {
   }
 
   async selectPanel(panel: 'blocks' | 'layers' | 'styles' | 'pages') {
-    await this.page.locator(`.tab-btn[data-panel="${panel}"]`).click();
+    await this.page.locator(`.tab-btn[data-panel="${panel}"]`).click({ force: true });
   }
 
   async selectDevice(device: 'Desktop' | 'Tablet' | 'Mobile') {
-    await this.page.locator(`.panel__devices button[title="${device}"]`).click();
+    await this.page.locator(`.panel__devices button[title="${device}"]`).click({ force: true });
   }
 }

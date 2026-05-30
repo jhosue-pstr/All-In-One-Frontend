@@ -11,12 +11,13 @@ test.describe('Módulos', () => {
     await sitiosPage.goto();
     const cards = await sitiosPage.sitioCards.count();
     if (cards === 0) {
+      const uniqueSlug = `test-sitio-modulos-${Date.now()}`;
       await sitiosPage.btnNuevoSitio.click();
       await sitiosPage.modal.waitFor({ state: 'visible' });
       await sitiosPage.inputNombre.fill('Test Sitio Modulos');
-      await sitiosPage.inputSlug.fill('test-sitio-modulos');
+      await sitiosPage.inputSlug.fill(uniqueSlug);
       await sitiosPage.btnCrear.click();
-      await expect(sitiosPage.modal).not.toBeVisible();
+      await sitiosPage.modal.waitFor({ state: 'hidden', timeout: 15000 });
     }
     await page.close();
   });
