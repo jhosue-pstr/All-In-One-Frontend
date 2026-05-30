@@ -69,9 +69,7 @@ pipeline {
         }
 
         stage('Run E2E Tests') {
-            when {
-                branch 'main'
-            }
+            
             steps {
                 sh 'docker compose -f docker-compose.yml up -d db backend frontend'
                 sh '''
