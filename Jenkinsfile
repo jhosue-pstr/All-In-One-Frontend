@@ -68,10 +68,17 @@ pipeline {
             }
         }
 
-        stage('Run E2E Tests') {
-            
+        stage('Setup Docker Compose') {
             steps {
-                sh 'docker compose -f docker-compose.yml up -d db backend frontend'
+                sh '''mkdir -p bin
+curl -sL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o bin/docker-compose
+chmod +x bin/docker-compose'''
+            }
+        }
+
+        stage('Run E2E Tests') {
+            steps {
+                sh '${WORKSPACE}/bin/docker-compose -f ../docker-compose.yml up -d db backend frontend'
                 sh '''
                     echo "Waiting for frontend to be ready..."
                     timeout=60
@@ -85,20 +92,12 @@ pipeline {
                     done
                 '''
                 sh '''
-                    echo "Creating test user if not exists..."
-                    curl -X POST http://backend:8000/api/auth/registro \
-                        -H "Content-Type: application/json" \
-                        -d '{"correo":"test@test.com","contrasena":"test123","nombre":"Test","apellido":"User"}' \
-                        -w "\\nHTTP Status: %{http_code}\\n" \
-                        --connect-timeout 5 || true
-                '''
-                sh '''
                     docker run --rm \
                         --network app-network \
                         -e BASE_URL=http://frontend:5173 \
                         -e API_URL=http://backend:8000/api \
-                        -e TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
-                        -e TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
+                        -e TEST_USER_EMAIL=test@test.com \
+                        -e TEST_USER_PASSWORD=test123 \
                         -e CI=true \
                         -v "$WORKSPACE:/app" \
                         -w /app \
