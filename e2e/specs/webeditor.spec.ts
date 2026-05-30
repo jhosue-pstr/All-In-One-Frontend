@@ -25,8 +25,7 @@ test.describe('WebEditor (GrapesJS)', () => {
     await expect(editorPage.btnBack).toBeVisible();
     await expect(editorPage.editorTitle).toContainText('Editor');
 
-    const devices = await editorPage.deviceButtons.count();
-    expect(devices).toBe(3);
+    await expect(editorPage.deviceButtons).toHaveCount(3);
 
     await expect(editorPage.btnSave).toBeVisible();
     await expect(editorPage.btnBorders).toBeVisible();
