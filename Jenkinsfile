@@ -84,16 +84,16 @@ pipeline {
                 '''
                 sh '''
                     docker run --rm \
+                        --volumes-from jenkins \
                         --network app-network \
                         -e BASE_URL=http://frontend:5173 \
                         -e API_URL=http://backend:8000/api \
                         -e TEST_USER_EMAIL=test@test.com \
                         -e TEST_USER_PASSWORD=test123 \
                         -e CI=true \
-                        -v "$WORKSPACE:/app" \
-                        -w /app \
+                        -w "$WORKSPACE" \
                         mcr.microsoft.com/playwright:v1.52.0-jammy \
-                        sh -c "npm ci && npx playwright test"
+                        sh -c "npm install && npx playwright test"
                 '''
                 junit 'test-results/results.xml'
                 publishHTML(target: [
