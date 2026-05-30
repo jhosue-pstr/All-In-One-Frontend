@@ -68,17 +68,8 @@ pipeline {
             }
         }
 
-        stage('Setup Docker Compose') {
-            steps {
-                sh '''mkdir -p bin
-curl -sL "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o bin/docker-compose
-chmod +x bin/docker-compose'''
-            }
-        }
-
         stage('Run E2E Tests') {
             steps {
-                sh '${WORKSPACE}/bin/docker-compose -f docker-compose.e2e.yml up -d db backend frontend'
                 sh '''
                     echo "Waiting for frontend to be ready..."
                     timeout=60
