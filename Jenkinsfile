@@ -70,13 +70,20 @@ pipeline {
 
         stage('Run E2E Tests') {
             steps {
+                sh 'docker rm -f e2e-frontend 2>/dev/null || true'
                 sh '''
-                    echo "Waiting for frontend to be ready..."
+                    docker run -d --name e2e-frontend \
+                        --network app-network \
+                        -e VITE_API_BASE_URL=http://backend:8000/api \
+                        all-in-one-frontend:latest \
+                        sh -c "npm run dev -- --host 0.0.0.0"
+                '''
+                sh '''
+                    echo "Waiting for e2e-frontend..."
                     timeout=60
                     while [ $timeout -gt 0 ]; do
-                        http_code=$(curl -s -o /dev/null -w "%{http_code}" http://frontend:5173 || echo "000")
-                        if [ "$http_code" != "000" ]; then
-                            echo "Frontend is ready! (HTTP $http_code)"
+                        if curl -s -o /dev/null http://e2e-frontend:5173 2>/dev/null; then
+                            echo "e2e-frontend ready!"
                             break
                         fi
                         echo "Not ready yet... ${timeout}s left"
@@ -84,23 +91,15 @@ pipeline {
                         timeout=$((timeout - 2))
                     done
                     if [ $timeout -le 0 ]; then
-                        echo "ERROR: Frontend not reachable after 60s"
-                        curl -v http://frontend:5173 2>&1 || true
+                        echo "ERROR: e2e-frontend not reachable"
                         exit 1
                     fi
-                '''
-                sh '''
-                    echo "=== Debug: Frontend response ==="
-                    docker run --rm --network app-network \
-                        mcr.microsoft.com/playwright:v1.60.0-jammy \
-                        sh -c "curl -s http://frontend:5173 | head -100"
-                    echo "=== End debug ==="
                 '''
                 sh '''
                     docker run --rm \
                         --volumes-from jenkins \
                         --network app-network \
-                        -e BASE_URL=http://frontend:5173 \
+                        -e BASE_URL=http://e2e-frontend:5173 \
                         -e API_URL=http://backend:8000/api \
                         -e TEST_USER_EMAIL=test@test.com \
                         -e TEST_USER_PASSWORD=test123 \
@@ -109,6 +108,7 @@ pipeline {
                         mcr.microsoft.com/playwright:v1.60.0-jammy \
                         sh -c "npm install && npx playwright test"
                 '''
+                sh 'docker rm -f e2e-frontend 2>/dev/null || true'
                 junit 'test-results/results.xml'
                 publishHTML(target: [
                     allowMissing: false,

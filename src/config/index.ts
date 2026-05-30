@@ -1,6 +1,4 @@
-export const API_CONFIG = {
-  baseUrl: 'http://localhost:8000/api',
-  timeout: 30000,
-};
-
-export const getApiUrl = () => API_CONFIG.baseUrl;
+export const getApiUrl = () =>
+  typeof import.meta !== 'undefined' && import.meta.env.VITE_API_BASE_URL
+    ? import.meta.env.VITE_API_BASE_URL
+    : 'http://localhost:8000/api';
