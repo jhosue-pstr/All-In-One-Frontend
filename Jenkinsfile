@@ -78,7 +78,7 @@ chmod +x bin/docker-compose'''
 
         stage('Run E2E Tests') {
             steps {
-                sh '${WORKSPACE}/bin/docker-compose -f ../docker-compose.yml up -d db backend frontend'
+                sh '${WORKSPACE}/bin/docker-compose -f docker-compose.e2e.yml up -d db backend frontend'
                 sh '''
                     echo "Waiting for frontend to be ready..."
                     timeout=60
