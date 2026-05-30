@@ -74,13 +74,27 @@ pipeline {
                     echo "Waiting for frontend to be ready..."
                     timeout=60
                     while [ $timeout -gt 0 ]; do
-                        if curl -s http://frontend:5173 > /dev/null 2>&1; then
-                            echo "Frontend is ready!"
+                        http_code=$(curl -s -o /dev/null -w "%{http_code}" http://frontend:5173 || echo "000")
+                        if [ "$http_code" != "000" ]; then
+                            echo "Frontend is ready! (HTTP $http_code)"
                             break
                         fi
+                        echo "Not ready yet... ${timeout}s left"
                         sleep 2
                         timeout=$((timeout - 2))
                     done
+                    if [ $timeout -le 0 ]; then
+                        echo "ERROR: Frontend not reachable after 60s"
+                        curl -v http://frontend:5173 2>&1 || true
+                        exit 1
+                    fi
+                '''
+                sh '''
+                    echo "=== Debug: Frontend response ==="
+                    docker run --rm --network app-network \
+                        mcr.microsoft.com/playwright:v1.60.0-jammy \
+                        sh -c "curl -s http://frontend:5173 | head -100"
+                    echo "=== End debug ==="
                 '''
                 sh '''
                     docker run --rm \
