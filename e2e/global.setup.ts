@@ -11,6 +11,23 @@ setup('authenticate', async ({ page }) => {
   }
 
   await page.goto('/');
+
+  if (process.env.CI) {
+    await page.waitForTimeout(5000);
+    console.log('=== DEBUG CI ===');
+    console.log('URL:', page.url());
+    console.log('Title:', await page.title());
+    const hasRoot = await page.$('#root');
+    console.log('Has #root:', !!hasRoot);
+    if (hasRoot) {
+      const rootHTML = await page.evaluate(() => document.getElementById('root')?.innerHTML?.substring(0, 2000) || 'empty');
+      console.log('Root innerHTML:', rootHTML);
+    }
+    const body = await page.evaluate(() => document.body?.innerText?.substring(0, 500) || 'empty');
+    console.log('Body text:', body);
+    console.log('=== END DEBUG CI ===');
+  }
+
   await page.fill('#correo', email);
   await page.fill('#contrasena', password);
   await page.click('button[type="submit"]');
