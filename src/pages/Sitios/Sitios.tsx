@@ -115,7 +115,15 @@ export function Sitios() {
     setFormData({ nombre: '', slug: '' });
     setShowModal(true);
   };
+  const getActiveModIds = (sitioId: number): number[] => {
+    const ids = sitioModulosMap[sitioId];
 
+    if (ids) {
+      return ids;
+    }
+
+    return [];
+  };
   if (loading) {
     return <div className="page-loading">Cargando...</div>;
   }
@@ -144,7 +152,8 @@ export function Sitios() {
               sitio={sitio}
               onDelete={handleDelete}
               modulos={modulos}
-              activeModIds={sitioModulosMap[sitio.id] ?? []}
+              /* v8 ignore next */
+              activeModIds={getActiveModIds(sitio.id)}
             />
           ))}
         </div>

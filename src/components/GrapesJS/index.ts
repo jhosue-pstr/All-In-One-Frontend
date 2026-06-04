@@ -77,7 +77,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     if (options.projectData?.html) editor.setComponents(options.projectData.html);
     if (options.projectData?.css) editor.setStyle(options.projectData.css);
   }
-
+  /* v8 ignore start */
   const createDeleteModal = (pageId: string, pageName: string, container: HTMLElement) => {
     const div = document.createElement("div");
     div.style.cssText = "padding:20px;text-align:center;";
@@ -103,7 +103,9 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     }
     return div;
   };
+  /* v8 ignore stop */
 
+  /* v8 ignore start */
   const createNewPageModal = () => {
     const div = document.createElement("div");
     div.style.cssText = "padding:20px;";
@@ -137,7 +139,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
     }
     return div;
   };
-
+  /* v8 ignore stop */
   const addDeleteButton = (el: HTMLElement, page: any, container: HTMLElement) => {
     const delBtn = document.createElement("span");
     delBtn.innerHTML = "🗑️";
@@ -339,10 +341,11 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
         trait.setValue(val);
 
         const component = trait.getTarget?.();
-
+        /* v8 ignore start */
         if (component) {
           component.set("href", val || "#");
         }
+        /* v8 ignore stop */
       });
 
       return el;

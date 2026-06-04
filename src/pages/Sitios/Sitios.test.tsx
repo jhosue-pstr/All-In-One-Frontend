@@ -31,12 +31,20 @@ vi.mock('../../services/sitioModulo', () => ({
     getBySitio: vi.fn(),
   },
 }))
-
 vi.mock('../../components/CardSitio/CardSitio', () => ({
-  CardSitio: ({ sitio, onDelete }: any) => (
+  CardSitio: ({ sitio, onDelete, activeModIds }: any) => (
     <div data-testid="card-sitio">
       <span>{sitio.nombre}</span>
-      <button onClick={() => onDelete(sitio.id)}>Eliminar</button>
+
+      <span data-testid={`mods-${sitio.id}`}>
+        {activeModIds
+          .map((mod: any) => mod.id_modulo ?? mod)
+          .join(',')}
+      </span>
+
+      <button onClick={() => onDelete(sitio.id)}>
+        Eliminar
+      </button>
     </div>
   ),
 }))
@@ -384,4 +392,56 @@ describe('Sitios', () => {
     expect(screen.getByText('Sitio Alpha')).toBeInTheDocument()
     expect(screen.getByText('Sitio Beta')).toBeInTheDocument()
   })
+  it('does not delete when confirm returns false', async () => {
+  vi.stubGlobal('confirm', vi.fn(() => false))
+
+  renderSitios()
+
+  await waitFor(() => {
+    expect(screen.getByText('Sitio Alpha')).toBeInTheDocument()
+  })
+
+  fireEvent.click(screen.getAllByText('Eliminar')[0])
+
+  expect(sitioService.delete).not.toHaveBeenCalled()
+})
+it('passes active module ids to CardSitio', async () => {
+  ;(sitioModuloService.getBySitio as any)
+    .mockResolvedValueOnce([
+      { id_modulo: 100 },
+      { id_modulo: 101 },
+    ])
+    .mockResolvedValueOnce([])
+
+  renderSitios()
+
+  await waitFor(() => {
+    expect(
+      screen.getByTestId('mods-1')
+    ).toHaveTextContent('100,101')
+  })
+})
+it('uses empty array when sitio has no active modules', async () => {
+  ;(sitioModuloService.getBySitio as any)
+    .mockRejectedValueOnce(new Error('sin modulos'))
+    .mockResolvedValueOnce([])
+
+  renderSitios()
+
+  await waitFor(() => {
+    expect(screen.getByTestId('mods-1')).toHaveTextContent('')
+  })
+})
+it('uses empty active module ids when sitio has no map entry', async () => {
+  ;(sitioModuloService.getBySitio as any)
+    .mockResolvedValueOnce(undefined)
+    .mockResolvedValueOnce(undefined)
+
+  renderSitios()
+
+  await waitFor(() => {
+    expect(screen.getByTestId('mods-1')).toHaveTextContent('')
+    expect(screen.getByTestId('mods-2')).toHaveTextContent('')
+  })
+})
 })

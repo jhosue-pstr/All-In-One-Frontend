@@ -738,4 +738,92 @@ it('covers delete cancel, quick status fallback and public url fallback', async 
 })
 
 
+
 });
+
+
+
+
+
+
+
+it("openEditForm uses fallback title content and status", async () => {
+  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+    {
+      ...mockPosts[0],
+      title: "",
+      content: "",
+      status: undefined,
+    } as any,
+  ])
+
+  render(<Blog />)
+
+  await screen.findByText("Editar")
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /editar/i,
+    })
+  )
+
+  expect(
+    screen.getByPlaceholderText("Ej: Mi primer artículo")
+  ).toHaveValue("")
+})
+
+it("save uses fallback message for non Error throw", async () => {
+  vi.mocked(blogService.createPost)
+    .mockRejectedValueOnce("boom")
+
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /\+ nuevo post/i,
+    })
+  )
+
+  await userEvent.type(
+    screen.getByPlaceholderText("Ej: Mi primer artículo"),
+    "Titulo"
+  )
+
+  await userEvent.type(
+    screen.getByPlaceholderText("<p>Escribe el contenido del artículo...</p>"),
+    "Contenido"
+  )
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: /crear post/i,
+    })
+  )
+
+  expect(
+    await screen.findByText("Error al guardar el post")
+  ).toBeInTheDocument()
+})
+
+it("quick draft keeps existing published_at", async () => {
+  render(<Blog />)
+
+  await screen.findByText("Post Publicado")
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Borrador",
+    })
+  )
+
+  expect(blogService.updatePost).toHaveBeenCalledWith(
+    1,
+    10,
+    expect.objectContaining({
+      status: "draft",
+      published_at: "2026-01-01T10:00:00Z",
+    })
+  )
+})
