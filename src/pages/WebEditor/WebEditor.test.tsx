@@ -302,4 +302,45 @@ describe('WebEditor', () => {
     }, { timeout: 10000 })
     consoleSpy.mockRestore()
   })
+
+  it('redirects to inicio when id is missing', async () => {
+  render(
+    <MemoryRouter initialEntries={['/plantillas/']}>
+      <Routes>
+        <Route path="/plantillas/" element={<WebEditor />} />
+        <Route path="/inicio" element={<div>Inicio Page</div>} />
+      </Routes>
+    </MemoryRouter>
+  )
+
+  await waitFor(() => {
+    expect(screen.getByText('Inicio Page')).toBeInTheDocument()
+  })
+})
+it('redirects to inicio when id is missing', async () => {
+  render(
+    <MemoryRouter initialEntries={['/editor-sin-id']}>
+      <Routes>
+        <Route path="/editor-sin-id" element={<WebEditor />} />
+        <Route path="/inicio" element={<div>Inicio Page</div>} />
+      </Routes>
+    </MemoryRouter>
+  )
+
+  await waitFor(() => {
+    expect(screen.getByText('Inicio Page')).toBeInTheDocument()
+  })
+})
+
+it('runs tab command when clicking a panel tab', async () => {
+  await waitForRender()
+
+  const editor = initGrapesJS.mock.results[0].value
+
+  const tab = document.querySelector('[data-panel="blocks"]') as HTMLElement
+
+  fireEvent.click(tab)
+
+  expect(editor.runCommand).toHaveBeenCalledWith('show-blocks')
+})
 })

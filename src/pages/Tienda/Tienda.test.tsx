@@ -785,4 +785,320 @@ describe("Tienda page", () => {
 
     expect(screen.getByText("No hay pedidos con este estado.")).toBeInTheDocument();
   });
+
+
+
+  it("closes pedido modal with close button", async () => {
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Pedidos",
+    })
+  );
+
+  const viewButtons = screen.getAllByRole("button", {
+    name: "Ver",
+  });
+
+  await userEvent.click(viewButtons[0]);
+
+  await screen.findByText("Pedido PED-001");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "×",
+    })
+  );
+
+  await waitFor(() => {
+    expect(screen.queryByText("Pedido PED-001")).not.toBeInTheDocument();
+  });
+});
+
+
+it("shows empty categories state", async () => {
+  vi.mocked(storeService.getCategorias).mockResolvedValueOnce({
+    data: [],
+    total: 0,
+  } as any);
+
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Categorías",
+    })
+  );
+
+  expect(
+    screen.getByText(
+      "No hay categorías. Crea la primera categoría para organizar tus productos."
+    )
+  ).toBeInTheDocument();
+});
+
+it("shows loading pedidos state", async () => {
+  vi.mocked(storeService.getPedidos).mockImplementationOnce(
+    () => new Promise(() => {})
+  );
+
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Pedidos",
+    })
+  );
+
+  expect(screen.getByText("Cargando pedidos...")).toBeInTheDocument();
+});
+
+
+it("shows loading categories state", async () => {
+  vi.mocked(storeService.getCategorias).mockImplementationOnce(
+    () => new Promise(() => {})
+  );
+
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Categorías",
+    })
+  );
+
+  expect(screen.getByText("Cargando categorías...")).toBeInTheDocument();
+});
+
+it("closes pedido modal with cancel event", async () => {
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Pedidos",
+    })
+  );
+
+  const viewButtons = screen.getAllByRole("button", {
+    name: "Ver",
+  });
+
+  await userEvent.click(viewButtons[0]);
+
+  await screen.findByText("Pedido PED-001");
+
+  const dialog = document.querySelector("dialog.tienda-modal-overlay")!;
+
+  fireEvent(
+    dialog,
+    new Event("cancel", {
+      bubbles: true,
+      cancelable: true,
+    })
+  );
+
+  await waitFor(() => {
+    expect(screen.queryByText("Pedido PED-001")).not.toBeInTheDocument();
+  });
+});
+
+
+it("returns to products tab when clicking Productos", async () => {
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Categorías",
+    })
+  );
+
+  expect(screen.getByText("Electrónicos")).toBeInTheDocument();
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Productos",
+    })
+  );
+
+  expect(screen.getByText("Laptop Gamer")).toBeInTheDocument();
+});
+
+
+  it("renders pedido detail fallbacks for missing optional fields", async () => {
+    const pedidoSinOpcionales = {
+      id: 200,
+      site_id: 1,
+      numero_pedido: "PED-X",
+      nombre_cliente: "Cliente Sin Datos",
+      email_cliente: "sin@test.com",
+      total: 99,
+      estado: "desconocido",
+      metodo_pago: null,
+      estado_pago: "pendiente",
+      direccion_envio: null,
+      ciudad_envio: null,
+      pais_envio: null,
+      codigo_postal: null,
+      notas: null,
+      created_at: "2026-01-01T00:00:00Z",
+      items: [
+        {
+          id: 99,
+          nombre_producto: "Producto sin SKU",
+          sku_producto: null,
+          cantidad: 2,
+          precio_unitario: 10,
+          total: 20,
+        },
+      ],
+    } as any;
+
+    vi.mocked(storeService.getPedidos).mockResolvedValueOnce({
+      data: [
+        {
+          id: 200,
+          site_id: 1,
+          numero_pedido: "PED-X",
+          nombre_cliente: "Cliente Sin Datos",
+          email_cliente: "sin@test.com",
+          total: 99,
+          estado: "desconocido",
+          estado_pago: "pendiente",
+          created_at: "2026-01-01T00:00:00Z",
+        },
+      ],
+      total: 1,
+    } as any);
+
+    vi.mocked(storeService.getPedido).mockResolvedValueOnce(pedidoSinOpcionales);
+
+    render(<Tienda />);
+
+    await screen.findByText("Laptop Gamer");
+
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Pedidos",
+      })
+    );
+
+    expect(await screen.findByText("desconocido")).toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Ver",
+      })
+    );
+
+    expect(await screen.findByText("Pedido PED-X")).toBeInTheDocument();
+
+    expect(screen.getAllByText("desconocido").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getByText("Producto sin SKU")).toBeInTheDocument();
+
+    expect(screen.queryByText("DIRECCIÓN DE ENVÍO")).not.toBeInTheDocument();
+    expect(screen.queryByText("NOTAS DEL PEDIDO")).not.toBeInTheDocument();
+    expect(screen.queryByText("Teléfono")).not.toBeInTheDocument();
+  });
+
+  it("shows empty pedidos text when all filter has no pedidos", async () => {
+    vi.mocked(storeService.getPedidos).mockResolvedValueOnce({
+      data: [],
+      total: 0,
+    } as any);
+
+    render(<Tienda />);
+
+    await screen.findByText("Laptop Gamer");
+
+    await userEvent.click(
+      screen.getByRole("button", {
+        name: "Pedidos",
+      })
+    );
+
+    expect(screen.getByText("No hay pedidos todavía.")).toBeInTheDocument();
+  });
+  it("opens edit product with null optional values", async () => {
+    vi.mocked(storeService.getProducts).mockResolvedValueOnce({
+      data: [
+        {
+          id: 99,
+          nombre: "Producto Null",
+          slug: "producto-null",
+          precio: 100,
+          precio_comparacion: null,
+          stock: 5,
+          es_activo: true,
+          imagenes: [],
+        },
+      ],
+      total: 1,
+    } as any);
+
+    render(<Tienda />);
+
+    await screen.findByText("Producto Null");
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /editar/i })
+    );
+
+    expect(
+      screen.getByDisplayValue("Producto Null")
+    ).toBeInTheDocument();
+  });
+
+
+  it("opens edit category with null description and image", async () => {
+  const categoria = {
+    id: 99,
+    nombre: "Categoria Null",
+    slug: "categoria-null",
+    descripcion: null,
+    imagen: null,
+  };
+
+  vi.mocked(storeService.getCategorias).mockResolvedValueOnce({
+    data: [categoria],
+    total: 1,
+  } as any);
+
+  render(<Tienda />);
+
+  await screen.findByText("Laptop Gamer");
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "Categorías",
+    })
+  );
+
+  await screen.findByText("Categoria Null");
+
+  const editButtons = screen.getAllByRole("button", {
+    name: /editar/i,
+  });
+
+  await userEvent.click(editButtons[0]);
+
+  expect(
+    screen.getByDisplayValue("Categoria Null")
+  ).toBeInTheDocument();
+});
+
+
 });

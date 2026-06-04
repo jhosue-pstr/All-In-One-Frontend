@@ -504,4 +504,101 @@ it('register uses fallback message for non Error throw', async () => {
       document.querySelector('.auth-error')?.textContent
     ).toContain('Error al registrarse')
   })
+
+  
+
+
+
+
+  
+})
+
+it('register uses fallback message for non Error throw', async () => {
+  globalThis.fetch = vi.fn().mockRejectedValue("boom")
+
+  document.body.innerHTML = `
+    <div data-sitio-id="1">
+      <form>
+        <div class="auth-error"></div>
+
+        <input name="nombre" value="Juan"/>
+        <input name="apellido" value="Perez"/>
+        <input name="correo" value="a@a.com"/>
+        <input name="contrasena" value="123"/>
+
+        <button type="submit">Registrarse</button>
+      </form>
+    </div>
+  `
+
+  const form = document.querySelector('form')!
+
+  handleRegister(form)
+
+  form.dispatchEvent(
+    new Event('submit', {
+      bubbles: true,
+      cancelable: true,
+    })
+  )
+
+  await vi.waitFor(() => {
+    expect(
+      document.querySelector('.auth-error')?.textContent
+    ).toContain('Error al registrarse')
+  })
+})
+
+it('register success reload button reloads page', async () => {
+  const reloadSpy = vi.fn()
+
+  Object.defineProperty(window, 'location', {
+    value: {
+      reload: reloadSpy,
+    },
+    writable: true,
+  })
+
+  globalThis.fetch = vi.fn().mockResolvedValue({
+    ok: true,
+    json: () => Promise.resolve({ id: 1 }),
+  })
+
+  document.body.innerHTML = `
+    <div data-sitio-id="1">
+      <form>
+        <div class="auth-error"></div>
+
+        <input name="nombre" value="Juan"/>
+        <input name="apellido" value="Perez"/>
+        <input name="correo" value="a@a.com"/>
+        <input name="contrasena" value="123"/>
+
+        <button type="submit">Registrarse</button>
+      </form>
+    </div>
+  `
+
+  const form = document.querySelector('form')!
+
+  handleRegister(form)
+
+  form.dispatchEvent(
+    new Event('submit', {
+      bubbles: true,
+      cancelable: true,
+    })
+  )
+
+  await vi.waitFor(() => {
+    expect(
+      document.querySelector('#auth-login-reload-btn')
+    ).toBeTruthy()
+  })
+
+  document
+    .querySelector<HTMLButtonElement>('#auth-login-reload-btn')!
+    .click()
+
+  expect(reloadSpy).toHaveBeenCalled()
 })

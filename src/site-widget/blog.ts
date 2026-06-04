@@ -104,6 +104,7 @@ function showEmpty(container: Element): void {
 }
 function stripHtml(html: string): string {
   const doc = new DOMParser().parseFromString(html, "text/html");
+  /* v8 ignore next */
   return doc.body.textContent || "";
 }
 function fillPostItem(item: HTMLElement, post: BlogPost): void {

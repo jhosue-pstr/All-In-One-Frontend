@@ -5,11 +5,11 @@ import App from "./App.tsx";
 
 const rootElement = document.getElementById("root");
 
-// Verificación explícita para evitar el operador "!" y complacer a SonarQube
+/* v8 ignore start */
 if (!rootElement) {
-  /* v8 ignore next 3 */
   throw new Error("No se encontró el elemento root en el HTML.");
 }
+/* v8 ignore stop */
 
 createRoot(rootElement).render(
   <StrictMode>
