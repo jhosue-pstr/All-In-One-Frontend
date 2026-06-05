@@ -42,7 +42,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} npm run test || true'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" ${NODE_IMAGE} npm run test'
             }
         }
 
@@ -153,9 +153,36 @@ pipeline {
                         sh -c "npm install && npx playwright test"
                 '''
 
+                sh '''
+                    echo "======================================"
+                    echo "Checking Playwright report files..."
+                    echo "WORKSPACE: $WORKSPACE"
+                    echo "======================================"
+
+                    docker run --rm \
+                        --volumes-from jenkins \
+                        -w "$WORKSPACE" \
+                        ${NODE_IMAGE} \
+                        sh -c "
+                            echo 'PWD:' && pwd
+                            echo ''
+                            echo 'ROOT FILES:' && ls -la
+                            echo ''
+                            echo 'PLAYWRIGHT CONFIG:' && sed -n '1,120p' playwright.config.ts || true
+                            echo ''
+                            echo 'TEST RESULTS FOLDER:' && ls -la test-results || true
+                            echo ''
+                            echo 'PLAYWRIGHT REPORT FOLDER:' && ls -la playwright-report || true
+                            echo ''
+                            echo 'SEARCH XML/JSON/HTML:' && find . -maxdepth 4 -type f \\( -name '*.xml' -o -name '*.json' -o -name 'index.html' \\) | sort
+                            echo ''
+                            echo 'CHECK EXACT JUNIT FILE:' && test -f test-results/results.xml && echo 'JUNIT XML EXISTS' || echo 'JUNIT XML DOES NOT EXIST'
+                        "
+                '''
+
                 sh 'docker rm -f e2e-frontend 2>/dev/null || true'
 
-                junit 'test-results/results.xml'
+                junit testResults: 'test-results/*.xml', allowEmptyResults: false
 
                 publishHTML(target: [
                     allowMissing: false,
