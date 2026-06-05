@@ -10,8 +10,8 @@ pipeline {
         SONAR_TOKEN    = credentials('Sonar-qube')
         PROJECT_KEY    = 'All-In-One-Frontend'
         NODE_IMAGE     = 'node:20-alpine'
-        TEST_USER_EMAIL    = 'test@test.com'
-        TEST_USER_PASSWORD = 'test123'
+        TEST_USER_EMAIL    = 'moisesjoaquin51@gmail.com'
+        TEST_USER_PASSWORD = '123456'
     }
 
     stages {
@@ -101,8 +101,8 @@ pipeline {
                         --network app-network \
                         -e BASE_URL=http://e2e-frontend:5173 \
                         -e API_URL=http://backend:8000/api \
-                        -e TEST_USER_EMAIL=test@test.com \
-                        -e TEST_USER_PASSWORD=test123 \
+                        -e TEST_USER_EMAIL="${TEST_USER_EMAIL}" \
+                        -e TEST_USER_PASSWORD="${TEST_USER_PASSWORD}" \
                         -e CI=true \
                         -w "$WORKSPACE" \
                         mcr.microsoft.com/playwright:v1.60.0-jammy \
