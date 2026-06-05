@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/23</span>
+                <span class='fraction'>23/23</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/2</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/22</span>
+                <span class='fraction'>22/22</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -142,39 +142,39 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">53x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">16x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">53x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useState } from 'react';
 &nbsp;
 interface UseFormOptions&lt;T&gt; {
@@ -193,44 +193,44 @@ interface UseFormReturn&lt;T&gt; {
   reset: () =&gt; void;
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >useForm&lt;T extends Record&lt;string, string&gt;&gt;({</span>
+export function useForm&lt;T extends Record&lt;string, string&gt;&gt;({
   initialValues,
   onSubmit,
   onSuccess,
 }: UseFormOptions&lt;T&gt;): UseFormReturn&lt;T&gt; {
-  const [values, <span class="cstat-no" title="statement not covered" >setValues] = useState&lt;T&gt;(initialValues);</span>
-  const [error, <span class="cstat-no" title="statement not covered" >setError] = useState('');</span>
-  const [success, <span class="cstat-no" title="statement not covered" >setSuccess] = useState('');</span>
-  const [loading, <span class="cstat-no" title="statement not covered" >setLoading] = useState(false);</span>
+  const [values, setValues] = useState&lt;T&gt;(initialValues);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 &nbsp;
-  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >setField = (f</span>ield: keyof T, value: string) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >    setValues(p</span>rev =&gt; (<span class="cstat-no" title="statement not covered" >{ ...prev, [field]: value }));</span></span>
+  const setField = (field: keyof T, value: string) =&gt; {
+    setValues(prev =&gt; ({ ...prev, [field]: value }));
   };
 &nbsp;
-  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >reset = () =&gt; {</span></span>
-<span class="cstat-no" title="statement not covered" >    setValues(initialValues);</span>
-<span class="cstat-no" title="statement not covered" >    setError('');</span>
-<span class="cstat-no" title="statement not covered" >    setSuccess('');</span>
+  const reset = () =&gt; {
+    setValues(initialValues);
+    setError('');
+    setSuccess('');
   };
 &nbsp;
-  const handleSubmit = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >async (e</span>: React.SubmitEvent&lt;HTMLFormElement&gt;) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    e.preventDefault();</span>
-<span class="cstat-no" title="statement not covered" >    setError('');</span>
-<span class="cstat-no" title="statement not covered" >    setSuccess('');</span>
-<span class="cstat-no" title="statement not covered" >    setLoading(true);</span>
+  const handleSubmit = async (e: React.SubmitEvent&lt;HTMLFormElement&gt;) =&gt; {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setLoading(true);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      await onSubmit(values);</span>
-<span class="cstat-no" title="statement not covered" >      setSuccess('¡Operación exitosa!');</span>
-<span class="cstat-no" title="statement not covered" >      onSuccess?.();</span>
+    try {
+      await onSubmit(values);
+      setSuccess('¡Operación exitosa!');
+      onSuccess?.();
     } catch (err) {
-<span class="cstat-no" title="statement not covered" >      setError(err instanceof Error ? err.message : 'Error desconocido');</span>
+      setError(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
-<span class="cstat-no" title="statement not covered" >      setLoading(false);</span>
+      setLoading(false);
     }
   };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return { values, error, success, loading, setField, handleSubmit, reset };</span>
+  return { values, error, success, loading, setField, handleSubmit, reset };
 }</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -238,7 +238,7 @@ export function <span class="fstat-no" title="function not covered" >useForm&lt;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T01:43:11.213Z
+                at 2026-06-05T02:24:00.148Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

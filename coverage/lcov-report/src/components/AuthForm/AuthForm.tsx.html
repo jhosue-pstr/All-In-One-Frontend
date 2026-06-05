@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/11</span>
+                <span class='fraction'>11/11</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -168,30 +168,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">108x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">39x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">108x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">14x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -228,7 +228,7 @@ interface AuthFormProps {
   readonly formClassName: string;
 }
 &nbsp;
-export function <span class="fstat-no" title="function not covered" >AuthForm({</span>
+export function AuthForm({
   title,
   fields,
   submitText,
@@ -239,15 +239,15 @@ export function <span class="fstat-no" title="function not covered" >AuthForm({<
   errorClassName,
   formClassName,
 }: AuthFormProps) {
-  const initialValues = <span class="cstat-no" title="statement not covered" >fields.<span class="fstat-no" title="function not covered" >reduce((a</span>cc, f) =&gt; (<span class="cstat-no" title="statement not covered" >{ ...acc, [f.id]: '' }), {</span>} as Record&lt;string, string&gt;);</span>
+  const initialValues = fields.reduce((acc, f) =&gt; ({ ...acc, [f.id]: '' }), {} as Record&lt;string, string&gt;);
   
-  const { values, error, success, loading, setField, <span class="cstat-no" title="statement not covered" >handleSubmit } = useForm({</span>
+  const { values, error, success, loading, setField, handleSubmit } = useForm({
     initialValues,
     onSubmit,
     onSuccess,
   });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return (</span>
+  return (
     &lt;form className={formClassName} onSubmit={handleSubmit}&gt;
       &lt;h2&gt;{title}&lt;/h2&gt;
       
@@ -255,14 +255,14 @@ export function <span class="fstat-no" title="function not covered" >AuthForm({<
       {error &amp;&amp; &lt;div className={errorClassName || "error-message"}&gt;{error}&lt;/div&gt;}
       {successMessage &amp;&amp; success &amp;&amp; &lt;div className="success-message"&gt;{successMessage}&lt;/div&gt;}
       
-      {fields.<span class="fstat-no" title="function not covered" >map((f</span>ield) =&gt; (
-<span class="cstat-no" title="statement not covered" >        &lt;div key={field.id} className="form-group"&gt;</span>
+      {fields.map((field) =&gt; (
+        &lt;div key={field.id} className="form-group"&gt;
           &lt;label htmlFor={field.id}&gt;{field.label}&lt;/label&gt;
           &lt;input
             type={field.type}
             id={field.id}
             value={values[field.id] || ''}
-<span class="fstat-no" title="function not covered" >            onChange={(e</span>) =&gt; <span class="cstat-no" title="statement not covered" >setField(field.id, e.target.value)}</span>
+            onChange={(e) =&gt; setField(field.id, e.target.value)}
             required={field.required}
             placeholder={field.placeholder}
           /&gt;
@@ -283,7 +283,7 @@ export function <span class="fstat-no" title="function not covered" >AuthForm({<
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T01:43:09.589Z
+                at 2026-06-05T02:23:58.771Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
