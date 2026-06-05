@@ -11,9 +11,11 @@ test.describe('Login', () => {
     await page.evaluate(() => localStorage.clear());
   });
 
-  test('should show login form', async () => {
-    await expect(loginPage.isLoginFormVisible()).toBeTruthy();
+  test('should show login form', async ({ page }) => {
+    await page.goto('/');
+
     await expect(page.locator('h2')).toContainText('Iniciar Sesión');
+    await expect(page.locator('form.login-form')).toBeVisible();
   });
 
   test('should show error with invalid credentials', async () => {
