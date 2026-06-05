@@ -53,6 +53,7 @@ function renderWebEditor(path = '/plantillas/1/editar') {
         <Route path="/sitio/:id/editar" element={<WebEditor />} />
         <Route path="/plantillas" element={<div>Plantillas List</div>} />
         <Route path="/sitioWeb" element={<div>SitioWeb List</div>} />
+        <Route path="/inicio" element={<div>Inicio Page</div>} />
       </Routes>
     </MemoryRouter>
   )
