@@ -184,14 +184,7 @@ pipeline {
 
                 junit testResults: 'test-results/*.xml', allowEmptyResults: false
 
-                publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: true,
-                    keepAll: true,
-                    reportDir: 'playwright-report',
-                    reportFiles: 'index.html',
-                    reportName: 'E2E Test Report'
-                ])
+                archiveArtifacts artifacts: 'playwright-report/**,test-results/**', allowEmptyArchive: true
             }
         }
     }
