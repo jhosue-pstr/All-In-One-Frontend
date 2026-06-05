@@ -6,21 +6,27 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
+
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
     ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
   ],
+
   timeout: 30000,
+
   expect: {
     timeout: 10000,
   },
+
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'on',
     video: 'on-first-retry',
   },
+
   projects: [
     {
       name: 'setup',
@@ -35,6 +41,7 @@ export default defineConfig({
       dependencies: ['setup'],
     },
   ],
+
   webServer: process.env.CI
     ? undefined
     : {
