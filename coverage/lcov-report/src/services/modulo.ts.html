@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -93,54 +93,54 @@
 <a name='L28'></a><a href='#L28'>28</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import type { Modulo, ModuloCreate, ModuloUpdate } from '../models';
 import { fetchApi } from './api';
 &nbsp;
-export const moduloService = <span class="cstat-no" title="statement not covered" >{</span>
-  async <span class="fstat-no" title="function not covered" >getAll(): Promise&lt;Modulo[]&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;Modulo[]&gt;('/modulos/');</span>
+export const moduloService = {
+  async getAll(): Promise&lt;Modulo[]&gt; {
+    return fetchApi&lt;Modulo[]&gt;('/modulos/');
   },
-  async <span class="fstat-no" title="function not covered" >getById(i</span>d: number): Promise&lt;Modulo&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;Modulo&gt;(`/modulos/${id}`);</span>
+  async getById(id: number): Promise&lt;Modulo&gt; {
+    return fetchApi&lt;Modulo&gt;(`/modulos/${id}`);
   },
-  async <span class="fstat-no" title="function not covered" >create(d</span>ata: ModuloCreate): Promise&lt;Modulo&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;Modulo&gt;('/modulos/', {</span>
+  async create(data: ModuloCreate): Promise&lt;Modulo&gt; {
+    return fetchApi&lt;Modulo&gt;('/modulos/', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
-  async <span class="fstat-no" title="function not covered" >update(i</span>d: number, data: ModuloUpdate): Promise&lt;Modulo&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;Modulo&gt;(`/modulos/${id}`, {</span>
+  async update(id: number, data: ModuloUpdate): Promise&lt;Modulo&gt; {
+    return fetchApi&lt;Modulo&gt;(`/modulos/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
-  async <span class="fstat-no" title="function not covered" >delete(i</span>d: number): Promise&lt;void&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;void&gt;(`/modulos/${id}`, {</span>
+  async delete(id: number): Promise&lt;void&gt; {
+    return fetchApi&lt;void&gt;(`/modulos/${id}`, {
       method: 'DELETE',
     });
   },
@@ -151,7 +151,7 @@ export const moduloService = <span class="cstat-no" title="statement not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T01:43:09.589Z
+                at 2026-06-05T02:23:58.771Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

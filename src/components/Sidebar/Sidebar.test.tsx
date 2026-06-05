@@ -32,7 +32,7 @@ function renderSidebar(user = mockUser, route = '/inicio') {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Sidebar user={user} />
-    </MemoryRouter>
+    </MemoryRouter>,
   )
 }
 
@@ -54,15 +54,16 @@ describe('Sidebar', () => {
     ] as any)
   })
 
-  it('should render user name', () => {
+  it('should render user name', async () => {
     renderSidebar()
-    expect(screen.getByText(/Bienvenido, Juan/)).toBeInTheDocument()
+
+    expect(await screen.findByText(/Bienvenido, Juan/)).toBeInTheDocument()
   })
 
-  it('should render base navigation links', () => {
+  it('should render base navigation links', async () => {
     renderSidebar()
 
-    expect(screen.getByText('Inicio')).toBeInTheDocument()
+    expect(await screen.findByText('Inicio')).toBeInTheDocument()
     expect(screen.getByText('Sitios')).toBeInTheDocument()
     expect(screen.getByText('Plantillas')).toBeInTheDocument()
     expect(screen.getByText('Módulos')).toBeInTheDocument()
@@ -98,8 +99,23 @@ describe('Sidebar', () => {
 
     const select = await screen.findByRole('combobox')
 
+    await waitFor(() => {
+      expect(screen.getByText('Sitio 1')).toBeInTheDocument()
+      expect(screen.getByText('Sitio 2')).toBeInTheDocument()
+    })
+
+    await waitFor(() => {
+      expect(sitioService.getModulos).toHaveBeenCalledWith(1)
+    })
+
+    vi.mocked(sitioService.getModulos).mockClear()
+
     fireEvent.change(select, {
       target: { value: '2' },
+    })
+
+    await waitFor(() => {
+      expect(select).toHaveValue('2')
     })
 
     await waitFor(() => {
@@ -133,35 +149,36 @@ describe('Sidebar', () => {
     expect(screen.queryByText('Tienda')).not.toBeInTheDocument()
   })
 
-  it('should mark current route as active', () => {
+  it('should mark current route as active', async () => {
     renderSidebar(mockUser, '/sitios')
 
-    expect(screen.getByTestId('nav-sitios')).toHaveClass('active')
+    expect(await screen.findByTestId('nav-sitios')).toHaveClass('active')
   })
 
-  it('should show user initial when no image in localStorage', () => {
+  it('should show user initial when no image in localStorage', async () => {
     renderSidebar()
-    expect(screen.getByText('J')).toBeInTheDocument()
+
+    expect(await screen.findByText('J')).toBeInTheDocument()
   })
 
-  it('should show user image when present in localStorage', () => {
+  it('should show user image when present in localStorage', async () => {
     localStorage.setItem('user_image', 'data:image/png;base64,abc')
 
     renderSidebar()
 
-    const img = screen.getByAltText('Avatar')
+    const img = await screen.findByAltText('Avatar')
     expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute('src', 'data:image/png;base64,abc')
   })
 
-  it('should show default initial U when user has no nombre', () => {
+  it('should show default initial U when user has no nombre', async () => {
     renderSidebar({ ...mockUser, nombre: '' })
 
-    expect(screen.getByText('U')).toBeInTheDocument()
+    expect(await screen.findByText('U')).toBeInTheDocument()
     expect(screen.getByText(/Bienvenido, Usuario/)).toBeInTheDocument()
   })
 
-  it('should clear token, user image and redirect on logout', () => {
+  it('should clear token, user image and redirect on logout', async () => {
     localStorage.setItem('token', 'tok')
     localStorage.setItem('user_image', 'img')
 
@@ -170,7 +187,8 @@ describe('Sidebar', () => {
     globalThis.location = { href: '' } as any
 
     renderSidebar()
-    fireEvent.click(screen.getByText('Salir'))
+
+    fireEvent.click(await screen.findByText('Salir'))
 
     expect(localStorage.getItem('token')).toBeNull()
     expect(localStorage.getItem('user_image')).toBeNull()
@@ -180,40 +198,44 @@ describe('Sidebar', () => {
   })
 
   it('handles non-array sitios response', async () => {
-  vi.mocked(sitioService.getAll).mockResolvedValueOnce(null as any)
+    vi.mocked(sitioService.getAll).mockResolvedValueOnce(null as any)
 
-  renderSidebar()
+    renderSidebar()
 
-  await waitFor(() => {
-    expect(sitioService.getAll).toHaveBeenCalled()
+    await waitFor(() => {
+      expect(sitioService.getAll).toHaveBeenCalled()
+    })
+
+    expect(screen.getByText('Seleccionar sitio')).toBeInTheDocument()
   })
 
-  expect(screen.getByText('Seleccionar sitio')).toBeInTheDocument()
-})
+  it('handles empty sitios response without selecting first site', async () => {
+    vi.mocked(sitioService.getAll).mockResolvedValueOnce([] as any)
 
-it('handles empty sitios response without selecting first site', async () => {
-  vi.mocked(sitioService.getAll).mockResolvedValueOnce([] as any)
+    renderSidebar()
 
-  renderSidebar()
+    await waitFor(() => {
+      expect(sitioService.getAll).toHaveBeenCalled()
+    })
 
-  await waitFor(() => {
-    expect(sitioService.getAll).toHaveBeenCalled()
+    expect(sitioService.getModulos).not.toHaveBeenCalled()
   })
 
-  expect(sitioService.getModulos).not.toHaveBeenCalled()
-})
+  it('sets sitioId to null when selected value is empty', async () => {
+    renderSidebar()
 
-it('sets sitioId to null when selected value is empty', async () => {
-  renderSidebar()
+    const select = await screen.findByRole('combobox')
 
-  const select = await screen.findByRole('combobox')
+    await waitFor(() => {
+      expect(screen.getByText('Sitio 1')).toBeInTheDocument()
+    })
 
-  fireEvent.change(select, {
-    target: { value: '' },
+    fireEvent.change(select, {
+      target: { value: '' },
+    })
+
+    await waitFor(() => {
+      expect(select).toHaveValue('')
+    })
   })
-
-  await waitFor(() => {
-    expect((select as HTMLSelectElement).value).toBe('')
-  })
-})
 })

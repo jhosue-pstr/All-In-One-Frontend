@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -127,46 +127,46 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -181,46 +181,46 @@
 } from '../models/siteAuth';
 import { fetchApi } from './api';
 &nbsp;
-export const siteAuthService = <span class="cstat-no" title="statement not covered" >{</span>
-  async <span class="fstat-no" title="function not covered" >register(d</span>ata: UsuarioSitioCreate): Promise&lt;UsuarioSitioResponse&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/registro', {</span>
+export const siteAuthService = {
+  async register(data: UsuarioSitioCreate): Promise&lt;UsuarioSitioResponse&gt; {
+    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/registro', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >login(d</span>ata: UsuarioSitioLogin): Promise&lt;SiteTokenResponse&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;SiteTokenResponse&gt;('/site-auth/login', {</span>
+  async login(data: UsuarioSitioLogin): Promise&lt;SiteTokenResponse&gt; {
+    return fetchApi&lt;SiteTokenResponse&gt;('/site-auth/login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >logout(): Promise&lt;void&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;void&gt;('/site-auth/logout', {</span>
+  async logout(): Promise&lt;void&gt; {
+    return fetchApi&lt;void&gt;('/site-auth/logout', {
       method: 'POST',
     });
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >me(): Promise&lt;UsuarioSitioResponse&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/me');</span>
+  async me(): Promise&lt;UsuarioSitioResponse&gt; {
+    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/me');
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >update(d</span>ata: UsuarioSitioUpdate): Promise&lt;UsuarioSitioResponse&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/me', {</span>
+  async update(data: UsuarioSitioUpdate): Promise&lt;UsuarioSitioResponse&gt; {
+    return fetchApi&lt;UsuarioSitioResponse&gt;('/site-auth/me', {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >verify(t</span>oken: string): Promise&lt;TokenVerifyResponse&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;TokenVerifyResponse&gt;(</span>
+  async verify(token: string): Promise&lt;TokenVerifyResponse&gt; {
+    return fetchApi&lt;TokenVerifyResponse&gt;(
       `/site-auth/verify?token=${encodeURIComponent(token)}`
     );
   },
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >listBySite(s</span>iteId: number): Promise&lt;UsuarioSitioResponse[]&gt; {
-<span class="cstat-no" title="statement not covered" >    return fetchApi&lt;UsuarioSitioResponse[]&gt;(</span>
+  async listBySite(siteId: number): Promise&lt;UsuarioSitioResponse[]&gt; {
+    return fetchApi&lt;UsuarioSitioResponse[]&gt;(
       `/site-auth/usuarios?site_id=${siteId}`
     );
   },
@@ -232,7 +232,7 @@ export const siteAuthService = <span class="cstat-no" title="statement not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T01:43:11.213Z
+                at 2026-06-05T02:24:00.148Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
