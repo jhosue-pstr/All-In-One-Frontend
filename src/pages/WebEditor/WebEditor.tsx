@@ -22,15 +22,28 @@ export function WebEditor() {
     message: "",
   });
 
-  const showToast = (message: string) => {
-    setToast({ show: true, message });
+const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    setTimeout(
-      /* v8 ignore next */
-      () => setToast({ show: false, message: "" }),
-      3000
-    );
+useEffect(() => {
+  return () => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
   };
+}, []);
+
+const showToast = (message: string) => {
+  setToast({ show: true, message });
+
+  if (toastTimeoutRef.current) {
+    clearTimeout(toastTimeoutRef.current);
+  }
+
+  toastTimeoutRef.current = setTimeout(() => {
+    setToast({ show: false, message: "" });
+    toastTimeoutRef.current = null;
+  }, 3000);
+};
 
   const isTemplate = location.pathname.startsWith("/plantillas");
 

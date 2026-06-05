@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>0/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>14/14</span>
+                <span class='fraction'>0/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>6/6</span>
+                <span class='fraction'>0/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/13</span>
+                <span class='fraction'>0/13</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -139,7 +139,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -149,28 +149,26 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-yes">11x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">11x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -187,7 +185,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -210,7 +210,7 @@ import type { Sitio } from "../../models";
 import { API_CONFIG } from "../../config";
 import "./CardSitio.css";
 &nbsp;
-const API_URL = API_CONFIG.baseUrl.replace("/api", "");
+const API_URL = <span class="cstat-no" title="statement not covered" >API_CONFIG.baseUrl.replace("/api", "");</span>
 &nbsp;
 interface CardSitioProps {
   readonly sitio: Sitio;
@@ -219,27 +219,27 @@ interface CardSitioProps {
   readonly activeModIds?: number[];
 }
 &nbsp;
-export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly&lt;CardSitioProps&gt;) {
-  const navigate = useNavigate();
+export function <span class="fstat-no" title="function not covered" >CardSitio({</span> sitio, onDelete, modulos, activeModIds }: Readonly&lt;CardSitioProps&gt;) {
+  const <span class="cstat-no" title="statement not covered" >navigate = useNavigate();</span>
 &nbsp;
-  const handleEdit = () =&gt; {
-    navigate(`/sitio/${sitio.id}/editar`);
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleEdit = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    navigate(`/sitio/${sitio.id}/editar`);</span>
   };
 &nbsp;
-  const handleDelete = () =&gt; {
-    if (confirm("¿Estás seguro de eliminar este sitio?")) {
-      onDelete?.(sitio.id);
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleDelete = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (confirm("¿Estás seguro de eliminar este sitio?")) {</span>
+<span class="cstat-no" title="statement not covered" >      onDelete?.(sitio.id);</span>
     }
   };
 &nbsp;
-  const handleView = () =&gt; {
-    window.open(`${API_URL}/${sitio.slug}`, "_blank");
+  const <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >handleView = () =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    window.open(`${API_URL}/${sitio.slug}`, "_blank");</span>
   };
 &nbsp;
-  const activeSet = new Set(activeModIds ?? []);
-  const activeModulos = modulos?.filter(m =&gt; activeSet.has(m.id)) ?? [];
+  const activeSet = <span class="cstat-no" title="statement not covered" >new Set(activeModIds ?? []);</span>
+  const activeModulos = <span class="cstat-no" title="statement not covered" >modulos?.<span class="fstat-no" title="function not covered" >filter(m</span> =&gt; <span class="cstat-no" title="statement not covered" >activeSet.has(m.id))</span> ?? [];</span>
 &nbsp;
-  return (
+<span class="cstat-no" title="statement not covered" >  return (</span>
     &lt;div className="sitio-card" data-testid={`sitio-card-${sitio.id}`}&gt;
       {sitio.miniatura &amp;&amp; (
         &lt;div className="sitio-miniatura"&gt;
@@ -257,8 +257,8 @@ export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly&l
         &lt;div className="sitio-modulos"&gt;
           &lt;span className="sitio-modulos-label"&gt;Módulos:&lt;/span&gt;
           &lt;div className="sitio-modulos-list"&gt;
-            {activeModulos.map(m =&gt; (
-              &lt;span key={m.slug} className="sitio-modulo-badge"&gt;{m.nombre}&lt;/span&gt;
+            {activeModulos.<span class="fstat-no" title="function not covered" >map(m</span> =&gt; (
+<span class="cstat-no" title="statement not covered" >              &lt;span key={m.slug} className="sitio-modulo-badge"&gt;{m.nombre}&lt;/span&gt;</span>
             ))}
           &lt;/div&gt;
         &lt;/div&gt;
@@ -283,7 +283,7 @@ export function CardSitio({ sitio, onDelete, modulos, activeModIds }: Readonly&l
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T00:42:01.309Z
+                at 2026-06-05T01:43:09.589Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
