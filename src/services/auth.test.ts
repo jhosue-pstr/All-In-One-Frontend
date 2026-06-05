@@ -8,37 +8,61 @@ describe('authService', () => {
   })
 
   it('register should POST to /auth/registro', async () => {
-    const mockUser = { id: 1, correo: 'a@b.com', nombre: 'A', apellido: 'B', role: 'user', created_at: '', updated_at: '' }
+    const mockUser = {
+      id: 1,
+      correo: 'a@b.com',
+      nombre: 'A',
+      apellido: 'B',
+      role: 'user',
+      created_at: '',
+      updated_at: '',
+    }
+
     ;(globalThis.fetch as any).mockResolvedValue({
       ok: true,
       status: 200,
       json: () => Promise.resolve(mockUser),
     })
-    const result = await authService.register({ correo: 'a@b.com', contrasena: '123', nombre: 'A', apellido: 'B' })
+
+    const result = await authService.register({
+      correo: 'a@b.com',
+      contrasena: '123',
+      nombre: 'A',
+      apellido: 'B',
+    })
+
     expect(result).toEqual(mockUser)
   })
 
   it('login should POST to /auth/inicio with form-urlencoded', async () => {
-    const mockToken = { access_token: 'tok', token_type: 'bearer' }
+    const mockToken = {
+      access_token: 'tok',
+      token_type: 'bearer',
+    }
+
     ;(globalThis.fetch as any).mockResolvedValue({
       ok: true,
       status: 200,
       json: () => Promise.resolve(mockToken),
     })
-    const result = await authService.login({ correo: 'a@b.com', contrasena: '123' })
+
+    const result = await authService.login({
+      correo: 'a@b.com',
+      contrasena: '123',
+    })
+
     expect(result).toEqual(mockToken)
     expect(localStorage.getItem('token')).toBe('tok')
-  })
 
-  it('me should GET /auth/me', async () => {
-    const mockUser = { id: 1, correo: 'a@b.com', nombre: 'A', apellido: 'B', role: 'user', created_at: '', updated_at: '' }
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve(mockUser),
-    })
-    const result = await authService.me()
-    expect(result).toEqual(mockUser)
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/auth/inicio'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      }),
+    )
   })
 
   it('login should throw on non-ok response', async () => {
@@ -47,7 +71,13 @@ describe('authService', () => {
       status: 401,
       json: () => Promise.resolve({ detail: 'Credenciales incorrectas' }),
     })
-    await expect(authService.login({ correo: 'a@b.com', contrasena: 'wrong' })).rejects.toThrow('Credenciales incorrectas')
+
+    await expect(
+      authService.login({
+        correo: 'a@b.com',
+        contrasena: 'wrong',
+      }),
+    ).rejects.toThrow('Credenciales incorrectas')
   })
 
   it('login should throw fallback when no detail in response', async () => {
@@ -56,26 +86,87 @@ describe('authService', () => {
       status: 500,
       json: () => Promise.resolve({}),
     })
-    await expect(authService.login({ correo: 'a@b.com', contrasena: 'wrong' })).rejects.toThrow('Error en el inicio de sesión')
+
+    await expect(
+      authService.login({
+        correo: 'a@b.com',
+        contrasena: 'wrong',
+      }),
+    ).rejects.toThrow('Error en el inicio de sesión')
   })
 
-  it('update should PUT /auth/me', async () => {
+  it('login should use fallback error when response json fails', async () => {
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: vi.fn().mockRejectedValue(new Error('invalid json')),
+    })
+
+    await expect(
+      authService.login({
+        correo: 'bad@test.com',
+        contrasena: 'wrong',
+      }),
+    ).rejects.toThrow('Credenciales incorrectas')
+  })
+
+  it('me should GET /auth/me', async () => {
+    const mockUser = {
+      id: 1,
+      correo: 'a@b.com',
+      nombre: 'A',
+      apellido: 'B',
+      role: 'user',
+      created_at: '',
+      updated_at: '',
+    }
+
     ;(globalThis.fetch as any).mockResolvedValue({
       ok: true,
       status: 200,
-      json: () => Promise.resolve({}),
+      json: () => Promise.resolve(mockUser),
     })
-    await authService.update({ nombre: 'New' })
+
+    const result = await authService.me()
+
+    expect(result).toEqual(mockUser)
+  })
+
+  it('update should PUT /auth/me', async () => {
+    const mockUser = {
+      id: 1,
+      correo: 'a@b.com',
+      nombre: 'New',
+      apellido: 'B',
+      role: 'user',
+      created_at: '',
+      updated_at: '',
+    }
+
+    ;(globalThis.fetch as any).mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(mockUser),
+    })
+
+    const result = await authService.update({
+      nombre: 'New',
+    })
+
+    expect(result).toEqual(mockUser)
   })
 
   it('logout should remove token from localStorage', () => {
     localStorage.setItem('token', 'tok')
+
     authService.logout()
+
     expect(localStorage.getItem('token')).toBeNull()
   })
 
   it('getToken should return token from localStorage', () => {
     localStorage.setItem('token', 'my-token')
+
     expect(authService.getToken()).toBe('my-token')
   })
 

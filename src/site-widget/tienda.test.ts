@@ -2230,4 +2230,760 @@ it("checkout uses fallback message when thrown value is not Error", async () => 
 
   expect(document.body.textContent).toContain("Error al procesar el pedido");
 });
+
+
+
+
+it("categories without name spans still render and filter hidden product items", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="categories" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">VACIO</div>
+      <div data-tienda-list>
+        <button data-tienda-item style="display:none"></button>
+      </div>
+    </section>
+
+    <section data-tienda="products-grid" data-sitio-id="1">
+      <div data-tienda-list>
+        <article data-tienda-item style="display:none">Producto oculto</article>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>(
+    '[data-tienda="categories"] [data-tienda-item]'
+  );
+
+  expect(buttons.length).toBeGreaterThan(1);
+
+  buttons[1].click();
+  buttons[0].click();
+
+  expect(document.body.textContent).toContain("Producto oculto");
+});
+it("cart with missing item template returns safely", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list></div>
+      <span data-tienda-cart-total></span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Carrito vacío");
+});
+
+it("cart pay button is appended to container when total section is missing", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list>
+        <div data-tienda-item style="display:none">
+          <span data-tienda-product-name></span>
+          <span data-tienda-product-price></span>
+          <span data-tienda-qty-value></span>
+          <span data-tienda-item-subtotal></span>
+        </div>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  const pagarBtn = document.querySelector<HTMLButtonElement>("[data-tienda-pagar]");
+
+  expect(pagarBtn).toBeTruthy();
+  expect(pagarBtn?.textContent).toBe("Pagar ahora");
+});
+it("checkout success uses fallback message when backend message is empty", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  globalThis.fetch = vi.fn(async (url: string) => {
+    if (url.includes("/checkout")) {
+      return {
+        ok: true,
+        json: async () => ({
+          pedido: { id: 99 },
+          mensaje: "",
+        }),
+      } as Response;
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: [product],
+      }),
+    } as Response;
+  }) as any;
+
+  document.body.innerHTML = `
+    <section data-tienda="checkout" data-sitio-id="1">
+      <form data-tienda-checkout-form>
+        <input data-tienda-field-nombre value="Juan" />
+        <input data-tienda-field-email value="j@test.com" />
+        <button type="submit">Confirmar pedido</button>
+      </form>
+      <div data-tienda-checkout-success style="display:none"></div>
+      <div data-tienda-checkout-error style="display:none"></div>
+      <div data-tienda-checkout-message></div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  document
+    .querySelector<HTMLFormElement>("[data-tienda-checkout-form]")!
+    .dispatchEvent(
+      new Event("submit", {
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Pedido confirmado exitosamente");
+});
+
+it("checkout profile autofill skips empty optional values", async () => {
+  vi.doMock("./perfil", () => ({
+    fetchProfile: vi.fn(async () => ({
+      nombre: "",
+      apellido: "",
+      correo: "",
+      telefono: null,
+      direccion_envio: undefined,
+      ciudad: "",
+      pais: null,
+      codigo_postal: undefined,
+    })),
+  }));
+
+  loginUser();
+
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="checkout" data-sitio-id="1">
+      <form data-tienda-checkout-form>
+        <input data-tienda-field-nombre value="Original Nombre" />
+        <input data-tienda-field-email value="original@test.com" />
+        <input data-tienda-field-telefono value="111" />
+        <input data-tienda-field-direccion value="Dir original" />
+        <input data-tienda-field-ciudad value="Ciudad original" />
+        <input data-tienda-field-pais value="Pais original" />
+        <input data-tienda-field-codigo-postal value="00000" />
+      </form>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(
+    document.querySelector<HTMLInputElement>("[data-tienda-field-email]")!.value
+  ).toBe("original@test.com");
+
+  expect(
+    document.querySelector<HTMLInputElement>("[data-tienda-field-telefono]")!.value
+  ).toBe("111");
+
+  expect(
+    document.querySelector<HTMLInputElement>("[data-tienda-field-direccion]")!.value
+  ).toBe("Dir original");
+});
+
+it("featured product handles add cart error and shows Error text", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  globalThis.fetch = vi.fn((url: string, options?: RequestInit) => {
+    if (options?.method === "POST") {
+      return Promise.resolve({
+        ok: false,
+        json: async () => ({}),
+      } as Response);
+    }
+
+    return Promise.resolve({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: [product],
+      }),
+    } as Response);
+  }) as any;
+
+  vi.spyOn(console, "error").mockImplementation(() => {});
+
+  document.body.innerHTML = `
+    <section data-tienda="featured-product" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Vacío</div>
+      <article data-tienda-item>
+        <h3 data-tienda-product-name></h3>
+        <span data-tienda-product-price></span>
+        <button data-tienda-add-cart>Agregar al carrito</button>
+      </article>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  const btn = document.querySelector<HTMLButtonElement>("[data-tienda-add-cart]")!;
+  btn.click();
+
+  await vi.runAllTimersAsync();
+
+  expect(btn.textContent).toBe("Error");
+  expect(console.error).toHaveBeenCalled();
+});
+
+
+it("product detail without siteId returns without showing empty", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="product-detail" data-producto-id="1">
+      <div data-tienda-empty style="display:none">No encontrado</div>
+      <h3 data-tienda-product-name></h3>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(
+    document.querySelector<HTMLElement>("[data-tienda-empty]")!.style.display
+  ).toBe("none");
+});
+it("product detail without product id and slug returns safely", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  window.history.pushState({}, "", "/");
+
+  document.body.innerHTML = `
+    <section data-tienda="product-detail" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">No encontrado</div>
+      <h3 data-tienda-product-name></h3>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(
+    document.querySelector<HTMLElement>("[data-tienda-empty]")!.style.display
+  ).toBe("none");
+});
+it("cart item renders safely when optional inner elements are missing", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list>
+        <div data-tienda-item style="display:none">
+          <button data-tienda-qty-minus>-</button>
+          <button data-tienda-qty-plus>+</button>
+          <button data-tienda-item-remove>Eliminar</button>
+        </div>
+      </div>
+      <span data-tienda-cart-total></span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.querySelectorAll("[data-tienda-item]").length).toBeGreaterThan(0);
+});
+
+it("cart handles empty cloned template safely", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list>
+        <template data-tienda-item></template>
+      </div>
+      <span data-tienda-cart-total></span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Carrito vacío");
+});
+
+it("qty minus does nothing when quantity remains the same", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  globalThis.fetch = vi.fn((url: string, options?: RequestInit) => {
+    if (options?.method === "PUT") {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({}),
+      } as Response);
+    }
+
+    if (url.includes("/carrito")) {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          site_id: 1,
+          items: [
+            {
+              id: 10,
+              producto_id: 1,
+              cantidad: 1,
+              producto: product,
+            },
+          ],
+          total: 1000,
+        }),
+      } as Response);
+    }
+
+    return Promise.resolve({
+      ok: true,
+      json: async () => ({}),
+    } as Response);
+  }) as any;
+
+  document.body.innerHTML = CART_HTML;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  document.querySelector<HTMLButtonElement>("[data-tienda-qty-minus]")!.click();
+
+  await vi.runAllTimersAsync();
+
+  expect(globalThis.fetch).not.toHaveBeenCalledWith(
+    "/api/v1/sitios/1/tienda/carrito/items/10?cantidad=1",
+    expect.objectContaining({ method: "PUT" })
+  );
+});
+
+it("cart pay button asks login when token expires before clicking pay", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = CART_HTML;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  const pagarBtn = document.querySelector<HTMLButtonElement>("[data-tienda-pagar]")!;
+
+  expect(pagarBtn).toBeTruthy();
+
+  const expiredPayload = btoa(
+    JSON.stringify({
+      sub: "7",
+      usuario_id: 7,
+      exp: Math.floor(Date.now() / 1000) - 10,
+    })
+  );
+
+  localStorage.setItem("site_token", `header.${expiredPayload}.signature`);
+
+  pagarBtn.click();
+
+  expect(document.body.textContent).toContain("Debes iniciar sesión para pagar");
+});
+
+it("featured product uses container as item when template item is missing", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="featured-product" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Vacío</div>
+      <h3 data-tienda-product-name></h3>
+      <span data-tienda-product-price></span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Laptop Gamer");
+  expect(document.body.textContent).toContain("S/ 1000.00");
+});
+
+it("product detail quantity controls work without qty value element", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="product-detail" data-sitio-id="1" data-producto-id="1">
+      <div data-tienda-empty style="display:none">No encontrado</div>
+      <h3 data-tienda-product-name></h3>
+      <button data-tienda-qty-minus>-</button>
+      <button data-tienda-qty-plus>+</button>
+      <button data-tienda-add-cart>Agregar al carrito</button>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  document.querySelector<HTMLButtonElement>("[data-tienda-qty-plus]")!.click();
+  document.querySelector<HTMLButtonElement>("[data-tienda-qty-minus]")!.click();
+  document.querySelector<HTMLButtonElement>("[data-tienda-add-cart]")!.click();
+
+  await vi.runAllTimersAsync();
+
+  expect(globalThis.fetch).toHaveBeenCalledWith(
+    "/api/v1/sitios/1/tienda/carrito/items",
+    expect.objectContaining({
+      method: "POST",
+    })
+  );
+});
+it("categories renders when empty element is missing", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="categories" data-sitio-id="1">
+      <div data-tienda-list>
+        <button data-tienda-item style="display:none">
+          <span data-tienda-category-name></span>
+        </button>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Todas");
+  expect(document.body.textContent).toContain("Tecnología");
+});
+
+
+it("category filter keeps visible items when filtering by category", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="categories" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">VACIO</div>
+      <div data-tienda-list>
+        <button data-tienda-item style="display:none">
+          <span data-tienda-category-name></span>
+        </button>
+      </div>
+    </section>
+
+    <section data-tienda="products-grid" data-sitio-id="1">
+      <div data-tienda-list>
+        <article data-tienda-item style="">Producto visible</article>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  const buttons = document.querySelectorAll<HTMLButtonElement>(
+    '[data-tienda="categories"] [data-tienda-item]'
+  );
+
+  buttons[1].click();
+
+  expect(document.body.textContent).toContain("Producto visible");
+});
+
+it("cart summary handles total element without parent section", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list>
+        <div data-tienda-item style="display:none">
+          <span data-tienda-product-name></span>
+          <span data-tienda-product-price></span>
+          <span data-tienda-qty-value></span>
+          <span data-tienda-item-subtotal></span>
+        </div>
+      </div>
+      <span data-tienda-cart-total></span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.querySelector("[data-tienda-cart-total]")?.textContent).toBe(
+    "S/ 2000.00"
+  );
+});
+
+it("refresh cart total does nothing when total element is missing", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  document.body.innerHTML = `
+    <section data-tienda="cart" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">Carrito vacío</div>
+      <div data-tienda-list>
+        <div data-tienda-item style="display:none">
+          <span data-tienda-product-name></span>
+          <span data-tienda-product-price></span>
+          <button data-tienda-qty-plus>+</button>
+          <span data-tienda-qty-value></span>
+          <span data-tienda-item-subtotal></span>
+        </div>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  document.querySelector<HTMLButtonElement>("[data-tienda-qty-plus]")!.click();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Laptop Gamer");
+});
+
+
+it("showEmpty hides checkout link pay button and total section", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  globalThis.fetch = vi.fn(async () => ({
+    ok: true,
+    json: async () => ({
+      success: true,
+      data: [],
+    }),
+  })) as any;
+
+  document.body.innerHTML = `
+    <section data-tienda="products-grid" data-sitio-id="1">
+      <div data-tienda-empty style="display:none">VACIO</div>
+      <div data-tienda-list>
+        <article data-tienda-item>Item</article>
+      </div>
+      <a data-tienda-checkout-link style="display:block">Checkout</a>
+      <button data-tienda-pagar style="display:block">Pagar</button>
+      <div>
+        <div>
+          <span data-tienda-cart-total>S/ 10.00</span>
+        </div>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.querySelector<HTMLElement>("[data-tienda-empty]")!.style.display)
+    .toBe("block");
+
+  expect(document.querySelector<HTMLElement>("[data-tienda-checkout-link]")!.style.display)
+    .toBe("none");
+
+  expect(document.querySelector<HTMLElement>("[data-tienda-pagar]")!.style.display)
+    .toBe("none");
+
+  expect(document.querySelector<HTMLElement>("[data-tienda-cart-total]")!.textContent)
+    .toBe("");
+
+  const totalSection = document
+    .querySelector<HTMLElement>("[data-tienda-cart-total]")!
+    .parentElement!
+    .parentElement as HTMLElement;
+
+  expect(totalSection.style.display).toBe("none");
+});
+
+
+it("checkout uses fallback backend error when error response has invalid json", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  loginUser();
+
+  globalThis.fetch = vi.fn(async (url: string) => {
+    if (url.includes("/checkout")) {
+      return {
+        ok: false,
+        json: async () => {
+          throw new Error("invalid json");
+        },
+      } as unknown as Response;
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: [product],
+      }),
+    } as Response;
+  }) as any;
+
+  document.body.innerHTML = `
+    <section data-tienda="checkout" data-sitio-id="1">
+      <form data-tienda-checkout-form>
+        <input data-tienda-field-nombre value="Juan" />
+        <input data-tienda-field-email value="j@test.com" />
+        <button type="submit">Confirmar pedido</button>
+      </form>
+      <div data-tienda-checkout-error style="display:none"></div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  document
+    .querySelector<HTMLFormElement>("[data-tienda-checkout-form]")!
+    .dispatchEvent(
+      new Event("submit", {
+        bubbles: true,
+        cancelable: true,
+      })
+    );
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Error al procesar el pedido");
+});
+
+
+it("product item handles missing description and category", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  const productWithoutOptional = {
+    ...product,
+    descripcion: undefined,
+    categoria: null,
+  };
+
+  globalThis.fetch = vi.fn(async () => ({
+    ok: true,
+    json: async () => ({
+      success: true,
+      data: [productWithoutOptional],
+    }),
+  })) as any;
+
+  document.body.innerHTML = `
+    <section data-tienda="products-grid" data-sitio-id="1">
+      <div data-tienda-list>
+        <article data-tienda-item style="display:none">
+          <h3 data-tienda-product-name></h3>
+          <p data-tienda-product-desc>OLD</p>
+          <span data-tienda-category-name>OLD-CAT</span>
+        </article>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.querySelector("[data-tienda-product-desc]")?.textContent).toBe("");
+  expect(document.querySelector("[data-tienda-category-name]")?.textContent).toBe("OLD-CAT");
+});
+
+it("product collection renders item without add cart button", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="products-grid" data-sitio-id="1">
+      <div data-tienda-list>
+        <article data-tienda-item style="display:none">
+          <h3 data-tienda-product-name></h3>
+        </article>
+      </div>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Laptop Gamer");
+});
+
+it("product detail renders safely without add cart button", async () => {
+  const { initTiendaBlocks } = await import("./tienda");
+
+  document.body.innerHTML = `
+    <section data-tienda="product-detail" data-sitio-id="1" data-producto-id="1">
+      <div data-tienda-empty style="display:none">No encontrado</div>
+      <h3 data-tienda-product-name></h3>
+      <span data-tienda-qty-value>1</span>
+    </section>
+  `;
+
+  initTiendaBlocks();
+
+  await vi.runAllTimersAsync();
+
+  expect(document.body.textContent).toContain("Laptop Gamer");
+});
+
+
+
+
 });

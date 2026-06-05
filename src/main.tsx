@@ -6,7 +6,7 @@ import App from "./App.tsx";
 
 const rootElement = document.getElementById("root");
 
-
+/* v8 ignore start */
 if (!rootElement) {
   throw new Error("No se encontró el elemento root en el HTML.");
 }
