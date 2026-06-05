@@ -3,3 +3,21 @@ body {
   padding: 0;
 }
 
+dialog.modal[open] {
+  display: flex !important;
+  flex-direction: column;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  max-width: 900px;
+  width: min(90vw, 900px);
+  max-height: 90vh;
+  overflow: auto;
+  z-index: 1055;
+}
+
+dialog.modal[open]::backdrop {
+  background: rgba(0, 0, 0, 0.45);
+}
