@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>17/17</span>
+                <span class='fraction'>0/17</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>10/10</span>
+                <span class='fraction'>0/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>17/17</span>
+                <span class='fraction'>0/17</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -122,34 +122,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">16x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">8x</span>
-<span class="cline-any cline-yes">8x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">6x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { apiFetch } from './api';
 &nbsp;
@@ -165,35 +165,35 @@ export interface PerfilData {
   codigo_postal?: string | null;
 }
 &nbsp;
-export async function fetchProfile(): Promise&lt;PerfilData&gt; {
-  return apiFetch&lt;PerfilData&gt;('/site-auth/me');
+export async function <span class="fstat-no" title="function not covered" >fetchProfile(): Promise&lt;PerfilData&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  return apiFetch&lt;PerfilData&gt;('/site-auth/me');</span>
 }
 &nbsp;
-export async function loadProfile(block: HTMLElement): Promise&lt;void&gt; {
-  try {
-    const data = await fetchProfile();
+export async function <span class="fstat-no" title="function not covered" >loadProfile(b</span>lock: HTMLElement): Promise&lt;void&gt; {
+<span class="cstat-no" title="statement not covered" >  try {</span>
+    const data = <span class="cstat-no" title="statement not covered" >await fetchProfile();</span>
 &nbsp;
-    const nombreEl = block.querySelector('[data-perfil="nombre_completo"]');
-    if (nombreEl) {
-      nombreEl.textContent = `${data.nombre} ${data.apellido}`;
+    const nombreEl = <span class="cstat-no" title="statement not covered" >block.querySelector('[data-perfil="nombre_completo"]');</span>
+<span class="cstat-no" title="statement not covered" >    if (nombreEl) {</span>
+<span class="cstat-no" title="statement not covered" >      nombreEl.textContent = `${data.nombre} ${data.apellido}`;</span>
     }
 &nbsp;
-    const correoEl = block.querySelector('[data-perfil="correo"]');
-    if (correoEl) {
-      correoEl.textContent = data.correo;
+    const correoEl = <span class="cstat-no" title="statement not covered" >block.querySelector('[data-perfil="correo"]');</span>
+<span class="cstat-no" title="statement not covered" >    if (correoEl) {</span>
+<span class="cstat-no" title="statement not covered" >      correoEl.textContent = data.correo;</span>
     }
 &nbsp;
-    const avatarEl = block.querySelector('[data-perfil="avatar"]') as HTMLImageElement;
-    if (avatarEl) {
-      const inicial = (data.nombre?.charAt(0) || 'U').toUpperCase();
-      avatarEl.src = `https://placehold.co/80x80/667eea/ffffff?text=${inicial}`;
+    const avatarEl = <span class="cstat-no" title="statement not covered" >block.querySelector('[data-perfil="avatar"]') </span>as HTMLImageElement;
+<span class="cstat-no" title="statement not covered" >    if (avatarEl) {</span>
+      const <span class="cstat-no" title="statement not covered" >inicial = (data.nombre?.charAt(0) || 'U').toUpperCase();</span>
+<span class="cstat-no" title="statement not covered" >      avatarEl.src = `https://placehold.co/80x80/667eea/ffffff?text=${inicial}`;</span>
     }
   } catch {
-    const bloqueAuth = document.querySelector('[data-auth="login"]') as HTMLElement;
-    if (bloqueAuth) {
-      bloqueAuth.style.display = '';
+    const bloqueAuth = <span class="cstat-no" title="statement not covered" >document.querySelector('[data-auth="login"]') </span>as HTMLElement;
+<span class="cstat-no" title="statement not covered" >    if (bloqueAuth) {</span>
+<span class="cstat-no" title="statement not covered" >      bloqueAuth.style.display = '';</span>
     }
-    block.style.display = 'none';
+<span class="cstat-no" title="statement not covered" >    block.style.display = 'none';</span>
   }
 }</pre></td></tr></table></pre>
 
@@ -202,7 +202,7 @@ export async function loadProfile(block: HTMLElement): Promise&lt;void&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-05T02:23:58.771Z
+                at 2026-06-15T04:15:46.514Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
