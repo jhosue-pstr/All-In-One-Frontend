@@ -123,9 +123,33 @@ pipeline {
                         || true"
 
                     echo ""
+                    echo "Buscando contenedor real del backend..."
+
+                    BACKEND_CONTAINER=""
+
+                    for c in $(docker ps --filter "network=app-network" --format "{{.Names}}"); do
+                        ALIASES=$(docker inspect "$c" --format '{{range $net, $conf := .NetworkSettings.Networks}}{{range $conf.Aliases}}{{.}} {{end}}{{end}}' 2>/dev/null || true)
+                        IMAGE=$(docker inspect "$c" --format '{{.Config.Image}}' 2>/dev/null || true)
+
+                        echo "Contenedor detectado: $c | Imagen: $IMAGE | Aliases: $ALIASES"
+
+                        if echo "$c $IMAGE $ALIASES" | grep -qi "backend"; then
+                            BACKEND_CONTAINER="$c"
+                            break
+                        fi
+                    done
+
+                    if [ -z "$BACKEND_CONTAINER" ]; then
+                        echo "ERROR: No se encontró el contenedor backend en app-network"
+                        echo "Contenedores disponibles:"
+                        docker ps --format "table {{.Names}}\\t{{.Image}}\\t{{.Networks}}"
+                        exit 1
+                    fi
+
+                    echo "Backend encontrado: ${BACKEND_CONTAINER}"
                     echo "Promoting E2E user to super_admin..."
 
-                    docker exec backend python - <<PY
+                    docker exec -i "${BACKEND_CONTAINER}" python - <<PY
 from app.db.database import SessionLocal
 from app.models.usuario import User
 
