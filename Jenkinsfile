@@ -65,7 +65,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t all-in-one-frontend:latest .'
+                sh '''
+                    echo "Limpiando cache corrupta de Docker BuildKit..."
+                    docker builder prune -af || true
+                    docker system prune -af || true
+
+                    echo "Construyendo imagen frontend sin cache..."
+                    DOCKER_BUILDKIT=0 docker build --no-cache -t all-in-one-frontend:latest .
+                '''
             }
         }
 
@@ -114,6 +121,32 @@ pipeline {
                         -H 'Content-Type: application/json' \
                         -d '{\\"correo\\":\\"${E2E_EMAIL}\\",\\"contrasena\\":\\"${TEST_USER_PASSWORD}\\",\\"nombre\\":\\"Test\\",\\"apellido\\":\\"User\\"}' \
                         || true"
+
+                    echo ""
+                    echo "Promoting E2E user to super_admin..."
+
+                    docker exec backend python - <<PY
+from app.db.database import SessionLocal
+from app.models.usuario import User
+
+email = "${E2E_EMAIL}"
+
+db = SessionLocal()
+try:
+    user = db.query(User).filter(User.correo == email).first()
+
+    if not user:
+        raise SystemExit(f"ERROR: E2E user not found: {email}")
+
+    user.role = "super_admin"
+    user.activo = True
+
+    db.commit()
+
+    print(f"E2E user promoted to super_admin: {email}")
+finally:
+    db.close()
+PY
 
                     echo ""
                     echo "Checking E2E test user login..."
