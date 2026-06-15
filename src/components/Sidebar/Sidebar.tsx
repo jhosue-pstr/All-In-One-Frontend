@@ -1,10 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineGlobe, HiOutlineTemplate, HiOutlineCube, HiOutlineCog, HiOutlineShoppingCart, HiOutlineLogout, HiOutlineBookOpen } from 'react-icons/hi';
+import {
+  HiOutlineHome,
+  HiOutlineGlobe,
+  HiOutlineTemplate,
+  HiOutlineCube,
+  HiOutlineCog,
+  HiOutlineShoppingCart,
+  HiOutlineLogout,
+  HiOutlineBookOpen,
+  HiOutlineShieldCheck,
+} from 'react-icons/hi';
+
 import { USER_IMAGE_KEY } from '../../models';
 import type { User } from '../../models';
 import { sitioService } from '../../services/sitio';
 import { moduloService } from '../../services/modulo';
+import { rolesService } from '../../services/roles';
 import './Sidebar.css';
 
 interface SidebarProps {
@@ -12,30 +24,105 @@ interface SidebarProps {
 }
 
 const baseMenuItems = [
-  { path: '/inicio', label: 'Inicio', icon: HiOutlineHome, modulo: null },
-  { path: '/sitios', label: 'Sitios', icon: HiOutlineGlobe, modulo: null },
-  { path: '/plantillas', label: 'Plantillas', icon: HiOutlineTemplate, modulo: null },
-  { path: '/modulos', label: 'Módulos', icon: HiOutlineCube, modulo: null },
-  { path: '/configuraciones', label: 'Configuraciones', icon: HiOutlineCog, modulo: null },
-  { path: '/blog', label: 'Blog', icon: HiOutlineBookOpen, modulo: 'blog' },
-  { path: '/tienda', label: 'Tienda', icon: HiOutlineShoppingCart, modulo: 'tienda' },
+  {
+    path: '/inicio',
+    label: 'Inicio',
+    icon: HiOutlineHome,
+    permiso: 'inicio.ver',
+    modulo: null,
+  },
+  {
+    path: '/sitios',
+    label: 'Sitios',
+    icon: HiOutlineGlobe,
+    permiso: 'sitios.ver',
+    modulo: null,
+  },
+  {
+    path: '/plantillas',
+    label: 'Plantillas',
+    icon: HiOutlineTemplate,
+    permiso: 'plantillas.ver',
+    modulo: null,
+  },
+  {
+    path: '/modulos',
+    label: 'Módulos',
+    icon: HiOutlineCube,
+    permiso: 'modulos.ver',
+    modulo: null,
+  },
+  {
+    path: '/configuraciones',
+    label: 'Configuraciones',
+    icon: HiOutlineCog,
+    permiso: 'configuraciones.ver',
+    modulo: null,
+  },
+  {
+    path: '/roles',
+    label: 'Roles',
+    icon: HiOutlineShieldCheck,
+    permiso: 'roles.ver',
+    modulo: null,
+  },
+  {
+    path: '/blog',
+    label: 'Blog',
+    icon: HiOutlineBookOpen,
+    permiso: 'blog.ver',
+    modulo: 'blog',
+  },
+  {
+    path: '/tienda',
+    label: 'Tienda',
+    icon: HiOutlineShoppingCart,
+    permiso: 'tienda.ver',
+    modulo: 'tienda',
+  },
 ];
 
 export function Sidebar({ user }: Readonly<SidebarProps>) {
   const location = useLocation();
   const userImage = localStorage.getItem(USER_IMAGE_KEY);
+
   const [sitioId, setSitioId] = useState<number | null>(null);
   const [sitios, setSitios] = useState<{ id: number; nombre: string }[]>([]);
+  const [permisos, setPermisos] = useState<string[]>([]);
   const [modulosHabilitados, setModulosHabilitados] = useState<Set<string>>(new Set());
+  const [cargandoPermisos, setCargandoPermisos] = useState(true);
 
   useEffect(() => {
-    sitioService.getAll().then((data) => {
-      const list = Array.isArray(data) ? data : [];
-      setSitios(list);
-      if (list.length > 0 && !sitioId) {
-        setSitioId(list[0].id);
-      }
-    }).catch(() => {});
+    rolesService
+      .getMisPermisos()
+      .then((data) => {
+        setPermisos(data.permisos || []);
+      })
+      .catch((error) => {
+        console.error('Error cargando permisos en Sidebar:', error);
+        setPermisos([]);
+      })
+      .finally(() => {
+        setCargandoPermisos(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    sitioService
+      .getAll()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : [];
+
+        setSitios(list);
+
+        if (list.length > 0) {
+          setSitioId((actual) => actual ?? list[0].id);
+        }
+      })
+      .catch((error) => {
+        console.error('Error cargando sitios en Sidebar:', error);
+        setSitios([]);
+      });
   }, []);
 
   useEffect(() => {
@@ -43,12 +130,27 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
       setModulosHabilitados(new Set());
       return;
     }
+
     Promise.all([
-      sitioService.getModulos(sitioId).catch<number[]>(() => []),
-      moduloService.getAll().catch<[]>(() => []),
+      sitioService.getModulos(sitioId).catch<number[]>((error) => {
+        console.error('Error cargando módulos del sitio:', error);
+        return [];
+      }),
+      moduloService.getAll().catch<any[]>((error) => {
+        console.error('Error cargando catálogo de módulos:', error);
+        return [];
+      }),
     ]).then(([moduloIds, allModulos]) => {
-      const idToSlug = new Map(allModulos.map((m: { id: number; slug: string }) => [m.id, m.slug]));
-      const slugs = new Set(moduloIds.map((id: number) => idToSlug.get(id)).filter((s): s is string => !!s));
+      const idToSlug = new Map(
+        allModulos.map((m: { id: number; slug: string }) => [m.id, m.slug])
+      );
+
+      const slugs = new Set(
+        moduloIds
+          .map((id: number) => idToSlug.get(id))
+          .filter((slug): slug is string => Boolean(slug))
+      );
+
       setModulosHabilitados(slugs);
     });
   }, [sitioId]);
@@ -59,8 +161,26 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
     globalThis.location.href = '/';
   };
 
+  const esSuperAdmin = (user as any)?.role === 'super_admin';
+
   const visibleItems = baseMenuItems.filter((item) => {
-    if (!item.modulo) return true;
+    const tienePermiso = esSuperAdmin || permisos.includes(item.permiso);
+
+    if (!tienePermiso) {
+      return false;
+    }
+
+    // Menús normales: Inicio, Sitios, Plantillas, Módulos, Configuraciones, Roles
+    if (!item.modulo) {
+      return true;
+    }
+
+    // Menús dependientes del sitio: Blog, Tienda
+    // Se muestran solo si el módulo está activado en el sitio seleccionado.
+    if (!sitioId) {
+      return false;
+    }
+
     return modulosHabilitados.has(item.modulo);
   });
 
@@ -75,6 +195,7 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
               user?.nombre?.charAt(0).toUpperCase() || 'U'
             )}
           </div>
+
           <div className="user-details">
             <span className="user-name">
               ¡Bienvenido, {user?.nombre || 'Usuario'}!
@@ -99,23 +220,26 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
         >
           <option value="">Seleccionar sitio</option>
           {sitios.map((s) => (
-            <option key={s.id} value={s.id}>{s.nombre}</option>
+            <option key={s.id} value={s.id}>
+              {s.nombre}
+            </option>
           ))}
         </select>
       </div>
 
       <nav className="sidebar-nav">
-        {visibleItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-            data-testid={`nav-${item.label.toLowerCase()}`}
-          >
-            <item.icon className="nav-icon" />
-            <span className="nav-label">{item.label}</span>
-          </Link>
-        ))}
+        {!cargandoPermisos &&
+          visibleItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              data-testid={`nav-${item.label.toLowerCase()}`}
+            >
+              <item.icon className="nav-icon" />
+              <span className="nav-label">{item.label}</span>
+            </Link>
+          ))}
       </nav>
 
       <hr className="sidebar-divider" />
