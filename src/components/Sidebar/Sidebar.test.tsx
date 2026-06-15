@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
+
 import { Sidebar } from './Sidebar'
 import { sitioService } from '../../services/sitio'
 import { moduloService } from '../../services/modulo'
+import { rolesService } from '../../services/roles'
 
 vi.mock('../../services/sitio', () => ({
   sitioService: {
@@ -18,6 +20,12 @@ vi.mock('../../services/modulo', () => ({
   },
 }))
 
+vi.mock('../../services/roles', () => ({
+  rolesService: {
+    getMisPermisos: vi.fn(),
+  },
+}))
+
 const mockUser = {
   id: 1,
   correo: 'a@b.com',
@@ -28,11 +36,22 @@ const mockUser = {
   updated_at: '',
 }
 
+const permisosCompletos = [
+  'inicio.ver',
+  'sitios.ver',
+  'plantillas.ver',
+  'modulos.ver',
+  'configuraciones.ver',
+  'roles.ver',
+  'blog.ver',
+  'tienda.ver',
+]
+
 function renderSidebar(user = mockUser, route = '/inicio') {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Sidebar user={user} />
-    </MemoryRouter>,
+    </MemoryRouter>
   )
 }
 
@@ -40,6 +59,13 @@ describe('Sidebar', () => {
   beforeEach(() => {
     localStorage.clear()
     vi.clearAllMocks()
+
+    vi.mocked(rolesService.getMisPermisos).mockResolvedValue({
+      usuario_id: 1,
+      correo: 'admin@test.com',
+      role: 'admin',
+      permisos: permisosCompletos,
+    })
 
     vi.mocked(sitioService.getAll).mockResolvedValue([
       { id: 1, nombre: 'Sitio 1' },
@@ -68,6 +94,7 @@ describe('Sidebar', () => {
     expect(screen.getByText('Plantillas')).toBeInTheDocument()
     expect(screen.getByText('Módulos')).toBeInTheDocument()
     expect(screen.getByText('Configuraciones')).toBeInTheDocument()
+    expect(screen.getByText('Roles')).toBeInTheDocument()
   })
 
   it('should show module links when modules are enabled', async () => {
@@ -76,6 +103,7 @@ describe('Sidebar', () => {
     expect(await screen.findByText('Blog')).toBeInTheDocument()
     expect(await screen.findByText('Tienda')).toBeInTheDocument()
 
+    expect(rolesService.getMisPermisos).toHaveBeenCalled()
     expect(sitioService.getAll).toHaveBeenCalled()
     expect(sitioService.getModulos).toHaveBeenCalledWith(1)
     expect(moduloService.getAll).toHaveBeenCalled()
@@ -90,6 +118,26 @@ describe('Sidebar', () => {
       expect(sitioService.getModulos).toHaveBeenCalled()
     })
 
+    expect(screen.queryByText('Blog')).not.toBeInTheDocument()
+    expect(screen.queryByText('Tienda')).not.toBeInTheDocument()
+  })
+
+  it('should hide links when user does not have permissions', async () => {
+    vi.mocked(rolesService.getMisPermisos).mockResolvedValueOnce({
+      usuario_id: 2,
+      correo: 'user@test.com',
+      role: 'user',
+      permisos: ['inicio.ver'],
+    })
+
+    renderSidebar()
+
+    expect(await screen.findByText('Inicio')).toBeInTheDocument()
+    expect(screen.queryByText('Sitios')).not.toBeInTheDocument()
+    expect(screen.queryByText('Plantillas')).not.toBeInTheDocument()
+    expect(screen.queryByText('Módulos')).not.toBeInTheDocument()
+    expect(screen.queryByText('Configuraciones')).not.toBeInTheDocument()
+    expect(screen.queryByText('Roles')).not.toBeInTheDocument()
     expect(screen.queryByText('Blog')).not.toBeInTheDocument()
     expect(screen.queryByText('Tienda')).not.toBeInTheDocument()
   })
@@ -135,6 +183,18 @@ describe('Sidebar', () => {
     expect(screen.getByText('Seleccionar sitio')).toBeInTheDocument()
   })
 
+  it('should handle rolesService.getMisPermisos error silently', async () => {
+    vi.mocked(rolesService.getMisPermisos).mockRejectedValueOnce(new Error('Error'))
+
+    renderSidebar()
+
+    await waitFor(() => {
+      expect(rolesService.getMisPermisos).toHaveBeenCalled()
+    })
+
+    expect(screen.queryByText('Inicio')).not.toBeInTheDocument()
+  })
+
   it('should handle getModulos and getAll module errors silently', async () => {
     vi.mocked(sitioService.getModulos).mockRejectedValueOnce(new Error('Error'))
     vi.mocked(moduloService.getAll).mockRejectedValueOnce(new Error('Error'))
@@ -167,6 +227,7 @@ describe('Sidebar', () => {
     renderSidebar()
 
     const img = await screen.findByAltText('Avatar')
+
     expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute('src', 'data:image/png;base64,abc')
   })
@@ -183,6 +244,7 @@ describe('Sidebar', () => {
     localStorage.setItem('user_image', 'img')
 
     const originalLocation = globalThis.location
+
     delete (globalThis as any).location
     globalThis.location = { href: '' } as any
 
