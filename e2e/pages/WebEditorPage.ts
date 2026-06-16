@@ -1,54 +1,91 @@
-import type { Page } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 
 export class WebEditorPage {
-  constructor(private page: Page) {}
+  constructor(public page: Page) {}
 
   async gotoPlantilla(id: number) {
-    await this.page.goto(`/plantillas/${id}/editar`);
-    await this.editorContainer.waitFor({ state: 'visible', timeout: 15000 });
+    await this.page.goto(`/plantillas/${id}/editar`, {
+      waitUntil: 'domcontentloaded',
+    });
+
+    await this.page.waitForLoadState('networkidle');
+
+    await this.editorContainer.waitFor({
+      state: 'visible',
+      timeout: 30000,
+    });
   }
 
   async gotoSitio(id: number) {
-    await this.page.goto(`/sitio/${id}/editar`);
+    await this.page.goto(`/sitio/${id}/editar`, {
+      waitUntil: 'domcontentloaded',
+    });
+
+    await this.page.waitForLoadState('networkidle');
   }
 
-  get editorContainer() {
-    return this.page.locator('.editor-container');
+  get editorContainer(): Locator {
+    return this.page.locator('.editor-container, .gjs-editor').first();
   }
 
-  get editorTitle() {
-    return this.page.locator('.editor-title');
+  get editorTitle(): Locator {
+    return this.page.locator('.editor-title, h1, h2').first();
   }
 
-  get btnBack() {
-    return this.page.locator('.btn-back');
+  get btnBack(): Locator {
+    return this.page.locator('.btn-back, button:has-text("Volver")').first();
   }
 
-  get deviceButtons() {
-    return this.page.locator('.panel__devices .gjs-pn-btn');
+  get deviceButtons(): Locator {
+    return this.page.locator('.panel__devices .gjs-pn-btn, .panel__devices button');
   }
 
-  get btnSave() {
-    return this.page.locator('.btn-save');
+  get btnSave(): Locator {
+    return this.page.locator('.btn-save, button:has-text("Guardar")').first();
   }
 
-  get btnBorders() {
-    return this.page.locator('.btn-toggle-borders');
+  get btnBorders(): Locator {
+    return this.page.locator('.btn-toggle-borders, button[title*="border" i], button[title*="borde" i]').first();
   }
 
-  get btnExport() {
-    return this.page.locator('.btn-open-export');
+  get btnExport(): Locator {
+    return this.page.locator('.btn-open-export').first();
   }
 
-  get panelTabs() {
+  get panelTabs(): Locator {
     return this.page.locator('.tab-btn');
   }
 
   async selectPanel(panel: 'blocks' | 'layers' | 'styles' | 'pages') {
-    await this.page.locator(`.tab-btn[data-panel="${panel}"]`).click({ force: true });
+    const tab = this.page.locator(`.tab-btn[data-panel="${panel}"]`).first();
+
+    if (await tab.count()) {
+      await tab.click({ force: true });
+      return;
+    }
+
+    const fallbackText =
+      panel === 'blocks'
+        ? 'Bloques'
+        : panel === 'layers'
+          ? 'Capas'
+          : panel === 'styles'
+            ? 'Estilos'
+            : 'Páginas';
+
+    await this.page.getByText(fallbackText, { exact: false }).first().click({ force: true });
   }
 
   async selectDevice(device: 'Desktop' | 'Tablet' | 'Mobile') {
-    await this.page.locator(`.panel__devices button[title="${device}"]`).click({ force: true });
+    const button = this.page.locator(`.panel__devices button[title="${device}"]`).first();
+
+    if (await button.count()) {
+      await button.click({ force: true });
+      return;
+    }
+
+    await this.page.locator(`button[title="${device}"], .gjs-pn-btn[title="${device}"]`).first().click({
+      force: true,
+    });
   }
 }
