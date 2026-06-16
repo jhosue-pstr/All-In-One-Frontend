@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { FormEvent } from 'react';
 import { rolesService } from '../../services/roles';
 
 import type {
@@ -43,7 +44,7 @@ export default function RolesPage() {
     }
   }
 
-  async function crearUsuario(e: React.FormEvent) {
+  async function crearUsuario(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {
