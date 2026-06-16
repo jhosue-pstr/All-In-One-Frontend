@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineGlobe, HiOutlineTemplate, HiOutlineCube, HiOutlineCog, HiOutlineShoppingCart, HiOutlineLogout, HiOutlineBookOpen } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineGlobe, HiOutlineTemplate, HiOutlineCube, HiOutlineCog, HiOutlineShoppingCart, HiOutlineLogout, HiOutlineBookOpen, HiOutlineChartBar } from 'react-icons/hi';
 import { USER_IMAGE_KEY } from '../../models';
 import type { User } from '../../models';
 import { sitioService } from '../../services/sitio';
@@ -19,6 +19,7 @@ const baseMenuItems = [
   { path: '/configuraciones', label: 'Configuraciones', icon: HiOutlineCog, modulo: null },
   { path: '/blog', label: 'Blog', icon: HiOutlineBookOpen, modulo: 'blog' },
   { path: '/tienda', label: 'Tienda', icon: HiOutlineShoppingCart, modulo: 'tienda' },
+  { path: '/analitica', label: 'Analítica', icon: HiOutlineChartBar, modulo: 'analitica' },
 ];
 
 export function Sidebar({ user }: Readonly<SidebarProps>) {

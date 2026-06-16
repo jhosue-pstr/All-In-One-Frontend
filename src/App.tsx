@@ -20,6 +20,7 @@ import type { User } from "./models";
 import "./App.css";
 import Blog from "./pages/Blog/Blog";
 import Tienda from "./pages/Tienda/Tienda";
+import Analitica from "./pages/Analitica/Analitica";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -64,6 +65,7 @@ function App() {
           <Route path="/configuraciones" element={<Configuraciones />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/tienda" element={<Tienda />} />
+          <Route path="/analitica" element={<Analitica />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

@@ -2,6 +2,7 @@ import { handleLogin, handleRegister, handleLogout } from './auth';
 import { loadProfile } from './perfil';
 import { initBlogBlocks } from "./blog";
 import { initTiendaBlocks } from "./tienda";
+import { initAnalitica } from "./analitica";
 
 (
   () => {
@@ -45,6 +46,7 @@ import { initTiendaBlocks } from "./tienda";
       // Inicializar bloques dinámicos del Blog y Tienda
       initBlogBlocks();
       initTiendaBlocks();
+      initAnalitica();
     }
 
     if (document.readyState === 'loading') {
