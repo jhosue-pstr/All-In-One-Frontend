@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { FormEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { rolesService } from '../../services/roles';
 
 import type {
@@ -44,7 +44,7 @@ export default function RolesPage() {
     }
   }
 
-  async function crearUsuario(e: FormEvent<HTMLFormElement>) {
+  async function crearUsuario(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
 
     try {
@@ -87,8 +87,8 @@ export default function RolesPage() {
   } catch (error) {
     console.error('Error activando usuario:', error);
     alert('No se pudo activar el usuario');
+    }
   }
-}
   useEffect(() => {
     cargarDatos();
   }, []);
