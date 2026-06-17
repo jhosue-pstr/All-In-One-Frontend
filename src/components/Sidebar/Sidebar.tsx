@@ -192,7 +192,7 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
 
       <hr className="sidebar-divider" />
 
-      <div className="sidebar-site-selector" style={{ padding: '0 16px 12px' }}>
+      <div className="sidebar-site-selector">
         <select
           value={siteId ?? ''}
           onChange={(e) => {
@@ -201,13 +201,6 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
               const s = sitios.find((s) => s.id === id);
               setSite(id, s?.nombre || '');
             }
-          }}
-          style={{
-            width: '100%',
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid #ddd',
-            fontSize: '13px',
           }}
         >
           <option value="">Seleccionar sitio</option>

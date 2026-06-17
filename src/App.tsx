@@ -192,12 +192,22 @@ function AuthenticatedLayout() {
     return <div className="loading">Cargando...</div>;
   }
 
+  if (isEditor) {
+    return (
+      <PermisosProvider>
+        <SiteProvider>
+          <Outlet />
+        </SiteProvider>
+      </PermisosProvider>
+    );
+  }
+
   return (
     <PermisosProvider>
       <SiteProvider>
         <div className="app-layout">
-          {!isEditor && <Sidebar user={user} />}
-          <main className={isEditor ? "" : "main-content"}>
+          <Sidebar user={user} />
+          <main className="main-content">
             <Outlet />
           </main>
         </div>
