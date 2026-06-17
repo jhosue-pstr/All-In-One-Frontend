@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { FiShoppingBag } from "react-icons/fi";
 import { storeService } from "../../services/store";
-import { sitioService } from "../../services/sitio";
+import { useSite } from "../../context/SiteContext";
 import type {
   StoreProducto,
   StoreProductoCreate,
@@ -12,7 +13,6 @@ import type {
   StorePedido,
   StorePedidoListado,
 } from "../../models/store";
-import type { Sitio } from "../../models/sitio";
 import "./Tienda.css";
 
 type TabId = "productos" | "categorias" | "pedidos";
@@ -102,17 +102,13 @@ function getFirstImage(product: StoreProductoListado | StoreProducto): string {
 }
 
 export default function Tienda() {
+  const { siteId: selectedSiteId, sitios } = useSite();
   const [activeTab, setActiveTab] = useState<TabId>(PRODUCTOS_TAB);
-
-  const [sitios, setSitios] = useState<Sitio[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
 
   const [productos, setProductos] = useState<StoreProductoListado[]>([]);
   const [categorias, setCategorias] = useState<StoreCategoria[]>([]);
   const [pedidos, setPedidos] = useState<StorePedidoListado[]>([]);
   const [pedidoDetail, setPedidoDetail] = useState<StorePedido | null>(null);
-
-  const [loadingSitios, setLoadingSitios] = useState(false);
   const [loadingProductos, setLoadingProductos] = useState(false);
   const [loadingCategorias, setLoadingCategorias] = useState(false);
   const [loadingPedidos, setLoadingPedidos] = useState(false);
@@ -166,10 +162,6 @@ export default function Tienda() {
   }, [pedidos, pedidoEstadoFilter]);
 
   useEffect(() => {
-    loadSitios();
-  }, []);
-
-  useEffect(() => {
     if (selectedSiteId) {
       loadProductos(selectedSiteId);
       loadCategorias(selectedSiteId);
@@ -181,25 +173,6 @@ export default function Tienda() {
     setCategorias([]);
     setPedidos([]);
   }, [selectedSiteId]);
-
-  async function loadSitios() {
-    setLoadingSitios(true);
-    setError(null);
-
-    try {
-      const data = await sitioService.getAll();
-      setSitios(data);
-
-      if (data.length > 0) {
-        setSelectedSiteId(data[0].id);
-      }
-    } catch (err) {
-      /* v8 ignore next */
-      setError(err instanceof Error ? err.message : "Error al cargar sitios");
-    } finally {
-      setLoadingSitios(false);
-    }
-  }
 
   async function loadProductos(siteId: number) {
     setLoadingProductos(true);
@@ -1092,7 +1065,7 @@ export default function Tienda() {
     <div className="tienda-admin-page">
       <header className="tienda-admin-header">
         <div>
-          <span className="tienda-admin-kicker">Módulo Tienda</span>
+          <span className="tienda-admin-kicker"><FiShoppingBag size={16} /> Módulo Tienda</span>
           <h1>Administración de Tienda</h1>
           <p>Gestiona productos, categorías y pedidos de tu tienda online.</p>
         </div>
@@ -1100,25 +1073,6 @@ export default function Tienda() {
 
       {hasError && <div className="tienda-alert tienda-alert-error">{error}</div>}
       {hasSuccess && <div className="tienda-alert tienda-alert-success">{success}</div>}
-
-      <section className="tienda-toolbar">
-        <div className="tienda-field">
-          <label htmlFor="tienda-site-select">Sitio</label>
-          <select
-            id="tienda-site-select"
-            value={selectedSiteId || ""}
-            onChange={(event) => setSelectedSiteId(Number(event.target.value))}
-            disabled={loadingSitios}
-          >
-            <option value="">Selecciona un sitio</option>
-            {sitios.map((sitio) => (
-              <option key={sitio.id} value={sitio.id}>
-                {sitio.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-      </section>
 
       <nav className="tienda-tabs">
         <button

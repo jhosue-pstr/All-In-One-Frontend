@@ -3,15 +3,15 @@ import {
   useMemo,
   useState,
 } from "react";
+import { FiBook } from "react-icons/fi";
 import { blogService } from "../../services/blog";
-import { sitioService } from "../../services/sitio";
+import { useSite } from "../../context/SiteContext";
 import type {
   BlogPost,
   BlogPostCreate,
   BlogPostUpdate,
   PostStatus,
 } from "../../models/blog";
-import type { Sitio } from "../../models/sitio";
 import "./Blog.css";
 
 type BlogFormState = {
@@ -52,11 +52,9 @@ function stripHtml(html: string): string {
 }
 
 export default function Blog() {
-  const [sitios, setSitios] = useState<Sitio[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
+  const { siteId: selectedSiteId, sitios } = useSite();
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loadingSitios, setLoadingSitios] = useState(false);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -71,11 +69,12 @@ export default function Blog() {
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [form, setForm] = useState<BlogFormState>(initialForm);
 
-  const selectedSite =
-    sitios.find((sitio) => sitio.id === selectedSiteId) || null;
   const hasError = Boolean(error);
   const hasSuccess = Boolean(success);
   const hasSelectedSite = selectedSiteId !== null;
+  const selectedSite = selectedSiteId
+    ? sitios.find((s) => s.id === selectedSiteId) || null
+    : null;
   const hasFeaturedImage = Boolean(form.featured_image);
 
   const filteredPosts = useMemo(() => {
@@ -94,36 +93,12 @@ export default function Blog() {
   }, [posts, search, statusFilter]);
 
   useEffect(() => {
-    loadSitios();
-  }, []);
-
-  useEffect(() => {
     if (selectedSiteId) {
       loadPosts(selectedSiteId);
     } else {
       setPosts([]);
     }
   }, [selectedSiteId]);
-
-  async function loadSitios() {
-    setLoadingSitios(true);
-    setError(null);
-
-    try {
-      const data = await sitioService.getAll();
-      setSitios(data);
-
-      if (data.length > 0) {
-        setSelectedSiteId(data[0].id);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Error al cargar los sitios",
-      );
-    } finally {
-      setLoadingSitios(false);
-    }
-  }
 
   async function loadPosts(siteId: number) {
     setLoadingPosts(true);
@@ -454,7 +429,7 @@ export default function Blog() {
     <div className="blog-admin-page">
       <header className="blog-admin-header">
         <div>
-          <span className="blog-admin-kicker">Módulo Blog</span>
+          <span className="blog-admin-kicker"><FiBook size={16} /> Módulo Blog</span>
           <h1>Administración visual del Blog</h1>
           <p>
             Crea, edita, publica y administra los artículos que luego se
@@ -477,23 +452,6 @@ export default function Blog() {
       )}
 
       <section className="blog-toolbar">
-        <div className="blog-field">
-          <label htmlFor="blog-site-select">Sitio</label>
-          <select
-            id="blog-site-select"
-            value={selectedSiteId ?? ""}
-            onChange={(event) => setSelectedSiteId(Number(event.target.value))}
-            disabled={loadingSitios}
-          >
-            <option value="">Selecciona un sitio</option>
-            {sitios.map((sitio) => (
-              <option key={sitio.id} value={sitio.id}>
-                {sitio.nombre}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="blog-field">
           <label htmlFor="blog-search-input">Buscar</label>
           <input

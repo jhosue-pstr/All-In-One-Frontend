@@ -26,6 +26,12 @@ vi.mock('../../services/roles', () => ({
   },
 }))
 
+vi.mock('../../context/SiteContext', () => ({
+  useSite: vi.fn(),
+}))
+
+import { useSite } from '../../context/SiteContext'
+
 const mockUser = {
   id: 1,
   correo: 'a@b.com',
@@ -47,6 +53,11 @@ const permisosCompletos = [
   'tienda.ver',
 ]
 
+const mockSitios = [
+  { id: 1, nombre: 'Sitio 1' },
+  { id: 2, nombre: 'Sitio 2' },
+]
+
 function renderSidebar(user = mockUser, route = '/inicio') {
   return render(
     <MemoryRouter initialEntries={[route]}>
@@ -60,17 +71,19 @@ describe('Sidebar', () => {
     localStorage.clear()
     vi.clearAllMocks()
 
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 1,
+      siteNombre: 'Sitio 1',
+      sitios: mockSitios as any,
+      setSite: vi.fn(),
+    })
+
     vi.mocked(rolesService.getMisPermisos).mockResolvedValue({
       usuario_id: 1,
       correo: 'admin@test.com',
       role: 'admin',
       permisos: permisosCompletos,
     })
-
-    vi.mocked(sitioService.getAll).mockResolvedValue([
-      { id: 1, nombre: 'Sitio 1' },
-      { id: 2, nombre: 'Sitio 2' },
-    ] as any)
 
     vi.mocked(sitioService.getModulos).mockResolvedValue([1, 2] as any)
 
@@ -104,7 +117,6 @@ describe('Sidebar', () => {
     expect(await screen.findByText('Tienda')).toBeInTheDocument()
 
     expect(rolesService.getMisPermisos).toHaveBeenCalled()
-    expect(sitioService.getAll).toHaveBeenCalled()
     expect(sitioService.getModulos).toHaveBeenCalledWith(1)
     expect(moduloService.getAll).toHaveBeenCalled()
   })
@@ -143,6 +155,14 @@ describe('Sidebar', () => {
   })
 
   it('should change selected site and load its modules', async () => {
+    const setSite = vi.fn()
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 1,
+      siteNombre: 'Sitio 1',
+      sitios: mockSitios as any,
+      setSite,
+    })
+
     renderSidebar()
 
     const select = await screen.findByRole('combobox')
@@ -163,24 +183,12 @@ describe('Sidebar', () => {
     })
 
     await waitFor(() => {
-      expect(select).toHaveValue('2')
+      expect(setSite).toHaveBeenCalledWith(2, 'Sitio 2')
     })
 
     await waitFor(() => {
       expect(sitioService.getModulos).toHaveBeenCalledWith(2)
     })
-  })
-
-  it('should handle sitioService.getAll error silently', async () => {
-    vi.mocked(sitioService.getAll).mockRejectedValueOnce(new Error('Error'))
-
-    renderSidebar()
-
-    await waitFor(() => {
-      expect(sitioService.getAll).toHaveBeenCalled()
-    })
-
-    expect(screen.getByText('Seleccionar sitio')).toBeInTheDocument()
   })
 
   it('should handle rolesService.getMisPermisos error silently', async () => {
@@ -257,30 +265,6 @@ describe('Sidebar', () => {
     expect(globalThis.location.href).toBe('/')
 
     globalThis.location = originalLocation
-  })
-
-  it('handles non-array sitios response', async () => {
-    vi.mocked(sitioService.getAll).mockResolvedValueOnce(null as any)
-
-    renderSidebar()
-
-    await waitFor(() => {
-      expect(sitioService.getAll).toHaveBeenCalled()
-    })
-
-    expect(screen.getByText('Seleccionar sitio')).toBeInTheDocument()
-  })
-
-  it('handles empty sitios response without selecting first site', async () => {
-    vi.mocked(sitioService.getAll).mockResolvedValueOnce([] as any)
-
-    renderSidebar()
-
-    await waitFor(() => {
-      expect(sitioService.getAll).toHaveBeenCalled()
-    })
-
-    expect(sitioService.getModulos).not.toHaveBeenCalled()
   })
 
   it('sets sitioId to null when selected value is empty', async () => {

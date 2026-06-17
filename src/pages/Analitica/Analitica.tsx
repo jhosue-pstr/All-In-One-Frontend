@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { FiBarChart2, FiFileText, FiPackage } from "react-icons/fi";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell,
 } from "recharts";
 import { analiticaService } from "../../services/analitica";
-import { sitioService } from "../../services/sitio";
-import type { DashboardResponse, Sitio } from "../../models";
+import { useSite } from "../../context/SiteContext";
+import type { DashboardResponse } from "../../models";
 import "./Analitica.css";
 
 const COLORS = ["#2563eb", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
@@ -28,23 +29,18 @@ function formatNumero(n: number): string {
   return String(n);
 }
 
+function mostrarTag(pag: { titulo_pagina?: string | null; url: string }): string {
+  if (pag.titulo_pagina) return pag.titulo_pagina;
+  const path = pag.url.replace(/^https?:\/\/[^\/]+/, "").replace(/^\/?(index\.\w+)?$/, "") || "";
+  return path ? path : "Principal";
+}
+
 export default function Analitica() {
-  const [sitios, setSitios] = useState<Sitio[]>([]);
-  const [selectedSiteId, setSelectedSiteId] = useState<number | null>(null);
+  const { siteId: selectedSiteId } = useSite();
   const [dias, setDias] = useState(7);
   const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    sitioService.getAll().then((data) => {
-      const list = Array.isArray(data) ? data : [];
-      setSitios(list);
-      if (list.length > 0) {
-        setSelectedSiteId(list[0].id);
-      }
-    }).catch(() => {});
-  }, []);
 
   useEffect(() => {
     if (!selectedSiteId) return;
@@ -63,6 +59,8 @@ export default function Analitica() {
   const dispositivos = dashboard?.dispositivos ?? {};
   const ultimasVisitas = dashboard?.ultimas_visitas ?? [];
   const eventosRecientes = dashboard?.eventos_recientes ?? [];
+  const blogStats = dashboard?.blog;
+  const tiendaStats = dashboard?.tienda;
 
   const navegadoresData = Object.entries(navegadores).map(([name, value]) => ({ name, value }));
   const dispositivosData = Object.entries(dispositivos).map(([name, value]) => ({ name, value }));
@@ -71,26 +69,13 @@ export default function Analitica() {
     <div className="analitica-page">
       <header className="analitica-header">
         <div>
-          <span className="analitica-kicker">Módulo Analítica</span>
+          <span className="analitica-kicker"><FiBarChart2 size={16} /> Módulo Analítica</span>
           <h1>Dashboard de Analítica</h1>
           <p>Estadísticas y métricas de tus sitios web.</p>
         </div>
       </header>
 
       <section className="analitica-toolbar">
-        <div className="analitica-field">
-          <label htmlFor="analitica-site-select">Sitio</label>
-          <select
-            id="analitica-site-select"
-            value={selectedSiteId ?? ""}
-            onChange={(e) => setSelectedSiteId(Number(e.target.value) || null)}
-          >
-            <option value="">Selecciona un sitio</option>
-            {sitios.map((s) => (
-              <option key={s.id} value={s.id}>{s.nombre}</option>
-            ))}
-          </select>
-        </div>
         <div className="analitica-field">
           <label htmlFor="analitica-dias-select">Período</label>
           <select
@@ -148,6 +133,48 @@ export default function Analitica() {
             </div>
           </section>
 
+          {/* Blog Stats */}
+          {blogStats && (
+            <section className="analitica-section analitica-module-stats">
+              <h2><FiFileText size={18} /> Blog — Resumen</h2>
+              <div className="analitica-kpi-grid">
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Total Posts</span>
+                  <span className="analitica-kpi-value">{blogStats.total_posts}</span>
+                </div>
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Publicados</span>
+                  <span className="analitica-kpi-value">{blogStats.publicados}</span>
+                </div>
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Borradores</span>
+                  <span className="analitica-kpi-value">{blogStats.borradores}</span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Tienda Stats */}
+          {tiendaStats && (
+            <section className="analitica-section analitica-module-stats">
+              <h2><FiPackage size={18} /> Tienda — Resumen</h2>
+              <div className="analitica-kpi-grid">
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Total Productos</span>
+                  <span className="analitica-kpi-value">{tiendaStats.total_productos}</span>
+                </div>
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Total Pedidos</span>
+                  <span className="analitica-kpi-value">{tiendaStats.total_pedidos}</span>
+                </div>
+                <div className="analitica-kpi-card">
+                  <span className="analitica-kpi-label">Ingresos Totales</span>
+                  <span className="analitica-kpi-value">${formatNumero(tiendaStats.ingresos_totales)}</span>
+                </div>
+              </div>
+            </section>
+          )}
+
           <section className="analitica-chart-section">
             <h2>Visitas por día</h2>
             <ResponsiveContainer width="100%" height={300}>
@@ -180,7 +207,7 @@ export default function Analitica() {
                     <div key={pag.url} className="analitica-top-item">
                       <span className="analitica-top-pos">#{i + 1}</span>
                       <div className="analitica-top-info">
-                        <span className="analitica-top-url">{pag.url}</span>
+                        <span className="analitica-top-url" title={pag.url}>{mostrarTag(pag)}</span>
                         <div className="analitica-top-bar">
                           <div className="analitica-top-bar-fill" style={{ width: `${pag.porcentaje}%` }} />
                         </div>
@@ -192,43 +219,43 @@ export default function Analitica() {
               )}
             </section>
 
-            <div className="analitica-pie-grid">
-              <section className="analitica-section">
-                <h2>Navegadores</h2>
-                {navegadoresData.length === 0 ? (
-                  <div className="analitica-empty-small">Sin datos</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie data={navegadoresData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                        {navegadoresData.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </section>
-
-              <section className="analitica-section">
-                <h2>Dispositivos</h2>
-                {dispositivosData.length === 0 ? (
-                  <div className="analitica-empty-small">Sin datos</div>
-                ) : (
-                  <ResponsiveContainer width="100%" height={200}>
-                    <PieChart>
-                      <Pie data={dispositivosData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                        {dispositivosData.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </section>
-            </div>
+            <section className="analitica-section">
+              <h2>Navegadores y Dispositivos</h2>
+              <div className="analitica-pie-grid">
+                <div>
+                  {navegadoresData.length === 0 ? (
+                    <div className="analitica-empty-small">Sin datos</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie data={navegadoresData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                          {navegadoresData.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+                <div>
+                  {dispositivosData.length === 0 ? (
+                    <div className="analitica-empty-small">Sin datos</div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie data={dispositivosData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                          {dispositivosData.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+            </section>
           </div>
 
           <div className="analitica-grid-2col">
@@ -241,7 +268,7 @@ export default function Analitica() {
                   <table className="analitica-table">
                     <thead>
                       <tr>
-                        <th>URL</th>
+                        <th>Página</th>
                         <th>Navegador</th>
                         <th>Dispositivo</th>
                         <th>Fecha</th>
@@ -250,7 +277,7 @@ export default function Analitica() {
                     <tbody>
                       {ultimasVisitas.map((v) => (
                         <tr key={v.id}>
-                          <td title={v.url}>{v.url.length > 30 ? `${v.url.slice(0, 30)}...` : v.url}</td>
+                          <td title={v.url}>{mostrarTag({ titulo_pagina: v.titulo_pagina, url: v.url })}</td>
                           <td>{v.navegador || "—"}</td>
                           <td>{v.dispositivo || "—"}</td>
                           <td>{new Date(v.created_at).toLocaleDateString()}</td>

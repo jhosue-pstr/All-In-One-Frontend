@@ -18,14 +18,30 @@
 }
 
 .analitica-kicker {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 7px 14px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #ede9fe;
+  color: #5b21b6;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
   margin-bottom: 12px;
+}
+
+.analitica-module-stats {
+  margin-bottom: 24px;
+}
+
+.analitica-module-stats h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #0f172a;
 }
 
 .analitica-header h1 {

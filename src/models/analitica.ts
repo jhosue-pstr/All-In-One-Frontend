@@ -54,6 +54,7 @@ export interface ResumenAnalitica {
 
 export interface TopPagina {
   url: string;
+  titulo_pagina: string | null;
   visitas: number;
   porcentaje: number;
 }
@@ -61,6 +62,42 @@ export interface TopPagina {
 export interface VisitaPorDia {
   fecha: string;
   visitas: number;
+}
+
+export interface PostResumen {
+  id: number;
+  titulo: string;
+  slug: string;
+  estado: string;
+  created_at: string;
+  categoria: string | null;
+}
+
+export interface CategoriaPostCount {
+  nombre: string;
+  total: number;
+}
+
+export interface BlogStats {
+  total_posts: number;
+  publicados: number;
+  borradores: number;
+  posts_por_categoria: CategoriaPostCount[];
+  ultimos_posts: PostResumen[];
+}
+
+export interface ProductoVendido {
+  nombre: string;
+  cantidad: number;
+  total: number;
+}
+
+export interface TiendaStats {
+  total_productos: number;
+  total_pedidos: number;
+  ingresos_totales: number;
+  pedidos_por_estado: Record<string, number>;
+  productos_mas_vendidos: ProductoVendido[];
 }
 
 export interface DashboardResponse {
@@ -71,4 +108,6 @@ export interface DashboardResponse {
   dispositivos: Record<string, number>;
   ultimas_visitas: Visita[];
   eventos_recientes: EventoAnalitica[];
+  blog: BlogStats | null;
+  tienda: TiendaStats | null;
 }
