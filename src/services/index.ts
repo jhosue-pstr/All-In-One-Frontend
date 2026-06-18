@@ -5,5 +5,6 @@ export { plantillaService } from './plantilla';
 export { blogService } from './blog';
 export { storeService } from './store';
 export { siteAuthService } from './siteAuth';
+export { analiticaService } from './analitica';
 export { fetchApi, API_URL } from './api';
 export { USER_IMAGE_KEY } from '../models';

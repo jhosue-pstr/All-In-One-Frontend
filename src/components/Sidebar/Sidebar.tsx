@@ -10,10 +10,11 @@ import {
   HiOutlineLogout,
   HiOutlineBookOpen,
   HiOutlineShieldCheck,
+  HiOutlineChartBar,
 } from 'react-icons/hi';
-
 import { USER_IMAGE_KEY } from '../../models';
 import type { User } from '../../models';
+import { useSite } from '../../context/SiteContext';
 import { sitioService } from '../../services/sitio';
 import { moduloService } from '../../services/modulo';
 import { rolesService } from '../../services/roles';
@@ -80,14 +81,20 @@ const baseMenuItems = [
     permiso: 'tienda.ver',
     modulo: 'tienda',
   },
+  {
+    path: '/analitica',
+    label: 'Analítica',
+    icon: HiOutlineChartBar,
+    permiso: 'analitica.ver',
+    modulo: 'analitica',
+  },
 ];
 
 export function Sidebar({ user }: Readonly<SidebarProps>) {
   const location = useLocation();
   const userImage = localStorage.getItem(USER_IMAGE_KEY);
+  const { siteId, setSite, sitios } = useSite();
 
-  const [sitioId, setSitioId] = useState<number | null>(null);
-  const [sitios, setSitios] = useState<{ id: number; nombre: string }[]>([]);
   const [permisos, setPermisos] = useState<string[]>([]);
   const [modulosHabilitados, setModulosHabilitados] = useState<Set<string>>(new Set());
   const [cargandoPermisos, setCargandoPermisos] = useState(true);
@@ -108,31 +115,13 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
   }, []);
 
   useEffect(() => {
-    sitioService
-      .getAll()
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
-
-        setSitios(list);
-
-        if (list.length > 0) {
-          setSitioId((actual) => actual ?? list[0].id);
-        }
-      })
-      .catch((error) => {
-        console.error('Error cargando sitios en Sidebar:', error);
-        setSitios([]);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (!sitioId) {
+    if (!siteId) {
       setModulosHabilitados(new Set());
       return;
     }
 
     Promise.all([
-      sitioService.getModulos(sitioId).catch<number[]>((error) => {
+      sitioService.getModulos(siteId).catch<number[]>((error) => {
         console.error('Error cargando módulos del sitio:', error);
         return [];
       }),
@@ -153,7 +142,7 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
 
       setModulosHabilitados(slugs);
     });
-  }, [sitioId]);
+  }, [siteId]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -170,14 +159,11 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
       return false;
     }
 
-    // Menús normales: Inicio, Sitios, Plantillas, Módulos, Configuraciones, Roles
     if (!item.modulo) {
       return true;
     }
 
-    // Menús dependientes del sitio: Blog, Tienda
-    // Se muestran solo si el módulo está activado en el sitio seleccionado.
-    if (!sitioId) {
+    if (!siteId) {
       return false;
     }
 
@@ -206,16 +192,15 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
 
       <hr className="sidebar-divider" />
 
-      <div className="sidebar-site-selector" style={{ padding: '0 16px 12px' }}>
+      <div className="sidebar-site-selector">
         <select
-          value={sitioId ?? ''}
-          onChange={(e) => setSitioId(Number(e.target.value) || null)}
-          style={{
-            width: '100%',
-            padding: '8px',
-            borderRadius: '6px',
-            border: '1px solid #ddd',
-            fontSize: '13px',
+          value={siteId ?? ''}
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            if (id) {
+              const s = sitios.find((s) => s.id === id);
+              setSite(id, s?.nombre || '');
+            }
           }}
         >
           <option value="">Seleccionar sitio</option>

@@ -5,6 +5,7 @@ import {
   Route,
   Navigate,
   Outlet,
+  useLocation,
 } from "react-router-dom";
 
 import { Login } from "./components/Login/Login";
@@ -12,6 +13,7 @@ import { Register } from "./components/Register/Register";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { PermisosProvider } from "./context/PermisosContext";
+import { SiteProvider } from "./context/SiteContext";
 
 import { Inicio } from "./pages/Inicio/Inicio";
 import { Sitios } from "./pages/Sitios/Sitios";
@@ -26,6 +28,7 @@ import RolesPage from "./pages/Roles/RolesPage";
 import { authService } from "./services";
 import type { User } from "./models";
 import "./App.css";
+import Analitica from "./pages/Analitica/Analitica";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -126,6 +129,15 @@ function App() {
           />
 
           <Route
+            path="/analitica"
+            element={
+              <ProtectedRoute permiso="analitica.ver">
+                <Analitica />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/roles"
             element={
               <ProtectedRoute permiso="roles.ver">
@@ -162,6 +174,8 @@ function App() {
 function AuthenticatedLayout() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const isEditor = location.pathname.startsWith("/sitio/") || location.pathname.startsWith("/plantillas/");
 
   useEffect(() => {
     authService
@@ -178,14 +192,26 @@ function AuthenticatedLayout() {
     return <div className="loading">Cargando...</div>;
   }
 
+  if (isEditor) {
+    return (
+      <PermisosProvider>
+        <SiteProvider>
+          <Outlet />
+        </SiteProvider>
+      </PermisosProvider>
+    );
+  }
+
   return (
     <PermisosProvider>
-      <div className="app-layout">
-        <Sidebar user={user} />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+      <SiteProvider>
+        <div className="app-layout">
+          <Sidebar user={user} />
+          <main className="main-content">
+            <Outlet />
+          </main>
+        </div>
+      </SiteProvider>
     </PermisosProvider>
   );
 }

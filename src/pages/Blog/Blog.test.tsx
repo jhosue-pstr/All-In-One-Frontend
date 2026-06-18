@@ -2,14 +2,8 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Blog from "./Blog";
-import { sitioService } from "../../services/sitio";
 import { blogService } from "../../services/blog";
 import "@testing-library/jest-dom/vitest";
-vi.mock("../../services/sitio", () => ({
-  sitioService: {
-    getAll: vi.fn(),
-  },
-}));
 
 vi.mock("../../services/blog", () => ({
   blogService: {
@@ -20,6 +14,12 @@ vi.mock("../../services/blog", () => ({
     uploadImage: vi.fn(),
   },
 }));
+
+vi.mock("../../context/SiteContext", () => ({
+  useSite: vi.fn(),
+}));
+
+import { useSite } from "../../context/SiteContext";
 
 const mockSitios = [
   {
@@ -85,7 +85,13 @@ describe("Blog page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(sitioService.getAll).mockResolvedValue(mockSitios as any);
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 1,
+      siteNombre: "Sitio Demo",
+      sitios: mockSitios as any,
+      setSite: vi.fn(),
+    });
+
     vi.mocked(blogService.getPosts).mockResolvedValue(mockPosts);
     vi.mocked(blogService.createPost).mockResolvedValue(mockPosts[0]);
     vi.mocked(blogService.updatePost).mockResolvedValue(mockPosts[0]);
@@ -97,13 +103,12 @@ describe("Blog page", () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
   });
 
-  it("loads sitios and posts", async () => {
+  it("loads posts for selected site", async () => {
     render(<Blog />);
 
     expect(screen.getByText("Administración visual del Blog")).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(sitioService.getAll).toHaveBeenCalled();
       expect(blogService.getPosts).toHaveBeenCalledWith(1);
     });
 
@@ -131,7 +136,7 @@ describe("Blog page", () => {
     await screen.findByText("Post Publicado");
 
     const selects = screen.getAllByRole("combobox");
-    const statusSelect = selects[1];
+    const statusSelect = selects[0];
 
     fireEvent.change(statusSelect, {
       target: { value: "draft" },
@@ -172,40 +177,40 @@ describe("Blog page", () => {
   });
 
   it("validates scheduled post without date", async () => {
-  render(<Blog />);
+    render(<Blog />);
 
-  await screen.findByText("Post Publicado");
+    await screen.findByText("Post Publicado");
 
-  await userEvent.click(screen.getByRole("button", { name: "+ Nuevo post" }));
+    await userEvent.click(screen.getByRole("button", { name: "+ Nuevo post" }));
 
-  await userEvent.type(
-    screen.getByPlaceholderText("Ej: Mi primer artículo"),
-    "Post programado"
-  );
+    await userEvent.type(
+      screen.getByPlaceholderText("Ej: Mi primer artículo"),
+      "Post programado"
+    );
 
-  await userEvent.type(
-    screen.getByPlaceholderText("<p>Escribe el contenido del artículo...</p>"),
-    "Contenido"
-  );
+    await userEvent.type(
+      screen.getByPlaceholderText("<p>Escribe el contenido del artículo...</p>"),
+      "Contenido"
+    );
 
     const statusSelect = document.querySelector(
-    ".blog-form select[name='status']"
+      ".blog-form select[name='status']"
     ) as HTMLSelectElement;
 
     expect(statusSelect).not.toBeNull();
 
     fireEvent.change(statusSelect, {
-    target: { name: "status", value: "scheduled" },
+      target: { name: "status", value: "scheduled" },
     });
 
-  await userEvent.click(screen.getByRole("button", { name: "Crear post" }));
+    await userEvent.click(screen.getByRole("button", { name: "Crear post" }));
 
-  expect(
-    screen.getByText("Para programar un post debes indicar fecha y hora de publicación")
-  ).toBeInTheDocument();
+    expect(
+      screen.getByText("Para programar un post debes indicar fecha y hora de publicación")
+    ).toBeInTheDocument();
 
-  expect(blogService.createPost).not.toHaveBeenCalled();
-});
+    expect(blogService.createPost).not.toHaveBeenCalled();
+  });
 
   it("creates a post successfully", async () => {
     render(<Blog />);
@@ -379,14 +384,6 @@ describe("Blog page", () => {
     expect(blogService.deletePost).not.toHaveBeenCalled();
   });
 
-  it("handles loading sitios error", async () => {
-    vi.mocked(sitioService.getAll).mockRejectedValueOnce(new Error("Error sitios"));
-
-    render(<Blog />);
-
-    expect(await screen.findByText("Error sitios")).toBeInTheDocument();
-  });
-
   it("handles loading posts error", async () => {
     vi.mocked(blogService.getPosts).mockRejectedValueOnce(new Error("Error posts"));
 
@@ -441,7 +438,12 @@ describe("Blog page", () => {
   });
 
   it("shows empty state when there are no sitios", async () => {
-    vi.mocked(sitioService.getAll).mockResolvedValueOnce([]);
+    vi.mocked(useSite).mockReturnValue({
+      siteId: null,
+      siteNombre: null,
+      sitios: [],
+      setSite: vi.fn(),
+    });
 
     render(<Blog />);
 
@@ -462,368 +464,278 @@ describe("Blog page", () => {
     ).toBeInTheDocument();
   });
 
-it("does nothing when image input has no file", async () => {
-  render(<Blog />);
-
-  await screen.findByText("Post Publicado");
-
-  await userEvent.click(screen.getByRole("button", { name: "+ Nuevo post" }));
-
-  const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-
-  fireEvent.change(fileInput, {
-    target: {
-      files: [],
-    },
-  });
-
-  expect(blogService.uploadImage).not.toHaveBeenCalled();
-});
-
-  it("changes selected site and reloads posts", async () => {
+  it("does nothing when image input has no file", async () => {
     render(<Blog />);
 
     await screen.findByText("Post Publicado");
 
-    const siteSelect = screen.getAllByRole("combobox")[0];
+    await userEvent.click(screen.getByRole("button", { name: "+ Nuevo post" }));
 
-    fireEvent.change(siteSelect, {
-      target: { value: "2" },
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+
+    fireEvent.change(fileInput, {
+      target: {
+        files: [],
+      },
     });
 
-    await waitFor(() => {
-      expect(blogService.getPosts).toHaveBeenCalledWith(2);
-    });
+    expect(blogService.uploadImage).not.toHaveBeenCalled();
   });
 
-it("search matches using excerpt text", async () => {
-  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
-    {
-      ...mockPosts[0],
-      title: "Titulo diferente",
-      excerpt: "texto oculto especial",
-      meta_description: "",
-      content: "<p>contenido cualquiera</p>",
-    },
-  ])
-
-  render(<Blog />)
-
-  await screen.findByText("Titulo diferente")
-
-  const input = screen.getByPlaceholderText("Buscar por título o resumen...")
-
-  await userEvent.type(input, "oculto")
-
-  expect(screen.getByText("Titulo diferente")).toBeInTheDocument()
-  expect(screen.getByText("1 resultado(s)")).toBeInTheDocument()
-})
-it("handles delete non Error throw", async () => {
-  vi.spyOn(window, "confirm").mockReturnValue(true)
-
-  vi.mocked(blogService.deletePost).mockRejectedValueOnce("boom")
-
-  render(<Blog />)
-
-  await screen.findByText("Post Publicado")
-
-  const deleteButtons = screen.getAllByRole("button", {
-    name: "Eliminar",
-  })
-
-  await userEvent.click(deleteButtons[0])
-
-  expect(
-    await screen.findByText("Error al eliminar el post")
-  ).toBeInTheDocument()
-})
-it('quick publish adds current date and handles missing selectedSite', async () => {
-  vi.mocked(blogService.updatePost)
-    .mockResolvedValue({} as any)
-
-  render(<Blog />)
-
-  await screen.findByText('Post Publicado')
-
-  await userEvent.click(
-    screen.getByRole('button',{
-      name:/publicar/i
-    })
-  )
-
-  expect(
-    blogService.updatePost
-  ).toHaveBeenCalled()
-})
-
-it("opens edit form with fallback empty values", async () => {
-  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
-    {
-      ...mockPosts[0],
-      excerpt: null,
-      featured_image: null,
-      meta_title: null,
-      meta_description: null,
-      published_at: null,
-      category_id: null,
-    },
-  ])
-
-  render(<Blog />)
-
-  await screen.findByText("Post Publicado")
-
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: "Editar",
-    })
-  )
-
-  expect(screen.getByText("Editar post")).toBeInTheDocument()
-
-  expect(
-    screen.getByPlaceholderText("Breve descripción del artículo...")
-  ).toHaveValue("")
-
-  expect(
-    screen.getByPlaceholderText("Título para buscadores")
-  ).toHaveValue("")
-
-  expect(
-    screen.getByPlaceholderText("Descripción para buscadores")
-  ).toHaveValue("")
-})
-
-
-it('handles loadSitios and loadPosts non Error throws', async () => {
-  vi.mocked(sitioService.getAll)
-    .mockRejectedValueOnce("boom")
-
-  render(<Blog />)
-
-  expect(
-    await screen.findByText("Error al cargar los sitios")
-  ).toBeInTheDocument()
-
-  vi.clearAllMocks()
-
-  vi.mocked(
-    sitioService.getAll
-  ).mockResolvedValue(
-    mockSitios as any
-  )
-
-  vi.mocked(blogService.getPosts)
-    .mockRejectedValueOnce("boom")
-
-  render(<Blog />)
-
-  expect(
-    await screen.findByText("Error al cargar los posts")
-  ).toBeInTheDocument()
-})
-it('openEditForm uses empty fallbacks for nullable fields', async () => {
-  vi.mocked(blogService.getPosts)
-    .mockResolvedValueOnce([
+  it("search matches using excerpt text", async () => {
+    vi.mocked(blogService.getPosts).mockResolvedValueOnce([
       {
         ...mockPosts[0],
-        excerpt:null,
-        featured_image:null,
-        published_at:null,
-        category_id:null,
-        meta_title:null,
-        meta_description:null,
-      } as any
+        title: "Titulo diferente",
+        excerpt: "texto oculto especial",
+        meta_description: "",
+        content: "<p>contenido cualquiera</p>",
+      },
     ])
 
-  render(<Blog />)
+    render(<Blog />)
 
-  await screen.findByText("Post Publicado")
+    await screen.findByText("Titulo diferente")
 
-  await userEvent.click(
-    screen.getByRole(
-      'button',
-      {name:/editar/i}
-    )
-  )
+    const input = screen.getByPlaceholderText("Buscar por título o resumen...")
 
-  expect(
-    screen.getByPlaceholderText(
-      /breve descripción/i
-    )
-  ).toHaveValue('')
+    await userEvent.type(input, "oculto")
 
-  expect(
-    screen.getByPlaceholderText(
-      /título para buscadores/i
-    )
-  ).toHaveValue('')
+    expect(screen.getByText("Titulo diferente")).toBeInTheDocument()
+    expect(screen.getByText("1 resultado(s)")).toBeInTheDocument()
+  })
 
- expect(
-  screen.getByPlaceholderText(
-    /descripción para buscadores/i
-  )
-).toHaveValue('')
-})
+  it("handles delete non Error throw", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true)
 
-it('uses fallback messages for upload and save non Error throws', async () => {
-  vi.mocked(blogService.uploadImage)
-    .mockRejectedValueOnce("boom")
+    vi.mocked(blogService.deletePost).mockRejectedValueOnce("boom")
 
-  vi.mocked(blogService.createPost)
-    .mockRejectedValueOnce("boom")
+    render(<Blog />)
 
-  render(<Blog />)
+    await screen.findByText("Post Publicado")
 
-  await screen.findByText("Post Publicado")
-
-  await userEvent.click(
-    screen.getByRole('button',{
-      name:/nuevo post/i
+    const deleteButtons = screen.getAllByRole("button", {
+      name: "Eliminar",
     })
-  )
 
-  const file = new File(["x"],"a.png",{type:"image/png"})
+    await userEvent.click(deleteButtons[0])
 
-  const fileInput =
-    document.querySelector(
-      'input[type="file"]'
-    ) as HTMLInputElement
+    expect(
+      await screen.findByText("Error al eliminar el post")
+    ).toBeInTheDocument()
+  })
 
-  await userEvent.upload(
-    fileInput,
-    file
-  )
+  it("quick publish adds current date and handles missing selectedSite", async () => {
+    vi.mocked(blogService.updatePost).mockResolvedValue({} as any)
 
-  expect(
-    await screen.findByText(
-      "Error al subir la imagen"
+    render(<Blog />)
+
+    await screen.findByText("Post Publicado")
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /publicar/i })
     )
-  ).toBeInTheDocument()
-})
-it('covers delete cancel, quick status fallback and public url fallback', async () => {
-  vi.spyOn(window,'confirm')
-    .mockReturnValue(false)
 
-  render(<Blog />)
+    expect(blogService.updatePost).toHaveBeenCalled()
+  })
 
-  await screen.findByText("Post Publicado")
+  it("opens edit form with fallback empty values", async () => {
+    vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+      {
+        ...mockPosts[0],
+        excerpt: null,
+        featured_image: null,
+        meta_title: null,
+        meta_description: null,
+        published_at: null,
+        category_id: null,
+      },
+    ])
 
-  await userEvent.click(
-    screen.getAllByRole(
-      'button',
-      {name:/eliminar/i}
-    )[0]
-  )
+    render(<Blog />)
 
-  expect(
-    window.confirm
-  ).toHaveBeenCalled()
+    await screen.findByText("Post Publicado")
 
-  vi.mocked(blogService.updatePost)
-    .mockRejectedValueOnce("boom")
-
-  await userEvent.click(
-    screen.getByRole(
-      'button',
-      {name:/publicar/i}
+    await userEvent.click(
+      screen.getByRole("button", { name: "Editar" })
     )
-  )
 
-  expect(
-    await screen.findByText(
-      "Error al cambiar el estado"
+    expect(screen.getByText("Editar post")).toBeInTheDocument()
+
+    expect(
+      screen.getByPlaceholderText("Breve descripción del artículo...")
+    ).toHaveValue("")
+
+    expect(
+      screen.getByPlaceholderText("Título para buscadores")
+    ).toHaveValue("")
+
+    expect(
+      screen.getByPlaceholderText("Descripción para buscadores")
+    ).toHaveValue("")
+  })
+
+  it("handles loadSitios and loadPosts non Error throws", async () => {
+    vi.mocked(blogService.getPosts).mockRejectedValueOnce("boom")
+
+    render(<Blog />)
+
+    expect(
+      await screen.findByText("Error al cargar los posts")
+    ).toBeInTheDocument()
+  })
+
+  it("openEditForm uses empty fallbacks for nullable fields", async () => {
+    vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+      {
+        ...mockPosts[0],
+        excerpt: null,
+        featured_image: null,
+        published_at: null,
+        category_id: null,
+        meta_title: null,
+        meta_description: null,
+      } as any,
+    ])
+
+    render(<Blog />)
+
+    await screen.findByText("Post Publicado")
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /editar/i })
     )
-  ).toBeInTheDocument()
-})
 
+    expect(
+      screen.getByPlaceholderText(/breve descripción/i)
+    ).toHaveValue("")
 
+    expect(
+      screen.getByPlaceholderText(/título para buscadores/i)
+    ).toHaveValue("")
 
-});
+    expect(
+      screen.getByPlaceholderText(/descripción para buscadores/i)
+    ).toHaveValue("")
+  })
 
+  it("uses fallback messages for upload and save non Error throws", async () => {
+    vi.mocked(blogService.uploadImage).mockRejectedValueOnce("boom")
+    vi.mocked(blogService.createPost).mockRejectedValueOnce("boom")
 
+    render(<Blog />)
 
+    await screen.findByText("Post Publicado")
 
+    await userEvent.click(
+      screen.getByRole("button", { name: /nuevo post/i })
+    )
 
+    const file = new File(["x"], "a.png", { type: "image/png" })
 
+    const fileInput =
+      document.querySelector('input[type="file"]') as HTMLInputElement
 
-it("openEditForm uses fallback title content and status", async () => {
-  vi.mocked(blogService.getPosts).mockResolvedValueOnce([
-    {
-      ...mockPosts[0],
-      title: "",
-      content: "",
-      status: undefined,
-    } as any,
-  ])
+    await userEvent.upload(fileInput, file)
 
-  render(<Blog />)
+    expect(
+      await screen.findByText("Error al subir la imagen")
+    ).toBeInTheDocument()
+  })
 
-  await screen.findByText("Editar")
+  it("covers delete cancel, quick status fallback and public url fallback", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(false)
 
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: /editar/i,
-    })
-  )
+    render(<Blog />)
 
-  expect(
-    screen.getByPlaceholderText("Ej: Mi primer artículo")
-  ).toHaveValue("")
-})
+    await screen.findByText("Post Publicado")
 
-it("save uses fallback message for non Error throw", async () => {
-  vi.mocked(blogService.createPost)
-    .mockRejectedValueOnce("boom")
+    await userEvent.click(
+      screen.getAllByRole("button", { name: /eliminar/i })[0]
+    )
 
-  render(<Blog />)
+    expect(window.confirm).toHaveBeenCalled()
 
-  await screen.findByText("Post Publicado")
+    vi.mocked(blogService.updatePost).mockRejectedValueOnce("boom")
 
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: /\+ nuevo post/i,
-    })
-  )
+    await userEvent.click(
+      screen.getByRole("button", { name: /publicar/i })
+    )
 
-  await userEvent.type(
-    screen.getByPlaceholderText("Ej: Mi primer artículo"),
-    "Titulo"
-  )
+    expect(
+      await screen.findByText("Error al cambiar el estado")
+    ).toBeInTheDocument()
+  })
 
-  await userEvent.type(
-    screen.getByPlaceholderText("<p>Escribe el contenido del artículo...</p>"),
-    "Contenido"
-  )
+  it("openEditForm uses fallback title content and status", async () => {
+    vi.mocked(blogService.getPosts).mockResolvedValueOnce([
+      {
+        ...mockPosts[0],
+        title: "",
+        content: "",
+        status: undefined,
+      } as any,
+    ])
 
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: /crear post/i,
-    })
-  )
+    render(<Blog />)
 
-  expect(
-    await screen.findByText("Error al guardar el post")
-  ).toBeInTheDocument()
-})
+    await screen.findByText("Editar")
 
-it("quick draft keeps existing published_at", async () => {
-  render(<Blog />)
+    await userEvent.click(
+      screen.getByRole("button", { name: /editar/i })
+    )
 
-  await screen.findByText("Post Publicado")
+    expect(
+      screen.getByPlaceholderText("Ej: Mi primer artículo")
+    ).toHaveValue("")
+  })
 
-  await userEvent.click(
-    screen.getByRole("button", {
-      name: "Borrador",
-    })
-  )
+  it("save uses fallback message for non Error throw", async () => {
+    vi.mocked(blogService.createPost).mockRejectedValueOnce("boom")
 
-  expect(blogService.updatePost).toHaveBeenCalledWith(
-    1,
-    10,
-    expect.objectContaining({
-      status: "draft",
-      published_at: "2026-01-01T10:00:00Z",
-    })
-  )
+    render(<Blog />)
+
+    await screen.findByText("Post Publicado")
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /\+ nuevo post/i })
+    )
+
+    await userEvent.type(
+      screen.getByPlaceholderText("Ej: Mi primer artículo"),
+      "Titulo"
+    )
+
+    await userEvent.type(
+      screen.getByPlaceholderText("<p>Escribe el contenido del artículo...</p>"),
+      "Contenido"
+    )
+
+    await userEvent.click(
+      screen.getByRole("button", { name: /crear post/i })
+    )
+
+    expect(
+      await screen.findByText("Error al guardar el post")
+    ).toBeInTheDocument()
+  })
+
+  it("quick draft keeps existing published_at", async () => {
+    render(<Blog />)
+
+    await screen.findByText("Post Publicado")
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Borrador" })
+    )
+
+    expect(blogService.updatePost).toHaveBeenCalledWith(
+      1,
+      10,
+      expect.objectContaining({
+        status: "draft",
+        published_at: "2026-01-01T10:00:00Z",
+      })
+    )
+  })
 })

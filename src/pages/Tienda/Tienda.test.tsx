@@ -3,15 +3,14 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Tienda from "./Tienda";
-import { sitioService } from "../../services/sitio";
 import { storeService } from "../../services/store";
 import "@testing-library/jest-dom/vitest";
 
-vi.mock("../../services/sitio", () => ({
-  sitioService: {
-    getAll: vi.fn(),
-  },
+vi.mock("../../context/SiteContext", () => ({
+  useSite: vi.fn(),
 }));
+
+import { useSite } from "../../context/SiteContext";
 
 vi.mock("../../services/store", () => ({
   storeService: {
@@ -182,7 +181,12 @@ describe("Tienda page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(sitioService.getAll).mockResolvedValue(mockSitios as any);
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 1,
+      siteNombre: "Sitio Tienda",
+      sitios: mockSitios as any,
+      setSite: vi.fn(),
+    });
 
     vi.mocked(storeService.getProducts).mockResolvedValue({
       data: mockProductos,
@@ -225,7 +229,6 @@ describe("Tienda page", () => {
     expect(screen.getByText("Administración de Tienda")).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(sitioService.getAll).toHaveBeenCalled();
       expect(storeService.getProducts).toHaveBeenCalledWith(1, { solo_activos: false });
       expect(storeService.getCategorias).toHaveBeenCalledWith(1, false);
       expect(storeService.getPedidos).toHaveBeenCalledWith(1);
@@ -490,12 +493,19 @@ describe("Tienda page", () => {
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 
-  it("shows loading sitios error", async () => {
-    vi.mocked(sitioService.getAll).mockRejectedValueOnce(new Error("Error sitios"));
+  it("shows empty state when no site selected", async () => {
+    vi.mocked(useSite).mockReturnValue({
+      siteId: null,
+      siteNombre: null,
+      sitios: [],
+      setSite: vi.fn(),
+    });
 
     render(<Tienda />);
 
-    expect(await screen.findByText("Error sitios")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Selecciona un sitio para administrar su tienda.")
+    ).toBeInTheDocument();
   });
 
   it("shows loading products error", async () => {
@@ -506,26 +516,19 @@ describe("Tienda page", () => {
     expect(await screen.findByText("Error productos")).toBeInTheDocument();
   });
 
-  it("shows empty state when no sitios", async () => {
-    vi.mocked(sitioService.getAll).mockResolvedValueOnce([]);
-
-    render(<Tienda />);
-
-    expect(
-      await screen.findByText("Selecciona un sitio para administrar su tienda.")
-    ).toBeInTheDocument();
-  });
-
-  it("changes selected site and reloads data", async () => {
-    render(<Tienda />);
+  it("reloads data when siteId changes via context", async () => {
+    const { rerender } = render(<Tienda />);
 
     await screen.findByText("Laptop Gamer");
 
-    const siteSelect = screen.getAllByRole("combobox")[0];
-
-    fireEvent.change(siteSelect, {
-      target: { value: "2" },
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 2,
+      siteNombre: "Segundo Sitio",
+      sitios: mockSitios as any,
+      setSite: vi.fn(),
     });
+
+    rerender(<Tienda />);
 
     await waitFor(() => {
       expect(storeService.getProducts).toHaveBeenCalledWith(2, { solo_activos: false });
@@ -687,7 +690,7 @@ describe("Tienda page", () => {
     expect(screen.getByText("PED-001")).toBeInTheDocument();
     expect(screen.getByText("PED-002")).toBeInTheDocument();
 
-    const pedidoFilter = screen.getAllByRole("combobox")[1];
+    const pedidoFilter = screen.getAllByRole("combobox")[0];
 
     fireEvent.change(pedidoFilter, {
       target: { value: "enviado" },
@@ -777,7 +780,7 @@ describe("Tienda page", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Pedidos" }));
 
-    const pedidoFilter = screen.getAllByRole("combobox")[1];
+    const pedidoFilter = screen.getAllByRole("combobox")[0];
 
     fireEvent.change(pedidoFilter, {
       target: { value: "cancelado" },

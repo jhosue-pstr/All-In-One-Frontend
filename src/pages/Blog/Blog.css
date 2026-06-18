@@ -18,7 +18,9 @@
 }
 
 .blog-admin-kicker {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 7px 14px;
   background: #dbeafe;
   color: #1d4ed8;
