@@ -10,6 +10,14 @@ vi.mock("./api", () => ({
   setToken: vi.fn(),
 }));
 
+vi.mock('./perfil', () => ({
+  fetchProfile: vi.fn().mockResolvedValue({
+    id: 0, nombre: '', apellido: '', correo: '',
+    telefono: null, direccion_envio: null, ciudad: null,
+    pais: null, codigo_postal: null,
+  }),
+}))
+
 const product = {
   id: 1,
   nombre: "Laptop Gamer",
