@@ -15,30 +15,9 @@ type BlogPost = {
   updated_at: string;
 };
 
+import { getSiteId, getLimit } from './shared';
+
 const API_BASE = "/api";
-
-function getSiteId(element: Element): number | null {
-  const value = (element as HTMLElement).dataset.sitioId;
-
-  if (!value || value === "{{SITIO_ID}}") {
-    const bodySiteId = document.body.dataset.sitioId;
-    if (!bodySiteId) return null;
-
-    const parsedBodyId = Number(bodySiteId);
-    return Number.isNaN(parsedBodyId) ? null : parsedBodyId;
-  }
-
-  const parsed = Number(value);
-  return Number.isNaN(parsed) ? null : parsed;
-}
-
-function getLimit(element: Element, fallback: number): number {
-  const value = (element as HTMLElement).dataset.limit;
-  if (!value) return fallback;
-
-  const parsed = Number(value);
-  return Number.isNaN(parsed) ? fallback : parsed;
-}
 
 function formatDate(value: string | null): string {
   if (!value) return "Publicado recientemente";

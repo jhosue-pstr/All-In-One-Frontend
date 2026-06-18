@@ -1,4 +1,5 @@
 import { isAuthenticated } from './api';
+import { getSiteId, getLimit } from './shared';
 
 type Product = {
   id: number;
@@ -42,34 +43,6 @@ type CarritoData = {
 
 const API_BASE = "/api";
 let cartItemTemplate: string | null = null;
-
-function getSiteId(element: Element): number | null {
-  const value = (element as HTMLElement).dataset.sitioId;
-
-  if (!value || value === "{{SITIO_ID}}") {
-    const bodySiteId = document.body.dataset.sitioId;
-    if (!bodySiteId) return null;
-
-    const parsedBodyId = Number(bodySiteId);
-
-    /* v8 ignore next */
-    return Number.isNaN(parsedBodyId) ? null : parsedBodyId;
-  }
-
-  const parsed = Number(value);
-  /* v8 ignore next */
-  return Number.isNaN(parsed) ? null : parsed;
-}
-
-function getLimit(element: Element, fallback: number): number {
-  const value = (element as HTMLElement).dataset.limit;
-  /* v8 ignore next */
-  if (!value) return fallback;
-
-  const parsed = Number(value);
-  /* v8 ignore next */
-  return Number.isNaN(parsed) ? fallback : parsed;
-}
 
 function getUsuarioId(): number | null {
   try {

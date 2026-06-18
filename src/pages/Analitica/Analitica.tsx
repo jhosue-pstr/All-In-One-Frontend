@@ -37,7 +37,7 @@ function mostrarRuta(pag: { readonly titulo_pagina?: string | null; readonly url
   const decoded = decodeURIComponent(path);
   const hashIndex = decoded.indexOf("#");
   if (hashIndex !== -1 && hashIndex < decoded.length - 1) return decoded.slice(hashIndex + 1);
-  const segments = decoded.replace(/\/+$/, "").split("/");
+  const segments = decoded.split("/").filter(Boolean);
   const last = segments.at(-1);
   return last && last !== "index.html" && last !== "index.php" ? last : "Principal";
 }
