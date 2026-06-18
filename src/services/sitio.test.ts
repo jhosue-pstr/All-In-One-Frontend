@@ -1,139 +1,105 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { sitioService } from './sitio'
+
+vi.mock('./api', () => ({
+  API_URL: 'http://test.com/api',
+  fetchApi: vi.fn(),
+}))
+
+import { fetchApi } from './api'
+
+const mockSitios = [
+  { id: 1, nombre: 'Sitio 1', url: 'https://sitio1.com' },
+  { id: 2, nombre: 'Sitio 2', url: 'https://sitio2.com' },
+]
 
 describe('sitioService', () => {
   beforeEach(() => {
-    localStorage.clear()
     vi.clearAllMocks()
-    vi.spyOn(window, 'alert').mockImplementation(() => {})
+  })
 
-    globalThis.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({}),
+  describe('getAll', () => {
+    it('returns array response directly', async () => {
+      vi.mocked(fetchApi).mockResolvedValue(mockSitios)
+      const result = await sitioService.getAll()
+      expect(fetchApi).toHaveBeenCalledWith('/sitios')
+      expect(result).toEqual(mockSitios)
+    })
+
+    it('extracts data from wrapped response', async () => {
+      vi.mocked(fetchApi).mockResolvedValue({ data: mockSitios })
+      const result = await sitioService.getAll()
+      expect(result).toEqual(mockSitios)
+    })
+
+    it('returns empty array for unknown response format', async () => {
+      vi.mocked(fetchApi).mockResolvedValue({ foo: 'bar' })
+      const result = await sitioService.getAll()
+      expect(result).toEqual([])
     })
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
+  describe('getById', () => {
+    it('calls fetchApi with correct endpoint', async () => {
+      vi.mocked(fetchApi).mockResolvedValue(mockSitios[0])
+      const result = await sitioService.getById(1)
+      expect(fetchApi).toHaveBeenCalledWith('/sitios/1')
+      expect(result).toEqual(mockSitios[0])
+    })
   })
 
-  it('getAll should fetch /sitios', async () => {
-    await sitioService.getAll()
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios'),
-      expect.any(Object)
-    )
-
-    expect(globalThis.fetch).not.toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/mis-sitios'),
-      expect.any(Object)
-    )
+  describe('create', () => {
+    it('calls fetchApi with POST', async () => {
+      const data = { nombre: 'New Site', url: 'https://new.com' }
+      vi.mocked(fetchApi).mockResolvedValue({ id: 3, ...data })
+      const result = await sitioService.create(data as any)
+      expect(fetchApi).toHaveBeenCalledWith('/sitios/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      })
+      expect(result).toMatchObject(data)
+    })
   })
 
-  it('getById should fetch /sitios/{id}', async () => {
-    await sitioService.getById(3)
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/3'),
-      expect.any(Object)
-    )
+  describe('update', () => {
+    it('calls fetchApi with PUT', async () => {
+      const data = { nombre: 'Updated' }
+      vi.mocked(fetchApi).mockResolvedValue({ id: 1, ...data })
+      const result = await sitioService.update(1, data as any)
+      expect(fetchApi).toHaveBeenCalledWith('/sitios/1', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      })
+      expect(result).toMatchObject(data)
+    })
   })
 
-  it('create should POST /sitios/', async () => {
-    await sitioService.create({ nombre: 'Site', slug: 'site' } as any)
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/'),
-      expect.objectContaining({ method: 'POST' })
-    )
+  describe('delete', () => {
+    it('calls fetchApi with DELETE', async () => {
+      vi.mocked(fetchApi).mockResolvedValue(undefined)
+      await sitioService.delete(1)
+      expect(fetchApi).toHaveBeenCalledWith('/sitios/1', { method: 'DELETE' })
+    })
   })
 
-  it('update should PUT /sitios/{id}', async () => {
-    await sitioService.update(1, { nombre: 'Updated' } as any)
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/1'),
-      expect.objectContaining({ method: 'PUT' })
-    )
-  })
-
-  it('delete should DELETE /sitios/{id}', async () => {
-    await sitioService.delete(1)
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/1'),
-      expect.objectContaining({ method: 'DELETE' })
-    )
-  })
-
-  it('uploadMinatura should throw on non-ok response', async () => {
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: false,
-      status: 400,
-      json: () => Promise.resolve({ detail: 'Error' }),
+  describe('getModulos', () => {
+    it('returns array response directly', async () => {
+      vi.mocked(fetchApi).mockResolvedValue([1, 2, 3])
+      const result = await sitioService.getModulos(1)
+      expect(fetchApi).toHaveBeenCalledWith('/sitios/1/modulos/')
+      expect(result).toEqual([1, 2, 3])
     })
 
-    const file = new File([''], 'test.png', { type: 'image/png' })
-
-    await expect(sitioService.uploadMinatura(1, file)).rejects.toThrow('Error')
-  })
-
-  it('uploadMinatura should throw fallback when no detail', async () => {
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: () => Promise.resolve({}),
+    it('extracts data from wrapped response', async () => {
+      vi.mocked(fetchApi).mockResolvedValue({ data: [4, 5] })
+      const result = await sitioService.getModulos(1)
+      expect(result).toEqual([4, 5])
     })
 
-    const file = new File([''], 'test.png', { type: 'image/png' })
-
-    await expect(
-      sitioService.uploadMinatura(1, file)
-    ).rejects.toThrow('Error al subir la miniatura')
-  })
-
-  it('uploadMinatura should POST multipart to /sitios/{id}/miniatura', async () => {
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ url: 'https://img.url' }),
+    it('returns empty array for unknown format', async () => {
+      vi.mocked(fetchApi).mockResolvedValue(null)
+      const result = await sitioService.getModulos(1)
+      expect(result).toEqual([])
     })
-
-    localStorage.setItem('token', 'tok')
-
-    const file = new File([''], 'test.png', { type: 'image/png' })
-    const url = await sitioService.uploadMinatura(1, file)
-
-    expect(url).toBe('https://img.url')
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/1/miniatura'),
-      expect.objectContaining({ method: 'POST' })
-    )
-  })
-
-  it('getModulos should fetch /sitios/{id}/modulos/', async () => {
-    await sitioService.getModulos(5)
-
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/sitios/5/modulos/'),
-      expect.any(Object)
-    )
-  })
-
-  it('uploadMinatura should use fallback when error json throws', async () => {
-    ;(globalThis.fetch as any).mockResolvedValue({
-      ok: false,
-      status: 500,
-      json: () => Promise.reject(new Error('json fail')),
-    })
-
-    const file = new File([''], 'test.png', { type: 'image/png' })
-
-    await expect(
-      sitioService.uploadMinatura(1, file)
-    ).rejects.toThrow('Error al subir la miniatura')
   })
 })

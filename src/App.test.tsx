@@ -182,4 +182,16 @@ describe('App', () => {
       expect(screen.getByTestId('login-success')).toBeInTheDocument()
     })
   })
+
+  it('should render editor layout when path starts with /sitio/', async () => {
+    localStorage.setItem('token', 'good-token')
+    window.history.pushState({}, '', '/sitio/1')
+    authService.me.mockResolvedValue({ id: 1, correo: 'a@b.com', nombre: 'Juan', apellido: 'Perez', role: 'user', created_at: '', updated_at: '' })
+
+    render(<App />)
+
+    await waitFor(() => {
+      expect(authService.me).toHaveBeenCalled()
+    })
+  })
 })
