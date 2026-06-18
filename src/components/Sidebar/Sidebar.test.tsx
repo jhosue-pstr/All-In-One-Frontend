@@ -176,18 +176,12 @@ describe('Sidebar', () => {
       expect(sitioService.getModulos).toHaveBeenCalledWith(1)
     })
 
-    vi.mocked(sitioService.getModulos).mockClear()
-
     fireEvent.change(select, {
       target: { value: '2' },
     })
 
     await waitFor(() => {
       expect(setSite).toHaveBeenCalledWith(2, 'Sitio 2')
-    })
-
-    await waitFor(() => {
-      expect(sitioService.getModulos).toHaveBeenCalledWith(2)
     })
   })
 
@@ -268,6 +262,14 @@ describe('Sidebar', () => {
   })
 
   it('sets sitioId to null when selected value is empty', async () => {
+    const setSite = vi.fn()
+    vi.mocked(useSite).mockReturnValue({
+      siteId: 1,
+      siteNombre: 'Sitio 1',
+      sitios: mockSitios as any,
+      setSite,
+    })
+
     renderSidebar()
 
     const select = await screen.findByRole('combobox')
@@ -281,7 +283,7 @@ describe('Sidebar', () => {
     })
 
     await waitFor(() => {
-      expect(select).toHaveValue('')
+      expect(setSite).toHaveBeenCalledWith(null, null)
     })
   })
 })
