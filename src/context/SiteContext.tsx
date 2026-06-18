@@ -11,7 +11,7 @@ interface SiteContextType {
 
 const SiteContext = createContext<SiteContextType | undefined>(undefined);
 
-export function SiteProvider({ children }: { children: ReactNode }) {
+export function SiteProvider({ children }: { readonly children: ReactNode }) {
   const [siteId, setSiteId] = useState<number | null>(null);
   const [siteNombre, setSiteNombre] = useState<string | null>(null);
   const [sitios, setSitios] = useState<Sitio[]>([]);
