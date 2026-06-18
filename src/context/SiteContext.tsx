@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { sitioService } from "../services/sitio";
 import type { Sitio } from "../models";
 
@@ -32,8 +32,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     setSiteNombre(nombre);
   }, []);
 
+  const value = useMemo(() => ({ siteId, siteNombre, sitios, setSite }), [siteId, siteNombre, sitios, setSite]);
+
   return (
-    <SiteContext.Provider value={{ siteId, siteNombre, sitios, setSite }}>
+    <SiteContext.Provider value={value}>
       {children}
     </SiteContext.Provider>
   );

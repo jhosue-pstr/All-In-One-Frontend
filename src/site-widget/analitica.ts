@@ -13,7 +13,7 @@ function getSessionId(): string {
 function getSiteId(): number | null {
   const el = document.querySelector<HTMLElement>('[data-analitica-site]');
   if (!el) return null;
-  const id = el.getAttribute('data-analitica-site');
+  const id = el.dataset.analiticaSite;
   return id ? Number(id) : null;
 }
 
@@ -23,7 +23,7 @@ async function trackPageView(): Promise<void> {
   if (!siteId) return;
 
   const payload = {
-    url: window.location.pathname + window.location.search,
+    url: globalThis.location.pathname + globalThis.location.search,
     titulo_pagina: document.title,
     referer: document.referrer || undefined,
     session_id: getSessionId(),
@@ -59,7 +59,7 @@ async function trackEvent(
         etiqueta,
         valor,
         metadata_json: metadata,
-        url: window.location.pathname,
+        url: globalThis.location.pathname,
         session_id: getSessionId(),
       }),
     });
@@ -76,9 +76,9 @@ function initAnalitica(): void {
     const trackEl = target.closest<HTMLElement>('[data-analitica-event]');
 
     if (trackEl) {
-      const tipo = trackEl.getAttribute('data-analitica-event') || 'click';
-      const etiqueta = trackEl.getAttribute('data-analitica-label') || undefined;
-      const valor = trackEl.getAttribute('data-analitica-value') || undefined;
+      const tipo = trackEl.dataset.analiticaEvent || 'click';
+      const etiqueta = trackEl.dataset.analiticaLabel || undefined;
+      const valor = trackEl.dataset.analiticaValue || undefined;
       trackEvent(tipo, etiqueta, valor);
     }
   });
@@ -88,7 +88,7 @@ function initAnalitica(): void {
     const trackEl = form.closest<HTMLElement>('[data-analitica-form]');
 
     if (trackEl) {
-      const nombre = trackEl.getAttribute('data-analitica-form') || 'form_submit';
+      const nombre = trackEl.dataset.analiticaForm || 'form_submit';
       trackEvent('form', nombre);
     }
   });

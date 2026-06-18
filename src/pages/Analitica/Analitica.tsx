@@ -5,7 +5,7 @@ import {
 } from "react-icons/fi";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell,
+  PieChart, Pie,
 } from "recharts";
 import { analiticaService } from "../../services/analitica";
 import { useSite } from "../../context/SiteContext";
@@ -32,13 +32,13 @@ function formatNumero(n: number): string {
   return String(n);
 }
 
-function mostrarRuta(pag: { titulo_pagina?: string | null; url: string }): string {
-  const path = pag.url.replace(/^https?:\/\/[^\/]+/, "");
+function mostrarRuta(pag: { readonly titulo_pagina?: string | null; readonly url: string }): string {
+  const path = new URL(pag.url).pathname;
   const decoded = decodeURIComponent(path);
   const hashIndex = decoded.indexOf("#");
   if (hashIndex !== -1 && hashIndex < decoded.length - 1) return decoded.slice(hashIndex + 1);
   const segments = decoded.replace(/\/+$/, "").split("/");
-  const last = segments[segments.length - 1];
+  const last = segments.at(-1);
   return last && last !== "index.html" && last !== "index.php" ? last : "Principal";
 }
 
@@ -107,7 +107,7 @@ export default function Analitica() {
 
       {loading && <div className="analitica-empty-state">Cargando estadísticas...</div>}
 
-      {!loading && selectedSiteId && dashboard && (
+      {!loading && !!selectedSiteId && !!dashboard && (
         <>
           <section className="analitica-kpi-grid">
             <div className="analitica-kpi-card analitica-kpi-blue">
@@ -243,15 +243,11 @@ export default function Analitica() {
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
-                      data={topPaginas.map((p) => ({ name: mostrarRuta(p), value: p.visitas }))}
+                      data={topPaginas.map((p, i) => ({ name: mostrarRuta(p), value: p.visitas, fill: COLORS[i % COLORS.length] }))}
                       cx="50%" cy="50%" innerRadius={55} outerRadius={90}
                       dataKey="value"
                       label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                    >
-                      {topPaginas.map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                    </Pie>
+                    />
                     <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
@@ -313,15 +309,11 @@ export default function Analitica() {
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={navegadoresData}
+                        data={navegadoresData.map((d, i) => ({ ...d, fill: COLORS[i % COLORS.length] }))}
                         cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                         dataKey="value"
 label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        >
-                          {navegadoresData.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
+                      />
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
@@ -334,15 +326,11 @@ label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                   <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
                       <Pie
-                        data={dispositivosData}
+                        data={dispositivosData.map((d, i) => ({ ...d, fill: COLORS[i % COLORS.length] }))}
                         cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                         dataKey="value"
 label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                        >
-                          {dispositivosData.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
+                      />
                       <Tooltip />
                     </PieChart>
                   </ResponsiveContainer>
