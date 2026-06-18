@@ -123,4 +123,36 @@ describe('fetchApi', () => {
     await expect(fetchApi('/test')).rejects.toThrow('Error desconocido')
     expect(window.alert).toHaveBeenCalledWith('Error desconocido')
   })
+
+  it('should use error.message fallback when detail is missing', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: () => Promise.resolve({ message: 'Algo salio mal' }),
+    })
+
+    await expect(fetchApi('/test')).rejects.toThrow('Algo salio mal')
+    expect(window.alert).toHaveBeenCalledWith('Algo salio mal')
+  })
+
+  it('should handle 401 by clearing token and redirecting', async () => {
+    localStorage.setItem('token', 'old-token')
+
+    const originalLocation = globalThis.location
+
+    delete (globalThis as any).location
+    globalThis.location = { href: '' } as any
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: () => Promise.resolve({ detail: 'No autorizado' }),
+    })
+
+    await expect(fetchApi('/test')).rejects.toThrow('No autorizado')
+    expect(localStorage.getItem('token')).toBeNull()
+    expect(globalThis.location.href).toBe('/')
+
+    globalThis.location = originalLocation
+  })
 })

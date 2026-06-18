@@ -284,4 +284,22 @@ describe('Sidebar', () => {
 
     expect(setSite).not.toHaveBeenCalled()
   })
+
+  it('hides module items when siteId is null', async () => {
+    vi.mocked(useSite).mockReturnValue({
+      siteId: null,
+      siteNombre: null,
+      sitios: mockSitios as any,
+      setSite: vi.fn(),
+    })
+
+    renderSidebar()
+
+    await waitFor(() => {
+      expect(rolesService.getMisPermisos).toHaveBeenCalled()
+    })
+
+    expect(screen.queryByText('Blog')).not.toBeInTheDocument()
+    expect(screen.queryByText('Tienda')).not.toBeInTheDocument()
+  })
 })

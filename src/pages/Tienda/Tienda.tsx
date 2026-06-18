@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FiShoppingBag } from "react-icons/fi";
 import { storeService } from "../../services/store";
 import { useSite } from "../../context/SiteContext";
+import { formatPrice } from "../../site-widget/shared";
 import type {
   StoreProducto,
   StoreProductoCreate,
@@ -85,10 +86,6 @@ function slugify(text: string): string {
     .replaceAll(/\s+/g, "-")
     .replaceAll(/-+/g, "-")
     .trim();
-}
-
-function formatPrice(value: number): string {
-  return `S/ ${value.toFixed(2)}`;
 }
 
 function getFirstImage(product: StoreProductoListado | StoreProducto): string {

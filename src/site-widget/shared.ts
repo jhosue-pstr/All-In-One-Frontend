@@ -20,3 +20,7 @@ export function getLimit(element: Element, fallback: number): number {
   const parsed = Number(value);
   return Number.isNaN(parsed) ? fallback : parsed;
 }
+
+export function formatPrice(value: number): string {
+  return `S/ ${value.toFixed(2)}`;
+}

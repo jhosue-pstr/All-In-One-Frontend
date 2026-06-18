@@ -1,5 +1,5 @@
 import { isAuthenticated } from './api';
-import { getSiteId, getLimit } from './shared';
+import { getSiteId, getLimit, formatPrice } from './shared';
 
 type Product = {
   id: number;
@@ -67,10 +67,6 @@ function getUsuarioId(): number | null {
     return null;
   }
   /* v8 ignore stop */
-}
-
-function formatPrice(value: number): string {
-  return `S/ ${value.toFixed(2)}`;
 }
 
 function showToast(message: string): void {
