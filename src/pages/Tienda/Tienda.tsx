@@ -102,7 +102,7 @@ function getFirstImage(product: StoreProductoListado | StoreProducto): string {
 }
 
 export default function Tienda() {
-  const { siteId: selectedSiteId, sitios } = useSite();
+  const { siteId: selectedSiteId } = useSite();
   const [activeTab, setActiveTab] = useState<TabId>(PRODUCTOS_TAB);
 
   const [productos, setProductos] = useState<StoreProductoListado[]>([]);

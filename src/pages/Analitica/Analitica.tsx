@@ -246,7 +246,7 @@ export default function Analitica() {
                       data={topPaginas.map((p) => ({ name: mostrarRuta(p), value: p.visitas }))}
                       cx="50%" cy="50%" innerRadius={55} outerRadius={90}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                     >
                       {topPaginas.map((_, i) => (
                         <Cell key={i} fill={COLORS[i % COLORS.length]} />
@@ -316,9 +316,9 @@ export default function Analitica() {
                         data={navegadoresData}
                         cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {navegadoresData.map((_, i) => (
+label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                        >
+                          {navegadoresData.map((_, i) => (
                           <Cell key={i} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
@@ -337,9 +337,9 @@ export default function Analitica() {
                         data={dispositivosData}
                         cx="50%" cy="50%" innerRadius={45} outerRadius={75}
                         dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {dispositivosData.map((_, i) => (
+label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+                        >
+                          {dispositivosData.map((_, i) => (
                           <Cell key={i} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
