@@ -182,6 +182,7 @@ export const initGrapesJS = (options: GrapesJSInitOptions): Editor => {
   };
 
   const initPages = () => {
+    if (typeof document === 'undefined') return;
     const c = document.getElementById(pagesListId);
     if (c) renderPagesList(c);
     const b = document.getElementById(btnAddPageId);
