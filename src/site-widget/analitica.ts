@@ -4,7 +4,7 @@ const SESSION_KEY = 'analitica_session_id';
 function getSessionId(): string {
   let sid = localStorage.getItem(SESSION_KEY);
   if (!sid) {
-    sid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    sid = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0].toString(36)}`;
     localStorage.setItem(SESSION_KEY, sid);
   }
   return sid;
