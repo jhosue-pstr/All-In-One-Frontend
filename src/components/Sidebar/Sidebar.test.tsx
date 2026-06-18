@@ -261,7 +261,7 @@ describe('Sidebar', () => {
     globalThis.location = originalLocation
   })
 
-  it('sets sitioId to null when selected value is empty', async () => {
+  it('does not call setSite when selected value is empty', async () => {
     const setSite = vi.fn()
     vi.mocked(useSite).mockReturnValue({
       siteId: 1,
@@ -282,8 +282,6 @@ describe('Sidebar', () => {
       target: { value: '' },
     })
 
-    await waitFor(() => {
-      expect(setSite).toHaveBeenCalledWith(null, null)
-    })
+    expect(setSite).not.toHaveBeenCalled()
   })
 })

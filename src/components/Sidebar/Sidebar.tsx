@@ -196,14 +196,11 @@ export function Sidebar({ user }: Readonly<SidebarProps>) {
         <select
           value={siteId ?? ''}
           onChange={(e) => {
-            const val = e.target.value;
-            if (!val) {
-              setSite(null, null);
-              return;
+            const id = Number(e.target.value);
+            if (id) {
+              const s = sitios.find((s) => s.id === id);
+              setSite(id, s?.nombre || '');
             }
-            const id = Number(val);
-            const s = sitios.find((s) => s.id === id);
-            setSite(id, s?.nombre || '');
           }}
         >
           <option value="">Seleccionar sitio</option>
