@@ -83,8 +83,10 @@ pipeline {
                 sh '''
                     docker run -d --name e2e-frontend \
                         --network app-network \
+                        --volumes-from jenkins \
+                        -w "$WORKSPACE" \
                         -e VITE_API_BASE_URL=http://backend:8000/api \
-                        all-in-one-frontend:latest \
+                        ${NODE_IMAGE} \
                         sh -c "npm run dev -- --host 0.0.0.0"
                 '''
 
