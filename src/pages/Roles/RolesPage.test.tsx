@@ -161,7 +161,9 @@ describe('RolesPage', () => {
 
     expect(window.alert).toHaveBeenCalledWith('Usuario creado correctamente')
 
-    expect((screen.getByPlaceholderText('Nombre') as HTMLInputElement).value).toBe('')
+    await waitFor(() => {
+      expect((screen.getByPlaceholderText('Nombre') as HTMLInputElement).value).toBe('')
+    })
   })
 
   it('handles create usuario error', async () => {
