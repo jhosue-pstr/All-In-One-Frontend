@@ -911,8 +911,8 @@ function setSubmitLoading(submitBtn: HTMLElement | null, loading: boolean): void
 function fillCheckoutProfile(form: HTMLFormElement): void {
   if (!isAuthenticated()) return;
 
-  import('./perfil').then(({ fetchProfile }) => {
-    fetchProfile().then((profile) => {
+  import('./perfil').then(mod => {
+    mod.fetchProfile?.()?.then((profile) => {
       const setField = (name: string, value: string | null | undefined) => {
         const el = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
           `[data-tienda-field-${name}]`
@@ -928,7 +928,7 @@ function fillCheckoutProfile(form: HTMLFormElement): void {
       setField("pais", profile.pais);
       setField("codigo-postal", profile.codigo_postal);
     }).catch(() => {});
-  });
+  }).catch(() => {});
 }
 
 async function handleCheckoutSubmit(
