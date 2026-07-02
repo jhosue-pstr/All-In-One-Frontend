@@ -1,17 +1,26 @@
-site_name: All-InOne Frontend
-site_description: Documentación técnica del frontend de la plataforma All-InOne
+site_name: All-InOne Frontend + Auditoría SDLC
+site_description: Documentación técnica del frontend y documentación de auditoría SDLC del proyecto All-InOne
 site_author: ModularSoft - Grupo 4
 repo_name: All-InOne Frontend
+# repo_url: https://github.com/TU_USUARIO/TU_REPOSITORIO_FRONTEND
+
+use_directory_urls: true
 
 theme:
   name: material
   language: es
+  icon:
+    logo: material/monitor-dashboard
+    repo: fontawesome/brands/github
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.indexes
     - navigation.footer
+    - toc.follow
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -19,60 +28,92 @@ theme:
   palette:
     - scheme: default
       primary: indigo
-      accent: indigo
+      accent: teal
       toggle:
         icon: material/weather-night
         name: Cambiar a modo oscuro
     - scheme: slate
       primary: indigo
-      accent: indigo
+      accent: teal
       toggle:
         icon: material/weather-sunny
         name: Cambiar a modo claro
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Inicio: index.md
-  - Instalación local: instalacion.md
-  - Arquitectura:
-      - Visión general: arquitectura/vision-general.md
-      - Estructura del repositorio: arquitectura/estructura.md
-      - Rutas y layouts: arquitectura/rutas-layouts.md
-      - Contextos y servicios: arquitectura/contextos-servicios.md
-      - Editor visual GrapesJS: arquitectura/editor-visual.md
-      - Widget público: arquitectura/widget-publico.md
-  - Componentes:
-      - Páginas principales: componentes/paginas.md
-      - Componentes reutilizables: componentes/componentes-reutilizables.md
-      - Modelos TypeScript: componentes/modelos.md
-  - API:
-      - Consumo de API: api/consumo-api.md
-      - Autenticación y sesión: api/autenticacion-sesion.md
-      - Permisos y rutas protegidas: api/permisos-rutas.md
-  - Pruebas y calidad:
-      - Estrategia de pruebas: pruebas/estrategia.md
-      - Vitest y cobertura: pruebas/vitest-coverage.md
-      - Playwright E2E: pruebas/playwright-e2e.md
-      - Jenkins y calidad: pruebas/jenkins-calidad.md
-  - Seguridad:
-      - Controles frontend: seguridad/controles-frontend.md
-      - Roles y permisos: seguridad/roles-permisos.md
-  - Despliegue:
-      - Configuración: despliegue/configuracion.md
-      - Despliegue de prueba: despliegue/despliegue-prueba.md
-  - SDLC / Auditoría:
-      - Evidencias: sdlc/evidencias.md
-      - Limitaciones: sdlc/limitaciones.md
-  - Guía de contribución: guia-contribucion.md
+  - Documentación Frontend:
+      - Instalación local: instalacion.md
+      - Arquitectura:
+          - Visión general: arquitectura/vision-general.md
+          - Estructura del repositorio: arquitectura/estructura.md
+          - Rutas y layouts: arquitectura/rutas-layouts.md
+          - Contextos y servicios: arquitectura/contextos-servicios.md
+          - Editor visual GrapesJS: arquitectura/editor-visual.md
+          - Widget público: arquitectura/widget-publico.md
+      - Componentes:
+          - Páginas principales: componentes/paginas.md
+          - Componentes reutilizables: componentes/componentes-reutilizables.md
+          - Modelos TypeScript: componentes/modelos.md
+      - API:
+          - Consumo de API: api/consumo-api.md
+          - Autenticación y sesión: api/autenticacion-sesion.md
+          - Permisos y rutas protegidas: api/permisos-rutas.md
+      - Pruebas y calidad:
+          - Estrategia de pruebas: pruebas/estrategia.md
+          - Vitest y cobertura: pruebas/vitest-coverage.md
+          - Playwright E2E: pruebas/playwright-e2e.md
+          - Jenkins y calidad: pruebas/jenkins-calidad.md
+      - Seguridad:
+          - Controles frontend: seguridad/controles-frontend.md
+          - Roles y permisos: seguridad/roles-permisos.md
+      - Despliegue:
+          - Configuración: despliegue/configuracion.md
+          - Despliegue de prueba: despliegue/despliegue-prueba.md
+      - Evidencias SDLC:
+          - Evidencias: sdlc/evidencias.md
+          - Limitaciones: sdlc/limitaciones.md
+      - Guía de contribución: guia-contribucion.md
+  - Auditoría SDLC:
+      - Inicio auditoría: auditoria/index.md
+      - Project Charter:
+          - Resumen ejecutivo: auditoria/project-charter.md
+          - Información general: auditoria/informacion-general.md
+          - Antecedentes: auditoria/antecedentes.md
+          - Justificación y problema: auditoria/justificacion-problema.md
+          - Objetivos y alcance: auditoria/objetivos-alcance.md
+      - Ejecución de auditoría:
+          - Criterios de auditoría: auditoria/criterios-auditoria.md
+          - Metodología: auditoria/metodologia.md
+          - Entregables y stakeholders: auditoria/entregables-stakeholders.md
+          - Cronograma y presupuesto: auditoria/cronograma-presupuesto.md
+      - Gestión y cierre:
+          - Riesgos de auditoría: auditoria/riesgos.md
+          - Factores críticos de éxito: auditoria/factores-exito.md
+          - Criterios de aceptación: auditoria/criterios-aceptacion.md
+          - Supuestos y restricciones: auditoria/supuestos-restricciones.md
+      - Checklist SDLC:
+          - Resumen del checklist: auditoria/checklist-sdlc.md
+          - Trazabilidad de evidencias: auditoria/trazabilidad-evidencias.md
+          - Defensa en exposición: auditoria/preguntas-defensa.md
+          - Glosario: auditoria/glosario.md
 
 markdown_extensions:
   - admonition
   - attr_list
   - md_in_html
   - tables
+  - footnotes
   - toc:
       permalink: true
   - pymdownx.details
-  - pymdownx.highlight
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
